@@ -23,7 +23,7 @@ distlib==0.3.2
 docutils==0.17.1
 entrypoints==0.3
 filelock==3.0.12
-flake8==3.7.8
+flake8==3.9.2
 fvcore==0.1.5.post20210722
 idna
 imagesize==1.2.0
