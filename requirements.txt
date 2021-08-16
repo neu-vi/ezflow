@@ -9,7 +9,7 @@ binaryornot
 black==19.10b0
 bleach==3.3.0
 brotlipy==0.7.0
-bump2version==0.5.11
+bump2version==1.0.1
 certifi==2021.5.30
 cffi 
 chardet 
