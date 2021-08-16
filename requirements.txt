@@ -85,7 +85,7 @@ torchvision==0.10.0
 tornado 
 tox==3.14.0
 tqdm==4.61.2
-twine==1.14.0
+twine==3.4.2
 typed-ast 
 typing-extensions 
 Unidecode 
