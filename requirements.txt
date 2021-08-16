@@ -49,7 +49,7 @@ pathspec==0.7.0
 pathtools==0.1.2
 Pillow 
 pkginfo==1.7.1
-platformdirs==2.0.0
+platformdirs==2.2.0
 pluggy==0.13.1
 portalocker==2.3.0
 poyo
