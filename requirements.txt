@@ -70,7 +70,7 @@ readme-renderer==29.0
 regex 
 requests 
 requests-toolbelt==0.9.1
-scipy==1.7.0
+scipy==1.7.1
 six 
 snowballstemmer==2.1.0
 Sphinx==1.8.5
