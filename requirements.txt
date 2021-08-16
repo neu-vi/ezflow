@@ -62,7 +62,7 @@ pyOpenSSL
 pyparsing==2.4.7
 PySocks 
 pytest==6.2.4
-python-dateutil==2.8.1
+python-dateutil==2.8.2
 python-slugify 
 pytz==2021.1
 PyYAML==5.4.1
