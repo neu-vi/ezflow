@@ -7,7 +7,7 @@ Babel==2.9.1
 backports.entry-points-selectable==1.1.0
 binaryornot 
 black==19.10b0
-bleach==3.3.0
+bleach==4.0.0
 brotlipy==0.7.0
 bump2version==0.5.11
 certifi==2021.5.30
