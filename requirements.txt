@@ -16,7 +16,7 @@ chardet
 charset-normalizer==2.0.1
 click 
 cookiecutter==1.7.3
-coverage==4.5.4
+coverage==5.5
 cryptography 
 cycler==0.10.0
 distlib==0.3.2
