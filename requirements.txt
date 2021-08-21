@@ -13,7 +13,7 @@ bump2version==0.5.11
 certifi==2021.5.30
 cffi 
 chardet 
-charset-normalizer==2.0.1
+charset-normalizer==2.0.4
 click 
 cookiecutter==1.7.3
 coverage==4.5.4
