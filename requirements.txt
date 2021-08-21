@@ -54,7 +54,7 @@ pluggy==0.13.1
 portalocker==2.3.0
 poyo
 py==1.10.0
-pycodestyle==2.5.0
+pycodestyle==2.7.0
 pycparser 
 pyflakes==2.1.1
 Pygments==2.9.0
