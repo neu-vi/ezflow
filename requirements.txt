@@ -1,7 +1,7 @@
 alabaster==0.7.12
 appdirs==1.4.4
 argh==0.26.2
-arrow==0.13.1
+arrow==1.1.1
 attrs 
 Babel==2.9.1
 backports.entry-points-selectable==1.1.0
