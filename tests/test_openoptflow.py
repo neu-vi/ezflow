@@ -4,8 +4,7 @@
 
 import pytest
 
-
-from openoptflow import openoptflow
+# from openoptflow import openoptflow
 
 
 @pytest.fixture

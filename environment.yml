@@ -8,7 +8,6 @@ dependencies:
   - _libgcc_mutex=0.1=main
   - _openmp_mutex=4.5=1_gnu
   - attrs=21.2.0=pyhd3eb1b0_0
-  - black=19.10b0=py_0
   - blas=1.0=mkl
   - brotlipy=0.7.0=py37h27cfd23_1003
   - bzip2=1.0.8=h7b6447c_0
@@ -70,10 +69,8 @@ dependencies:
   - openh264=2.1.0=hd408876_0
   - openjpeg=2.3.0=h05c96fa_1
   - openssl=1.1.1k=h27cfd23_0
-  - pathspec=0.7.0=py_0
   - pcre=8.45=h9c3ff4c_0
   - pillow=8.3.1=py37h2c7a002_0
-  - pip=21.1.3=py37h06a4308_0
   - pthread-stubs=0.4=h36c2ea0_1001
   - pycparser=2.20=py_2
   - pyopenssl=20.0.1=pyhd3eb1b0_1
@@ -98,7 +95,6 @@ dependencies:
   - typed-ast=1.4.3=py37h7f8727e_1
   - typing_extensions=3.10.0.0=pyh06a4308_0
   - unidecode=1.2.0=pyhd3eb1b0_0
-  - wheel=0.36.2=pyhd3eb1b0_0
   - whichcraft=0.6.1=pyhd3eb1b0_0
   - xorg-libxau=1.0.9=h7f98852_0
   - xorg-libxdmcp=1.1.3=h7f98852_0
@@ -114,18 +110,21 @@ dependencies:
     - babel==2.9.1
     - backports-entry-points-selectable==1.1.0
     - binaryornot==0.4.4
+    - black==21.7b0
     - bleach==3.3.0
     - bump2version==0.5.11
+    - cfgv==3.3.0
     - chardet==4.0.0
     - charset-normalizer==2.0.1
     - cookiecutter==1.7.3
-    - coverage==4.5.4
+    - coverage==5.5
     - distlib==0.3.2
     - docutils==0.17.1
     - entrypoints==0.3
     - filelock==3.0.12
-    - flake8==3.7.8
+    - flake8==3.9.2
     - fvcore==0.1.5.post20210722
+    - identify==2.2.13
     - idna==3.2
     - imagesize==1.2.0
     - importlib-metadata==0.23
@@ -135,16 +134,21 @@ dependencies:
     - jinja2-time==0.2.0
     - markupsafe==2.0.1
     - mccabe==0.6.1
+    - nodeenv==1.6.0
     - opencv-python==4.5.3.56
+    - openoptflow==0.1.0
     - packaging==21.0
+    - pathspec==0.9.0
+    - pip==21.2.4
     - pkginfo==1.7.1
     - platformdirs==2.0.0
     - pluggy==0.13.1
     - portalocker==2.3.0
     - poyo==0.5.0
+    - pre-commit==2.14.0
     - py==1.10.0
-    - pycodestyle==2.5.0
-    - pyflakes==2.1.1
+    - pycodestyle==2.7.0
+    - pyflakes==2.3.1
     - pygments==2.9.0
     - pytest==6.2.4
     - python-slugify==5.0.2
@@ -155,12 +159,18 @@ dependencies:
     - requests-toolbelt==0.9.1
     - scipy==1.7.0
     - snowballstemmer==2.1.0
-    - sphinx==1.8.5
+    - sphinx==4.1.2
+    - sphinxcontrib-applehelp==1.0.2
+    - sphinxcontrib-devhelp==1.0.2
+    - sphinxcontrib-htmlhelp==2.0.0
+    - sphinxcontrib-jsmath==1.0.1
+    - sphinxcontrib-qthelp==1.0.3
     - sphinxcontrib-serializinghtml==1.1.5
     - sphinxcontrib-websupport==1.2.4
     - tabulate==0.8.9
     - termcolor==1.1.0
     - text-unidecode==1.3
+    - tomli==1.2.1
     - tox==3.14.0
     - tqdm==4.61.2
     - twine==1.14.0
@@ -168,4 +178,6 @@ dependencies:
     - virtualenv==20.5.0
     - watchdog==0.9.0
     - webencodings==0.5.1
+    - wheel==0.37.0
     - yacs==0.1.8
+prefix: /home/neelay/miniconda3/envs/flow
