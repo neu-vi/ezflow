@@ -1,6 +1,6 @@
 import torch
 
-from ..openoptflow.methods import RAFT
+from openoptflow.methods import RAFT
 
 
 def test_RAFT():
