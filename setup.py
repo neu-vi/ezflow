@@ -7,13 +7,13 @@ import os
 
 from setuptools import find_packages, setup
 
-with open("README.md") as readme_file:
+with open("./README.md") as readme_file:
     readme = readme_file.read()
 
 
 PROJECT = os.path.abspath(os.path.dirname(__file__))
-REQUIRE_PATH = "requirements.txt"
-PKG_DESCRIBE = "README.md"
+REQUIRE_PATH = "./requirements.txt"
+PKG_DESCRIBE = "./README.md"
 
 
 def read(*parts):
