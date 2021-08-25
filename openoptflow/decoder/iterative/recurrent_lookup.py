@@ -1,7 +1,8 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from openopticalflow.models import ConvGRU
+
+from ...models import ConvGRU
 
 
 class FlowHead(nn.Module):
