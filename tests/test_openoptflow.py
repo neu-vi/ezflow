@@ -1,23 +1,14 @@
-#!/usr/bin/env python
+import torch
 
-"""Tests for `openoptflow` package."""
-
-import pytest
-
-# from openoptflow import openoptflow
+from ..openoptflow.methods import RAFT
 
 
-@pytest.fixture
-def response():
-    """Sample pytest fixture.
+def test_RAFT():
 
-    See more at: http://doc.pytest.org/en/latest/fixture.html
-    """
-    # import requests
-    # return requests.get('https://github.com/audreyr/cookiecutter-pypackage')
+    img1 = torch.randn(1, 3, 256, 256)
+    img2 = torch.randn(1, 3, 256, 256)
 
+    model = RAFT()
+    flow = model(img1, img2)
 
-def test_content(response):
-    """Sample pytest test function with the pytest fixture as an argument."""
-    # from bs4 import BeautifulSoup
-    # assert 'GitHub' in BeautifulSoup(response.content).title.string
+    assert flow.shape == (1, 2, 256, 256)
