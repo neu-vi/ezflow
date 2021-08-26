@@ -81,6 +81,7 @@ CONFIG = {
     "python_requires": ">=3.6",
     "test_suite": "tests",
     "tests_require": ["pytest>=3"],
+    "include_package_data": True,
 }
 
 if __name__ == "__main__":
