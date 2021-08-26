@@ -4,7 +4,7 @@ import os
 from setuptools import find_packages, setup
 
 # Basic information
-NAME = "openoptfloe"
+NAME = "openoptflow"
 DESCRIPTION = "A PyTorch library for optical flow estimation using neural networks"
 VERSION = "0.1.0"
 AUTHOR = "Neelay Shah"
@@ -17,11 +17,11 @@ with open("README.md", "r") as f:
     LONG_DESCRIPTION = f.read()
 
 # Define the keywords
-KEYWORDS = ("optical flow", "pytorch", "machine learning", "deep learning")
+KEYWORDS = ["optical flow", "pytorch", "machine learning", "deep learning"]
 
 # Define the classifiers
 # See https://pypi.python.org/pypi?%3Aaction=list_classifiers
-CLASSIFIERS = (
+CLASSIFIERS = [
     "Development Status :: 2 - Pre-Alpha",
     "Intended Audience :: Developers",
     "License :: OSI Approved :: MIT License",
@@ -30,7 +30,7 @@ CLASSIFIERS = (
     "Programming Language :: Python :: 3.6",
     "Programming Language :: Python :: 3.7",
     "Programming Language :: Python :: 3.8",
-)
+]
 
 # Important Paths
 PROJECT = os.path.abspath(os.path.dirname(__file__))
