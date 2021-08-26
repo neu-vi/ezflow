@@ -1,26 +1,53 @@
-#!/usr/bin/env python
-
-"""The setup script."""
-
 import codecs
 import os
 
 from setuptools import find_packages, setup
 
+# Basic information
+NAME = "openoptfloe"
+DESCRIPTION = "A PyTorch library for optical flow estimation using neural networks"
+VERSION = "0.1.0"
+AUTHOR = "Neelay Shah"
+EMAIL = "nstraum1@gmail.com"
+LICENSE = "MIT"
+REPOSITORY = "https://github.com/neu-vig/openoptflow"
+PACKAGE = "openoptflow"
+
+with open("README.md", "r") as f:
+    LONG_DESCRIPTION = f.read()
+
+# Define the keywords
+KEYWORDS = ("optical flow", "pytorch", "machine learning", "deep learning")
+
+# Define the classifiers
+# See https://pypi.python.org/pypi?%3Aaction=list_classifiers
+CLASSIFIERS = (
+    "Development Status :: 2 - Pre-Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Natural Language :: English",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.6",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+)
+
+# Important Paths
 PROJECT = os.path.abspath(os.path.dirname(__file__))
 REQUIRE_PATH = "requirements.txt"
 PKG_DESCRIBE = "README.md"
 
+# Directories to ignore in find_packages
+EXCLUDES = ()
 
+
+# helper functions
 def read(*parts):
     """
     returns contents of file
     """
     with codecs.open(os.path.join(PROJECT, *parts), "rb", "utf-8") as file:
         return file.read()
-
-
-REQUIRE_PATH = "requirements.txt"
 
 
 def get_requires(path=REQUIRE_PATH):
@@ -33,39 +60,28 @@ def get_requires(path=REQUIRE_PATH):
             yield line
 
 
-test_requirements = [
-    "pytest>=3",
-]
+# Define the configuration
+CONFIG = {
+    "name": NAME,
+    "version": VERSION,
+    "description": DESCRIPTION,
+    "long_description": LONG_DESCRIPTION,
+    "long_description_content_type": "text/markdown",
+    "classifiers": CLASSIFIERS,
+    "keywords": KEYWORDS,
+    "license": LICENSE,
+    "author": AUTHOR,
+    "author_email": EMAIL,
+    "url": REPOSITORY,
+    "project_urls": {"Source": REPOSITORY},
+    "packages": find_packages(
+        where=PROJECT, include=["openoptflow", "openoptflow.*"], exclude=EXCLUDES
+    ),
+    "install_requires": list(get_requires()),
+    "python_requires": ">=3.6",
+    "test_suite": "tests",
+    "tests_require": ["pytest>=3"],
+}
 
-setup(
-    author="Neelay Shah",
-    author_email="nstraum1@gmail.com",
-    python_requires=">=3.6",
-    classifiers=[
-        "Development Status :: 2 - Pre-Alpha",
-        "Intended Audience :: Developers",
-        "License :: OSI Approved :: MIT License",
-        "Natural Language :: English",
-        "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.6",
-        "Programming Language :: Python :: 3.7",
-        "Programming Language :: Python :: 3.8",
-    ],
-    description="A PyTorch library for optical flow estimation",
-    entry_points={
-        "console_scripts": [
-            "openoptflow=openoptflow.cli:main",
-        ],
-    },
-    install_requires=list(get_requires()),
-    license="MIT license",
-    include_package_data=True,
-    keywords="openoptflow",
-    name="openoptflow",
-    packages=find_packages(include=["openoptflow", "openoptflow.*"]),
-    test_suite="tests",
-    tests_require=test_requirements,
-    url="https://github.com/neu-vig/openoptflow",
-    version="0.1.0",
-    zip_safe=False,
-)
+if __name__ == "__main__":
+    setup(**CONFIG)
