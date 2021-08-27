@@ -78,6 +78,9 @@ class BottleneckBlock(nn.Module):
 
         assert norm in ("group", "batch", "instance", "none")
 
+        self.in_channels = in_channels
+        self.out_channels = out_channels
+
         if norm == "group":
             num_groups = out_channels // 8
             norm1 = nn.GroupNorm(num_groups=num_groups, num_channels=out_channels // 4)

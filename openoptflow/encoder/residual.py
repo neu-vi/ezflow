@@ -37,25 +37,24 @@ class BasicEncoder(nn.Module):
             norm_fn = nn.Sequential()
 
         layers = [
-            nn.Conv2D(in_channels, start_channels, kernel_size=7, stride=2, padding=3),
+            nn.Conv2d(in_channels, start_channels, kernel_size=7, stride=2, padding=3),
             norm_fn,
             nn.ReLU(inplace=True),
         ]
 
-        for i in range(len(layer_config) - 1):
+        for i in range(len(layer_config)):
             if i == 0:
                 stride = 1
             else:
                 stride = 2
 
-            layers += self._make_layer(
-                layer_config[i], layer_config[i + 1], stride, norm
-            )
+            layers += self._make_layer(start_channels, layer_config[i], stride, norm)
+            start_channels = layer_config[i]
 
         layers.append(nn.Conv2d(layer_config[-1], out_channels, kernel_size=1))
 
         dropout = nn.Sequential()
-        if dropout > 0:
+        if self.training and p_dropout > 0:
             dropout = nn.Dropout2d(p=p_dropout)
         layers.append(dropout)
 
@@ -73,7 +72,7 @@ class BasicEncoder(nn.Module):
     def _make_layer(self, in_channels, out_channels, stride, norm):
 
         layer1 = BasicBlock(in_channels, out_channels, stride, norm)
-        layer2 = BasicBlock(out_channels, out_channels, stride, norm)
+        layer2 = BasicBlock(out_channels, out_channels, stride=1, norm=norm)
 
         return [layer1, layer2]
 
@@ -82,7 +81,7 @@ class BasicEncoder(nn.Module):
         is_list = isinstance(x, tuple) or isinstance(x, list)
         if is_list:
             batch_dim = x[0].shape[0]
-            out = torch.cat(x, dim=0)
+            x = torch.cat(x, dim=0)
 
         out = self.encoder(x)
 
@@ -125,25 +124,24 @@ class BottleneckEncoder(nn.Module):
             norm_fn = nn.Sequential()
 
         layers = [
-            nn.Conv2D(in_channels, start_channels, kernel_size=7, stride=2, padding=3),
+            nn.Conv2d(in_channels, start_channels, kernel_size=7, stride=2, padding=3),
             norm_fn,
             nn.ReLU(inplace=True),
         ]
 
-        for i in range(len(layer_config) - 1):
+        for i in range(len(layer_config)):
             if i == 0:
                 stride = 1
             else:
                 stride = 2
 
-            layers += self._make_layer(
-                layer_config[i], layer_config[i + 1], stride, norm
-            )
+            layers += self._make_layer(start_channels, layer_config[i], stride, norm)
+            start_channels = layer_config[i]
 
         layers.append(nn.Conv2d(layer_config[-1], out_channels, kernel_size=1))
 
         dropout = nn.Sequential()
-        if dropout > 0:
+        if self.training and p_dropout > 0:
             dropout = nn.Dropout2d(p=p_dropout)
         layers.append(dropout)
 
@@ -161,7 +159,7 @@ class BottleneckEncoder(nn.Module):
     def _make_layer(self, in_channels, out_channels, stride, norm):
 
         layer1 = BottleneckBlock(in_channels, out_channels, stride, norm)
-        layer2 = BottleneckBlock(out_channels, out_channels, stride, norm)
+        layer2 = BottleneckBlock(out_channels, out_channels, stride=1, norm=norm)
 
         return [layer1, layer2]
 
@@ -170,7 +168,7 @@ class BottleneckEncoder(nn.Module):
         is_list = isinstance(x, tuple) or isinstance(x, list)
         if is_list:
             batch_dim = x[0].shape[0]
-            out = torch.cat(x, dim=0)
+            x = torch.cat(x, dim=0)
 
         out = self.encoder(x)
 

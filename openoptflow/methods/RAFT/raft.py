@@ -23,45 +23,57 @@ except:
 
 
 class RAFT(nn.Module):
-    def __init__(self, args):
+    def __init__(
+        self,
+        small=False,
+        dropout=0.0,
+        mixed_precision=False,
+    ):
         super(RAFT, self).__init__()
 
-        self.args = args
+        self.mixed_precision = mixed_precision
 
-        if args.small:
-            self.hidden_dim = hdim = 96
-            self.context_dim = cdim = 64
-            args.corr_levels = 4
-            args.corr_radius = 3
+        if small:
 
-        else:
-            self.hidden_dim = hdim = 128
-            self.context_dim = cdim = 128
-            args.corr_levels = 4
-            args.corr_radius = 4
+            self.hidden_dim = 96
+            self.context_dim = 64
+            self.corr_radius = 3
+            self.corr_levels = 4
 
-        if "dropout" not in self.args:
-            self.args.dropout = 0
-
-        if args.small:
             self.fnet = BottleneckEncoder(
-                out_channels=128, norm="instance", p_dropout=args.dropout
+                out_channels=128, norm="instance", p_dropout=dropout
             )
             self.cnet = BottleneckEncoder(
-                out_channels=hdim + cdim, norm="none", p_dropout=args.dropout
+                out_channels=self.hidden_dim + self.context_dim,
+                norm="none",
+                p_dropout=dropout,
             )
             self.update_block = SmallRecurrentLookupUpdateBlock(
-                self.args, hidden_dim=hdim
+                corr_radius=self.corr_radius,
+                corr_levels=self.corr_levels,
+                hidden_dim=self.hidden_dim,
             )
 
         else:
+
+            self.hidden_dim = 128
+            self.context_dim = 128
+            self.corr_levels = 4
+            self.corr_radius = 4
+
             self.fnet = BasicEncoder(
-                out_channels=256, norm="instance", p_dropout=args.dropout
+                out_channels=256, norm="instance", p_dropout=dropout
             )
             self.cnet = BasicEncoder(
-                out_channels=hdim + cdim, norm="batch", p_dropout=args.dropout
+                out_channels=self.hidden_dim + self.context_dim,
+                norm="batch",
+                p_dropout=dropout,
             )
-            self.update_block = RecurrentLookupUpdateBlock(self.args, hidden_dim=hdim)
+            self.update_block = RecurrentLookupUpdateBlock(
+                corr_radius=self.corr_radius,
+                corr_levels=self.corr_levels,
+                hidden_dim=self.hidden_dim,
+            )
 
     def freeze_bn(self):
         for m in self.modules():
@@ -90,7 +102,14 @@ class RAFT(nn.Module):
         return up_flow.reshape(N, 2, 8 * H, 8 * W)
 
     def forward(
-        self, image1, image2, iters=12, flow_init=None, upsample=True, test_mode=False
+        self,
+        image1,
+        image2,
+        iters=12,
+        flow_init=None,
+        upsample=True,
+        test_mode=False,
+        only_flow=False,
     ):
 
         image1 = 2 * (image1 / 255.0) - 1.0
@@ -99,20 +118,17 @@ class RAFT(nn.Module):
         image1 = image1.contiguous()
         image2 = image2.contiguous()
 
-        hdim = self.hidden_dim
-        cdim = self.context_dim
-
-        with autocast(enabled=self.args.mixed_precision):
+        with autocast(enabled=self.mixed_precision):
             fmap1, fmap2 = self.fnet([image1, image2])
 
         fmap1 = fmap1.float()
         fmap2 = fmap2.float()
 
-        corr_fn = MutliScalePairwise4D(fmap1, fmap2, radius=self.args.corr_radius)
+        corr_fn = MutliScalePairwise4D(fmap1, fmap2, radius=self.corr_radius)
 
-        with autocast(enabled=self.args.mixed_precision):
+        with autocast(enabled=self.mixed_precision):
             cnet = self.cnet(image1)
-            net, inp = torch.split(cnet, [hdim, cdim], dim=1)
+            net, inp = torch.split(cnet, [self.hidden_dim, self.context_dim], dim=1)
             net = torch.tanh(net)
             inp = torch.relu(inp)
 
@@ -122,12 +138,12 @@ class RAFT(nn.Module):
             coords1 = coords1 + flow_init
 
         flow_predictions = []
-        for itr in range(iters):
+        for _ in range(iters):
             coords1 = coords1.detach()
             corr = corr_fn(coords1)
 
             flow = coords1 - coords0
-            with autocast(enabled=self.args.mixed_precision):
+            with autocast(enabled=self.mixed_precision):
                 net, up_mask, delta_flow = self.update_block(net, inp, corr, flow)
 
             coords1 = coords1 + delta_flow
@@ -140,6 +156,8 @@ class RAFT(nn.Module):
             flow_predictions.append(flow_up)
 
         if test_mode:
+            if only_flow:
+                return flow_up
             return coords1 - coords0, flow_up
 
         return flow_predictions
