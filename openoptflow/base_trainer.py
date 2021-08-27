@@ -8,9 +8,9 @@ from torch.utils.tensorboard import SummaryWriter
 from .utils import AverageMeter
 
 
-class SegTrainer:
+class BaseTrainer:
     """
-    Base Trainer class for hand segmentation models
+    Base Trainer class
     """
 
     def __init__(
