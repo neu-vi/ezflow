@@ -1,15 +1,15 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from openopticalflow.decoder import Convolution3DJointFusion
-from openopticalflow.encoder import BasicEncoder
 
+from ...decoder import Convolution3DJointFusion
+from ...encoder import BasicEncoder
 from .utils import replace_bn, replace_relu
 
 
-class DeepLabV3OpticalFlowEstimator(nn.Module):
+class DCVNet(nn.Module):  # DeepLabV3OpticalFlowEstimator
     def __init__(self, cfg, criterion=None):
-        super(DeepLabV3OpticalFlowEstimator, self).__init__()
+        super(DCVNet, self).__init__()
 
         self.criterion = criterion
         self.cfg = cfg
@@ -18,7 +18,7 @@ class DeepLabV3OpticalFlowEstimator(nn.Module):
         batch_norm = cfg.MODEL.FEATURE_ENCODER_NORM
         assert batch_norm in ["instance", "batch"]
 
-        base = RAFT_Stride28_256d(norm_fn=batch_norm)
+        base = BasicEncoder(norm=batch_norm)
         self.base = base
 
         self.flow_decoder = Convolution3DJointFusion(
