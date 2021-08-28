@@ -1,0 +1,1 @@
+from .joint_fusion_decoder import Convolution3DJointFusion
