@@ -60,9 +60,12 @@ class BaseTrainer:
 
         raise NotImplementedError
 
-    def _compute_metric(self, pred, label):
+    def _calculate_metric(self, pred, label):
 
-        raise NotImplementedError
+        if isinstance(pred, tuple):
+            pred = pred[0]
+
+        metric = torch.sqrt(torch.sum((pred - label) ** 2, dim=1))
 
     def _train_model(self, n_epochs):
 
@@ -140,7 +143,7 @@ class BaseTrainer:
                 img, label = img.to(self.device), label.to(self.device)
                 pred = model(img)
 
-                metric = self._compute_metric(pred, label)
+                metric = self._calculate_metric(pred, label)
                 metric_meter.update(metric.item(), n=batch_size)
 
         return metric_meter.avg
