@@ -10,7 +10,9 @@ A PyTorch library for optical flow estimation using neural networks.
 
 ### ToDo
 
+- [ ] Add more models
 - [ ] Add dataloaders for common datasets
 - [ ] Integrate Optuna
 - [ ] Integrate Hydra
 - [ ] Add Registry
+- [ ] Add support for [AutoFlow](https://autoflow-google.github.io/#code)
