@@ -4,3 +4,12 @@
 [![Linting](https://github.com/neu-vig/openoptflow/actions/workflows/linting.yml/badge.svg)](https://github.com/neu-vig/openoptflow/actions/workflows/linting.yml)
 
 A PyTorch library for optical flow estimation using neural networks.
+
+
+<br>
+### ToDo
+
+- [ ] Add dataloaders for common datasets
+- [ ] Integrate Optuna
+- [ ] Integrate Hydra
+- [ ] Add Registry
