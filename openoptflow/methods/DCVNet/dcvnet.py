@@ -8,50 +8,51 @@ from .utils import replace_bn, replace_relu
 
 
 class DCVNet(nn.Module):  # DeepLabV3OpticalFlowEstimator
-    def __init__(self, cfg, criterion=None):
+    def __init__(
+        self,
+        norm="batch",
+        feature_strides=8,
+        features_dim=128,
+        leaky_relu=True,
+        **kwargs
+    ):
         super(DCVNet, self).__init__()
 
-        self.criterion = criterion
-        self.cfg = cfg
-
-        # elif cfg.MODEL.ENCODER == 'raft_stride28_256d':
-        batch_norm = cfg.MODEL.FEATURE_ENCODER_NORM
-        assert batch_norm in ["instance", "batch"]
-
-        base = BasicEncoder(norm=batch_norm)
+        base = BasicEncoder(norm=norm)
         self.base = base
 
         self.flow_decoder = Convolution3DJointFusion(
-            cfg, feat_stride=base.output_strides, app_feat_dim=base.output_dims
+            feat_stride=feature_strides, app_feat_dim=features_dim, **kwargs
         )
 
-        if cfg.MODEL.INIT_WEIGHTS:
-            for m in self.modules():
-                if isinstance(m, (nn.Conv2d, nn.Conv3d)):
-                    nn.init.kaiming_normal_(
-                        m.weight, mode="fan_out", nonlinearity="relu"
-                    )
-                elif isinstance(
-                    m,
-                    (
-                        nn.BatchNorm2d,
-                        nn.InstanceNorm2d,
-                        nn.GroupNorm,
-                        nn.BatchNorm3d,
-                        nn.SyncBatchNorm,
-                    ),
-                ):
-                    if m.weight is not None:
-                        nn.init.constant_(m.weight, 1)
-                    if m.bias is not None:
-                        nn.init.constant_(m.bias, 0)
+        self._init_weights()
 
-        if cfg.MODEL.USE_INST_NORM:
+        if norm == "instance":
             self.flow_decoder = replace_bn(self.flow_decoder, "instance_norm")
 
-        self.use_leaky_relu = cfg.MODEL.USE_LEAKY_RELU
-        if cfg.MODEL.USE_LEAKY_RELU:
+        self.leaky_relu = leaky_relu
+        if self.leaky_relu:
             self = replace_relu(self)
+
+    def _init_weights(self):
+
+        for m in self.modules():
+            if isinstance(m, (nn.Conv2d, nn.Conv3d)):
+                nn.init.kaiming_normal_(m.weight, mode="fan_out", nonlinearity="relu")
+            elif isinstance(
+                m,
+                (
+                    nn.BatchNorm2d,
+                    nn.InstanceNorm2d,
+                    nn.GroupNorm,
+                    nn.BatchNorm3d,
+                    nn.SyncBatchNorm,
+                ),
+            ):
+                if m.weight is not None:
+                    nn.init.constant_(m.weight, 1)
+                if m.bias is not None:
+                    nn.init.constant_(m.bias, 0)
 
     def freeze_encoder_bn(self):
         for m in self.base.modules():
@@ -137,53 +138,4 @@ class DCVNet(nn.Module):  # DeepLabV3OpticalFlowEstimator
             output_intermediate=output_intermediate,
         )
 
-        if self.training:
-
-            if isinstance(flow, tuple) or isinstance(flow, list):
-
-                if self.cfg.MODEL.DECODER == "dcv3d_dilation_joint_fusion_aux_loss":
-                    loss_list = []
-
-                    for flow_i in flow:
-                        loss_i = self.criterion(flow_i, y, valid)
-                        loss_list.append(loss_i)
-
-                    if len(loss_list) < 3:
-                        loss_list = [None] + loss_list
-
-                    assert len(loss_list) == 3, [len(loss_list), len(flow)]
-
-                    loss_list = loss_list[::-1]
-
-                    return flow[-1], loss_list[0], loss_list[1], loss_list[2]
-
-                else:
-
-                    if self.cfg.MODEL.CONVEX_AS_RESIDUAL:
-                        flow, coarse_flow = flow
-                        main_loss = self.criterion(flow, y, valid)
-                        aux_loss = self.criterion(coarse_flow, y, valid)
-                    else:
-                        flow, flow_entropy, fusion_entropy = flow
-                        assert self.criterion is not None
-
-                        main_loss = self.criterion(flow, y, valid)
-                        aux_loss1 = torch.mean(flow_entropy)
-
-                        if fusion_entropy is not None:
-                            aux_loss2 = torch.mean(fusion_entropy)
-                        else:
-                            aux_loss2 = None
-
-                    return flow, main_loss, aux_loss1, aux_loss2
-            else:
-
-                if self.criterion is not None:
-                    main_loss = self.criterion(flow, y, valid)
-                else:
-                    main_loss = None
-
-                return flow, main_loss
-
-        else:
-            return flow
+        return flow

@@ -69,14 +69,14 @@ class Convolution3DJointFusion:
         self.search_range = search_range
         self.cost_volume_list = []
 
-        for dilations_i, feat_stride_i in zip(dilations, feat_stride):
+        for dilations_i in dilations:
 
             cost_volume_i = GroupWiseCostVolume3D(
                 num_groups=cost_volume_num_groups,
                 search_range=search_range,
                 dilations=dilations_i,
                 pool_scales=cv_spatial_pooling,
-                stride=8 // feat_stride_i,
+                stride=8 // feat_stride,
                 use_bn=False,
                 relu_after_corr=relu_after_corr,
                 use_tail_op=use_tail_op,
@@ -91,9 +91,9 @@ class Convolution3DJointFusion:
         self.num_dilations = num_dilations
         flow_grids_list = []
 
-        for dilations_i, feat_stride_i in zip(dilations, feat_stride):
+        for dilations_i in dilations:
             for dl in dilations_i:
-                flow_grids = self.get_flow_grids(search_radius, feat_stride_i, dl)
+                flow_grids = self.get_flow_grids(search_radius, feat_stride, dl)
                 flow_grids_list.append(torch.Tensor(flow_grids))
 
         self.register_buffer("flow_grids_list", torch.stack(flow_grids_list, 0))
@@ -133,9 +133,9 @@ class Convolution3DJointFusion:
         not_process_app_feat = True
 
         self.app_feat_processors = []
-        for feat_stride_i, app_feat_dim_i in zip(feat_stride, app_feat_dim):
+        for app_feat_dim_i in app_feat_dim:
 
-            downsample_factor = 8 // feat_stride_i
+            downsample_factor = 8 // feat_stride
 
             if downsample_factor > 1 and (not not_process_app_feat):
 
@@ -190,14 +190,6 @@ class Convolution3DJointFusion:
             mask_kernel_size=mask_kernel_size,
             cv_filter_feat_dim=cv_filter_feat_dim,
         )
-
-        for m in self.modules():
-            if (
-                isinstance(m, nn.BatchNorm2d)
-                or isinstance(m, nn.BatchNorm3d)
-                or isinstance(m, nn.SyncBatchNorm)
-            ):
-                raise Exception("No BNs are expected in the decoder.")
 
     def get_flow_grids(self, search_radius, feat_stride, dilation):
         x_grids = np.arange(-search_radius, search_radius + 1) * dilation * feat_stride

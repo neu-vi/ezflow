@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from spatial_correlation_sampler import SpatialCorrelationSampler
 
 
 class GroupWiseCorrelation(nn.Module):
