@@ -16,5 +16,6 @@ A PyTorch library for optical flow estimation using neural networks.
 - [ ] Integrate Hydra for config parsing
 - [ ] Create CLI using Click
 - [ ] Add Registry
-- [ ] Think about creating a lodd/criterion module instead of having method losses in the same file as trainer classes. Could also have a base criterion which method specific losses can inherit and modify
+- [ ] Think about creating a loss/criterion module instead of having method losses in the same file as trainer classes. Could also have a base criterion which method specific losses can inherit and modify
 - [ ] Add support for [AutoFlow](https://autoflow-google.github.io/#code)
+- [ ] Add functionality for testing model size and inference speed
