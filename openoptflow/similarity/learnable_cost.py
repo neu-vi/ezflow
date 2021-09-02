@@ -5,7 +5,7 @@ import torch.nn.functional as F
 if torch.cuda.is_available():
     from spatial_correlation_sampler import SpatialCorrelationSampler
 
-from ..models import ConvNormRelu
+from ..common import ConvNormRelu
 
 
 class Conv2DMatching(nn.Module):
@@ -26,7 +26,14 @@ class Conv2DMatching(nn.Module):
 
 
 class LearnableMatchingCost(nn.Module):
-    def __init__(self, max_u, max_v, remove_warp_hole=True, matching_net=None):
+    def __init__(
+        self,
+        max_u,
+        max_v,
+        remove_warp_hole=True,
+        cuda_cost_compute=False,
+        matching_net=None,
+    ):
         super(LearnableMatchingCost, self).__init__()
 
         if matching_net is None:
@@ -37,6 +44,7 @@ class LearnableMatchingCost(nn.Module):
         self.max_u = max_u
         self.max_v = max_v
         self.remove_warp_hole = remove_warp_hole
+        self.cuda_cost_compute = cuda_cost_compute
 
     def forward(self, x, y):
 
@@ -59,7 +67,7 @@ class LearnableMatchingCost(nn.Module):
                 .zero_()
             )
 
-        if x.get_device() != -1:
+        if self.cuda_cost_compute:
             corr = SpatialCorrelationSampler(
                 kernel_size=1,
                 patch_size=(int(1 + 2 * 3), int(1 + 2 * 3)),

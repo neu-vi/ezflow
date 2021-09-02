@@ -1,3 +1,3 @@
 from .blocks import *
-from .recurrent import *
+from .models import *
 from .units import *

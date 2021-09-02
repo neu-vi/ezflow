@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from .units import ConvNormRelu
+from ..common import ConvNormRelu
 
 
 class Conv2x(nn.Module):
@@ -72,12 +72,12 @@ class Conv2x(nn.Module):
         return x
 
 
-class FeatureGA(nn.Module):
+class GANetBackbone(nn.Module):
 
     """GANet Feature Backbone"""
 
     def __init__(self):
-        super(FeatureGA, self).__init__()
+        super(GANetBackbone, self).__init__()
 
         self.conv_start = nn.Sequential(
             ConvNormRelu(3, 32, kernel_size=3, padding=1),
