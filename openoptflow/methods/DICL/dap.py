@@ -4,11 +4,11 @@ import torch.nn as nn
 from ...common import ConvNormRelu
 
 
-class DAP(nn.Module):
+class DisplacementAwareProjection(nn.Module):
     """Displacement-aware projection layer"""
 
     def __init__(self, max_displacement=3, temperature=False, temp_factor=1e-6):
-        super(DAP, self).__init__()
+        super(DisplacementAwareProjection, self).__init__()
 
         self.temperature = temperature
         self.temp_factor = temp_factor

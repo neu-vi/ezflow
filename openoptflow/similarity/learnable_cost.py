@@ -36,7 +36,7 @@ class LearnableMatchingCost(nn.Module):
     ):
         super(LearnableMatchingCost, self).__init__()
 
-        if matching_net is None:
+        if matching_net is not None:
             self.matching_net = matching_net
         else:
             self.matching_net = Conv2DMatching()
