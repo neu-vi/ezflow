@@ -11,7 +11,7 @@ class SoftArgFlowRegression(nn.Module):
 
         self.max_u = max_u
         self.max_v = max_v
-        self.op = operation
+        self.operation = operation
 
     def forward(self, x):
 
@@ -26,7 +26,6 @@ class SoftArgFlowRegression(nn.Module):
                 torch.arange(
                     -self.max_u,
                     self.max_u + 1,
-                    device=torch.cuda.current_device(),
                     dtype=torch.float32,
                 ),
                 [1, sizeU, 1, 1, 1],
@@ -38,7 +37,6 @@ class SoftArgFlowRegression(nn.Module):
                 torch.arange(
                     -self.max_v,
                     self.max_v + 1,
-                    device=torch.cuda.current_device(),
                     dtype=torch.float32,
                 ),
                 [1, 1, sizeV, 1, 1],

@@ -19,6 +19,7 @@ class DICL(nn.Module):
         search_range=(3, 3, 3, 3, 3),
         context_net=True,
         sup_raw_flow=False,
+        scale_factors=(1 / 4, 1 / 8, 1 / 16, 1 / 32, 1 / 64),
         scale_contexts=(1.0, 1.0, 1.0, 1.0, 1.0),
     ):
         super(DICL, self).__init__()
@@ -26,6 +27,7 @@ class DICL(nn.Module):
         self.dap = dap
         self.context_net = context_net
         self.sup_raw_flow = sup_raw_flow
+        self.scale_factors = scale_factors
         self.scale_contexts = scale_contexts
         self.feature_net = GANetBackbone()
 
@@ -146,10 +148,10 @@ class DICL(nn.Module):
         vgrid[:, 1, :, :] = 2.0 * vgrid[:, 1, :, :] / max(H - 1, 1) - 1.0
         vgrid = vgrid.permute(0, 2, 3, 1)
 
-        output = nn.functional.grid_sample(x, vgrid)
+        output = nn.functional.grid_sample(x, vgrid, align_corners=True)
 
         mask = torch.Tensor(torch.ones(x.size()))
-        mask = nn.functional.grid_sample(mask, vgrid)
+        mask = nn.functional.grid_sample(mask, vgrid, align_corners=True)
         mask[mask < 0.9999] = 0
         mask[mask > 0] = 1
 
@@ -159,12 +161,13 @@ class DICL(nn.Module):
         self,
         x,
         y,
+        orig_img,
         level,
         prev_upflow,
         scale_factor,
         upflow_size,
         scale_context=None,
-        warp=True,
+        warp_flow=True,
     ):
 
         level = str(level)
@@ -176,21 +179,25 @@ class DICL(nn.Module):
         if self.context_net:
             context_net = getattr(self, "context_net" + level)
 
-        if warp:
+        if warp_flow:
             warp, _ = self._warp(y, prev_upflow)
             cost = cost_fn(x, warp)
         else:
             cost = cost_fn(x, y)
 
         g = F.interpolate(
-            x, scale_factor=scale_factor, mode="bilinear", align_corners=True
+            orig_img,
+            scale_factor=scale_factor,
+            mode="bilinear",
+            align_corners=True,
+            recompute_scale_factor=True,
         )
 
         if self.dap:
             cost = dap_layer(cost)
 
-        if warp:
-            flow = flow_decoder(cost) + y
+        if warp_flow:
+            flow = flow_decoder(cost) + prev_upflow
         else:
             flow = flow_decoder(cost)
 
@@ -220,66 +227,86 @@ class DICL(nn.Module):
         upflow6, flow6, raw_flow6 = self._process_level(
             x6,
             y6,
+            img1,
             6,
             None,
-            (1 / 64),
+            self.scale_factors[4],
             (x5.shape[2], x5.shape[3]),
-            self.scale_context[4],
-            warp=False,
+            self.scale_contexts[4],
+            warp_flow=False,
         )
 
         upflow5, flow5, raw_flow5 = self._process_level(
             x5,
             y5,
+            img1,
             5,
             upflow6,
-            (1 / 32),
+            self.scale_factors[3],
             (x4.shape[2], x4.shape[3]),
-            self.scale_context[3],
+            self.scale_contexts[3],
         )
 
         upflow4, flow4, raw_flow4 = self._process_level(
             x4,
             y4,
+            img1,
             4,
             upflow5,
-            (1 / 16),
+            self.scale_factors[2],
             (x3.shape[2], x3.shape[3]),
-            self.scale_context[2],
+            self.scale_contexts[2],
         )
 
         upflow3, flow3, raw_flow3 = self._process_level(
             x3,
             y3,
+            img1,
             3,
             upflow4,
-            (1 / 8),
+            self.scale_factors[1],
             (x2.shape[2], x2.shape[3]),
-            self.scale_context[1],
+            self.scale_contexts[1],
         )
 
         _, flow2, raw_flow2 = self._process_level(
             x2,
             y2,
+            img1,
             2,
             upflow3,
-            (1 / 4),
+            self.scale_factors[0],
             (x2.shape[2], x2.shape[3]),
-            self.scale_context[0],
+            self.scale_contexts[0],
         )
+        if self.training:
 
-        if self.sup_raw_flow:
-            return (
-                flow2,
-                raw_flow2,
-                flow3,
-                raw_flow3,
-                flow4,
-                raw_flow4,
-                flow5,
-                raw_flow5,
-                flow6,
-                raw_flow6,
+            if self.sup_raw_flow:
+                return (
+                    flow2,
+                    raw_flow2,
+                    flow3,
+                    raw_flow3,
+                    flow4,
+                    raw_flow4,
+                    flow5,
+                    raw_flow5,
+                    flow6,
+                    raw_flow6,
+                )
+
+            return (flow2, flow3, flow4, flow5, flow6)
+
+        else:
+            _, _, height, width = img1.size()
+            return F.interpolate(
+                flow2, (height, width), mode="bilinear", align_corners=True
             )
 
-        return (flow2, flow3, flow4, flow5, flow6)
+
+if __name__ == "__main__":
+    model = DICL().eval()
+    i1 = torch.randn(2, 3, 512, 512)
+    i2 = torch.randn(2, 3, 512, 512)
+    out = model(i1, i2)
+    print(out.size())

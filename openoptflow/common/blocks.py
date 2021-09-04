@@ -13,27 +13,29 @@ class BasicBlock(nn.Module):
     ):
         super(BasicBlock, self).__init__()
 
-        if norm.lower() == "group":
-            n_groups = out_channels // 8
-            norm1 = nn.GroupNorm(num_groups=n_groups, num_channels=out_channels)
-            norm2 = nn.GroupNorm(num_groups=n_groups, num_channels=out_channels)
+        if norm is not None:
 
-            if stride != 1:
-                norm3 = nn.GroupNorm(num_groups=n_groups, num_channels=out_channels)
+            if norm.lower() == "group":
+                n_groups = out_channels // 8
+                norm1 = nn.GroupNorm(num_groups=n_groups, num_channels=out_channels)
+                norm2 = nn.GroupNorm(num_groups=n_groups, num_channels=out_channels)
 
-        elif norm.lower() == "batch":
-            norm1 = nn.BatchNorm2d(out_channels)
-            norm2 = nn.BatchNorm2d(out_channels)
+                if stride != 1:
+                    norm3 = nn.GroupNorm(num_groups=n_groups, num_channels=out_channels)
 
-            if stride != 1:
-                norm3 = nn.BatchNorm2d(out_channels)
+            elif norm.lower() == "batch":
+                norm1 = nn.BatchNorm2d(out_channels)
+                norm2 = nn.BatchNorm2d(out_channels)
 
-        elif norm.lower() == "instance":
-            norm1 = nn.InstanceNorm2d(out_channels)
-            norm2 = nn.InstanceNorm2d(out_channels)
+                if stride != 1:
+                    norm3 = nn.BatchNorm2d(out_channels)
 
-            if stride != 1:
-                norm3 = nn.InstanceNorm2d(out_channels)
+            elif norm.lower() == "instance":
+                norm1 = nn.InstanceNorm2d(out_channels)
+                norm2 = nn.InstanceNorm2d(out_channels)
+
+                if stride != 1:
+                    norm3 = nn.InstanceNorm2d(out_channels)
 
         else:
             norm1 = nn.Sequential()

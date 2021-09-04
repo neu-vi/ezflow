@@ -9,14 +9,21 @@ from ..common import ConvNormRelu
 
 
 class Conv2DMatching(nn.Module):
-    def __init__(self, config=(64, 96, 128, 128, 64, 32, 1)):
+    def __init__(self, config=(64, 96, 128, 64, 32, 1)):
         super(Conv2DMatching, self).__init__()
 
-        self.match = nn.ModuleList()
-        for i in range(len(config) - 1):
-            self.match.append(ConvNormRelu(config[i], config[i + 1]))
-
-        self.match = nn.Sequential(*self.match)
+        self.match = nn.Sequential(
+            ConvNormRelu(config[0], config[1], kernel_size=3, padding=1, dilation=1),
+            ConvNormRelu(config[1], config[2], kernel_size=3, stride=2, padding=1),
+            ConvNormRelu(config[2], config[2], kernel_size=3, padding=1, dilation=1),
+            ConvNormRelu(config[2], config[3], kernel_size=3, padding=1, dilation=1),
+            ConvNormRelu(
+                config[3], config[4], kernel_size=4, padding=1, stride=2, deconv=True
+            ),
+            nn.Conv2d(
+                config[4], config[5], kernel_size=3, stride=1, padding=1, bias=True
+            ),
+        )
 
     def forward(self, x):
 

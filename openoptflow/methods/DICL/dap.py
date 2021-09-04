@@ -17,12 +17,18 @@ class DisplacementAwareProjection(nn.Module):
 
         if self.temperature:
             self.dap_layer = ConvNormRelu(
-                dim_c, 1, kernel_size=1, padding=0, stride=1, bn=False, relu=False
+                dim_c, 1, kernel_size=1, padding=0, stride=1, norm=None, activation=None
             )
 
         else:
             self.dap_layer = ConvNormRelu(
-                dim_c, dim_c, kernel_size=1, padding=0, stride=1, bn=False, relu=False
+                dim_c,
+                dim_c,
+                kernel_size=1,
+                padding=0,
+                stride=1,
+                norm=None,
+                activation=None,
             )
 
     def forward(self, x):
