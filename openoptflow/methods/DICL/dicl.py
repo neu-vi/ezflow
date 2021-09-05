@@ -2,8 +2,6 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from openoptflow.utils.resampling import upflow
-
 from ...common import ConvNormRelu
 from ...decoder import FlowEntropy, SoftArgFlowRegression
 from ...encoder import GANetBackbone
@@ -302,11 +300,3 @@ class DICL(nn.Module):
             return F.interpolate(
                 flow2, (height, width), mode="bilinear", align_corners=True
             )
-
-
-if __name__ == "__main__":
-    model = DICL().eval()
-    i1 = torch.randn(2, 3, 512, 512)
-    i2 = torch.randn(2, 3, 512, 512)
-    out = model(i1, i2)
-    print(out.size())
