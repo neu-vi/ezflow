@@ -5,6 +5,7 @@ import torch.nn as nn
 class ConvGRU(nn.Module):
     def __init__(self, hidden_dim=128, input_dim=192 + 128, kernel_size=3):
         super(ConvGRU, self).__init__()
+
         self.convz = nn.Conv2d(
             hidden_dim + input_dim, hidden_dim, kernel_size, padding=1
         )
@@ -23,4 +24,5 @@ class ConvGRU(nn.Module):
         q = torch.tanh(self.convq(torch.cat([r * h, x], dim=1)))
 
         h = (1 - z) * h + z * q
+
         return h
