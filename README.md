@@ -11,7 +11,7 @@ A PyTorch library for optical flow estimation using neural networks.
 ### To-do
 
 - [ ] Add more models
-- [ ] Add docstrings compatible with Sphinx
+- [ ] Add docstrings compatible with Sphinx for documentation
 - [ ] Add dataloaders for common datasets
 - [ ] Integrate Optuna/HyperOpt/Ray Tune for hyperparameter tuning
 - [ ] Integrate Hydra for config parsing
