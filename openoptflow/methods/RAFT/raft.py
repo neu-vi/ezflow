@@ -108,8 +108,8 @@ class RAFT(nn.Module):
         iters=12,
         flow_init=None,
         upsample=True,
+        only_flow=True,
         test_mode=False,
-        only_flow=False,
     ):
 
         image1 = 2 * (image1 / 255.0) - 1.0
@@ -155,7 +155,7 @@ class RAFT(nn.Module):
 
             flow_predictions.append(flow_up)
 
-        if test_mode:
+        if test_mode or not self.training:
             if only_flow:
                 return flow_up
             return coords1 - coords0, flow_up

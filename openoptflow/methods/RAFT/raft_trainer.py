@@ -31,8 +31,28 @@ class SequenceLoss(nn.Module):
 
 
 class RAFTTrainer(BaseTrainer):
-    def __init__(self, **kwargs):
-        super(RAFTTrainer, self).__init__()
+    def __init__(
+        self,
+        model,
+        train_loader,
+        val_loader,
+        optimizer,
+        save_dir=".",
+        save_interval=5,
+        log_dir=".",
+        device="cpu",
+        **kwargs
+    ):
+        super(RAFTTrainer, self).__init__(
+            model,
+            train_loader,
+            val_loader,
+            optimizer,
+            save_dir,
+            save_interval,
+            log_dir,
+            device,
+        )
 
         self.loss_fn = SequenceLoss(**kwargs)
 

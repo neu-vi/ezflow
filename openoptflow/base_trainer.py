@@ -67,6 +67,8 @@ class BaseTrainer:
 
         metric = torch.sqrt(torch.sum((pred - label) ** 2, dim=1))
 
+        return metric
+
     def _train_model(self, n_epochs):
 
         writer = SummaryWriter(log_dir=self.log_dir)

@@ -1,2 +1,2 @@
-from .DCVNet import DCVNet
-from .RAFT import RAFT
+from .DICL import DICL, DICLTrainer
+from .RAFT import RAFT, RAFTTrainer
