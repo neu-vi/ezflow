@@ -1,9 +1,9 @@
-# Open Optical Flow
+<h1 align="center">Open Optical Flow</h1>
+<h3 align="center">A PyTorch library for optical flow estimation using neural networks</h3>
 
 [![Build](https://github.com/neu-vig/openoptflow/actions/workflows/package-test.yml/badge.svg)](https://github.com/neu-vig/openoptflow/actions/workflows/package-test.yml)
-[![Linting](https://github.com/neu-vig/openoptflow/actions/workflows/linting.yml/badge.svg)](https://github.com/neu-vig/openoptflow/actions/workflows/linting.yml)
-
-A PyTorch library for optical flow estimation using neural networks.
+[![Code style](https://github.com/neu-vig/openoptflow/actions/workflows/linting.yml/badge.svg)](https://github.com/neu-vig/openoptflow/actions/workflows/linting.yml)
+[![Code coverage](https://github.com/neu-vig/openoptflow/actions/workflows/codecov.yml/badge.svg)](https://github.com/neu-vig/openoptflow/actions/workflows/codecov.yml)
 
 
 <br>
