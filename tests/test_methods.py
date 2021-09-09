@@ -1,6 +1,6 @@
 import torch
 
-from openoptflow.methods import DICL, RAFT
+from openoptflow.methods import DICL, RAFT, DCVNet
 
 img1 = torch.randn(2, 3, 256, 256)
 img2 = torch.randn(2, 3, 256, 256)
@@ -27,6 +27,16 @@ def test_RAFT():
 def test_DICL():
 
     model = DICL()
+    _ = model(img1, img2)
+    model.eval()
+    flow = model(img1, img2)
+    assert flow.shape == (2, 2, 256, 256)
+    del model, flow
+
+
+def test_DCVNet():
+
+    model = DCVNet()
     _ = model(img1, img2)
     model.eval()
     flow = model(img1, img2)
