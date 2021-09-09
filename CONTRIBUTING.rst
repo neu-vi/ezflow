@@ -64,32 +64,35 @@ Ready to contribute? Here's how to set up `openoptflow` for local development.
 
     $ git clone git@github.com:your_name_here/openoptflow.git
 
-3. Install your local copy into a virtualenv. Assuming you have virtualenvwrapper installed, this is how you set up your fork for local development::
+3. Create a Conda virtual environment using the `environment.yml` file. Install your local copy of the package into the environment::
 
-    $ mkvirtualenv openoptflow
+    $ conda env create -f environment.yml
+    $ conda activate openoptflow
     $ cd openoptflow/
     $ python setup.py develop
 
-4. Create a branch for local development::
+4. Set up pre-commit hooks::
+
+    $ pip install pre-commit
+    $ pre-commit install
+
+5. Create a branch for local development::
 
     $ git checkout -b name-of-your-bugfix-or-feature
 
    Now you can make your changes locally.
 
-5. When you're done making changes, check that your changes pass flake8 and the
-   tests, including testing other Python versions with tox::
+5. Ensure you write tests for the code you add and run the tests before you commit. You can run tests locally using `pytest` from the root directory of the repository::
 
-    $ flake8 openoptflow tests
-    $ python setup.py test or pytest
-    $ tox
-
-   To get flake8 and tox, just pip install them into your virtualenv.
+    $ pytest
 
 6. Commit your changes and push your branch to GitHub::
 
     $ git add .
     $ git commit -m "Your detailed description of your changes."
     $ git push origin name-of-your-bugfix-or-feature
+
+    Note: You might need to add and commit twice if pre-commit hooks modify your code.
 
 7. Submit a pull request through the GitHub website.
 
@@ -99,12 +102,7 @@ Pull Request Guidelines
 Before you submit a pull request, check that it meets these guidelines:
 
 1. The pull request should include tests.
-2. If the pull request adds functionality, the docs should be updated. Put
-   your new functionality into a function with a docstring, and add the
-   feature to the list in README.rst.
-3. The pull request should work for Python 3.5, 3.6, 3.7 and 3.8, and for PyPy. Check
-   https://travis-ci.com/neu-vig/openoptflow/pull_requests
-   and make sure that the tests pass for all supported Python versions.
+2. If the pull request adds functionality, appropriate doctrings should be added.
 
 Tips
 ----

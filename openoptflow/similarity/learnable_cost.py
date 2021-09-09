@@ -12,7 +12,7 @@ class Conv2DMatching(nn.Module):
     def __init__(self, config=(64, 96, 128, 64, 32, 1)):
         super(Conv2DMatching, self).__init__()
 
-        self.match = nn.Sequential(
+        self.matching_net = nn.Sequential(
             ConvNormRelu(config[0], config[1], kernel_size=3, padding=1, dilation=1),
             ConvNormRelu(config[1], config[2], kernel_size=3, stride=2, padding=1),
             ConvNormRelu(config[2], config[2], kernel_size=3, padding=1, dilation=1),
@@ -27,7 +27,30 @@ class Conv2DMatching(nn.Module):
 
     def forward(self, x):
 
-        x = self.match(x)
+        x = self.matching_net(x)
+
+        return x
+
+
+class Custom2DConvMatching(nn.Module):
+    def __init__(self, config=(16, 32, 16, 1), kernel_size=3, **kwargs):
+        super(Custom2DConvMatching, self).__init__()
+
+        matching_net = nn.ModuleList()
+
+        for i in range(len(config) - 2):
+            matching_net.append(
+                ConvNormRelu(
+                    config[i], config[i + 1], kernel_size=kernel_size, **kwargs
+                )
+            )
+        matching_net.append(nn.Conv2d(config[-2], config[-1], kernel_size=1))
+
+        self.matching_net = nn.Sequential(*matching_net)
+
+    def forward(self, x):
+
+        x = self.matching_net(x)
 
         return x
 
@@ -35,8 +58,9 @@ class Conv2DMatching(nn.Module):
 class LearnableMatchingCost(nn.Module):
     def __init__(
         self,
-        max_u,
-        max_v,
+        max_u=3,
+        max_v=3,
+        config=(64, 96, 128, 64, 32, 1),
         remove_warp_hole=True,
         cuda_cost_compute=False,
         matching_net=None,
@@ -46,7 +70,7 @@ class LearnableMatchingCost(nn.Module):
         if matching_net is not None:
             self.matching_net = matching_net
         else:
-            self.matching_net = Conv2DMatching()
+            self.matching_net = Conv2DMatching(config=config)
 
         self.max_u = max_u
         self.max_v = max_v
@@ -57,7 +81,7 @@ class LearnableMatchingCost(nn.Module):
 
         size_u = 2 * self.max_u + 1
         size_v = 2 * self.max_v + 1
-        b, c, height, width = x.shape
+        _, c, height, width = x.shape
 
         with torch.cuda.device_of(x):
 
