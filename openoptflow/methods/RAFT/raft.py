@@ -4,7 +4,7 @@ import torch.nn.functional as F
 
 from ...decoder import RecurrentLookupUpdateBlock, SmallRecurrentLookupUpdateBlock
 from ...encoder import BasicEncoder, BottleneckEncoder
-from ...similarity import MutliScalePairwise4D
+from ...similarity import MutliScalePairwise4DCorr
 from ...utils import coords_grid, upflow
 
 try:
@@ -124,7 +124,7 @@ class RAFT(nn.Module):
         fmap1 = fmap1.float()
         fmap2 = fmap2.float()
 
-        corr_fn = MutliScalePairwise4D(fmap1, fmap2, radius=self.corr_radius)
+        corr_fn = MutliScalePairwise4DCorr(fmap1, fmap2, radius=self.corr_radius)
 
         with autocast(enabled=self.mixed_precision):
             cnet = self.cnet(image1)

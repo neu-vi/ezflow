@@ -76,11 +76,11 @@ class GANetBackbone(nn.Module):
 
     """GANet Feature Backbone"""
 
-    def __init__(self):
+    def __init__(self, in_channels=3, out_channels=32):
         super(GANetBackbone, self).__init__()
 
         self.conv_start = nn.Sequential(
-            ConvNormRelu(3, 32, kernel_size=3, padding=1),
+            ConvNormRelu(in_channels, 32, kernel_size=3, padding=1),
             ConvNormRelu(32, 32, kernel_size=3, stride=2, padding=1),
             ConvNormRelu(32, 32, kernel_size=3, padding=1),
         )
@@ -118,7 +118,7 @@ class GANetBackbone(nn.Module):
         self.outconv_3 = ConvNormRelu(64, 32, kernel_size=3, padding=1)
 
         self.deconv2b = Conv2x(64, 48, deconv=True)
-        self.outconv_2 = ConvNormRelu(48, 32, kernel_size=3, padding=1)
+        self.outconv_2 = ConvNormRelu(48, out_channels, kernel_size=3, padding=1)
 
     def forward(self, x):
 
