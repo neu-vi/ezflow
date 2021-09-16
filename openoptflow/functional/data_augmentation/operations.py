@@ -1,3 +1,4 @@
+import cv2
 import numpy as np
 from PIL import Image
 from torchvision.transforms import ColorJitter
@@ -6,7 +7,7 @@ from torchvision.transforms import ColorJitter
 def color_transform(
     img1,
     img2,
-    asymmetric_aug_prob=0.2,
+    aug_prob=0.2,
     brightness=0.4,
     contrast=0.4,
     saturation=0.4,
@@ -17,7 +18,7 @@ def color_transform(
         brightness=brightness, contrast=contrast, saturation=saturation, hue=hue
     )
 
-    if np.random.rand() < asymmetric_aug_prob:
+    if np.random.rand() < aug_prob:
         img1 = np.array(aug(Image.fromarray(img1)), dtype=np.uint8)
         img2 = np.array(aug(Image.fromarray(img2)), dtype=np.uint8)
 
