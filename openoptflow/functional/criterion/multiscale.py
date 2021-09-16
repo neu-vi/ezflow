@@ -14,7 +14,7 @@ class MultiScaleLoss(nn.Module):
     ):
         super(MultiScaleLoss, self).__init__()
 
-        self.norm = norm
+        self.norm = norm.upper()
         self.weights = weights
         self.extra_mask = extra_mask
         self.use_valid_range = use_valid_range
