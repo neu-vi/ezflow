@@ -8,6 +8,14 @@ from ..utils import frame_utils
 
 
 class BaseDataset(data.Dataset):
+    """
+    Base dataset for reading synthetic optical flow data.
+
+    Parameters
+    ----------
+
+    """
+
     def __init__(self):
         self.augmentor = None
         self.is_test = False
@@ -16,6 +24,10 @@ class BaseDataset(data.Dataset):
         self.image_list = []
 
     def __getitem__(self, index):
+        """
+        Returns the corresponding images and the flow between them.
+
+        """
         if self.is_test:
             img1 = frame_utils.read_gen(self.image_list[index][0])
             img2 = frame_utils.read_gen(self.image_list[index][1])
@@ -57,9 +69,17 @@ class BaseDataset(data.Dataset):
         return img1, img2, flow
 
     def __rmul__(self, v):
+        """
+        Returns an instance of the dataset after multiplying with v.
+
+        """
         self.flow_list = v * self.flow_list
         self.image_list = v * self.image_list
         return self
 
     def __len__(self):
+        """
+        Return length of the dataset.
+
+        """
         return len(self.image_list)
