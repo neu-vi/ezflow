@@ -10,7 +10,7 @@ from ..utils import frame_utils
 class BaseDataset(data.Dataset):
     def __init__(self):
         self.augmentor = None
-        self.isTest = False
+        self.is_test = False
         self.init_seed = False
         self.flow_list = []
         self.image_list = []
