@@ -4,7 +4,7 @@ import numpy as np
 import torch
 import torch.utils.data as data
 
-from openoptflow.utils import frame_utils
+from ..utils import frame_utils
 
 
 class BaseDataset(data.Dataset):
