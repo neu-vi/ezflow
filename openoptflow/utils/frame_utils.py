@@ -11,7 +11,7 @@ cv2.ocl.setUseOpenCL(False)
 TAG_CHAR = np.array([202021.25], np.float32)
 
 
-def readFlow(fn):
+def read_flow(fn):
     """ Read .flo file in Middlebury format"""
     # Code adapted from:
     # http://stackoverflow.com/questions/28013200/reading-middlebury-flow-files-with-python-bytes-array-numpy
@@ -33,7 +33,7 @@ def readFlow(fn):
             return np.resize(data, (int(h), int(w), 2))
 
 
-def readPFM(file):
+def read_pfm(file):
     file = open(file, "rb")
 
     color = None
@@ -71,14 +71,14 @@ def readPFM(file):
     return data
 
 
-def writeFlow(filename, uv, v=None):
+def write_flow(filename, uv, v=None):
     """Write optical flow to file.
 
     If v is None, uv is assumed to contain both u and v channels,
     stacked in depth.
     Original code by Deqing Sun, adapted from Daniel Scharstein.
     """
-    nBands = 2
+    n_bands = 2
 
     if v is None:
         assert uv.ndim == 3
@@ -96,7 +96,7 @@ def writeFlow(filename, uv, v=None):
     np.array(width).astype(np.int32).tofile(f)
     np.array(height).astype(np.int32).tofile(f)
     # arrange into matrix form
-    tmp = np.zeros((height, width * nBands))
+    tmp = np.zeros((height, width * n_bands))
     tmp[:, np.arange(width) * 2] = u
     tmp[:, np.arange(width) * 2 + 1] = v
     tmp.astype(np.float32).tofile(f)
@@ -110,9 +110,9 @@ def read_gen(file_name, pil=False):
     elif ext == ".bin" or ext == ".raw":
         return np.load(file_name)
     elif ext == ".flo":
-        return readFlow(file_name).astype(np.float32)
+        return read_flow(file_name).astype(np.float32)
     elif ext == ".pfm":
-        flow = readPFM(file_name).astype(np.float32)
+        flow = read_pfm(file_name).astype(np.float32)
         if len(flow.shape) == 2:
             return flow
         else:
