@@ -13,6 +13,33 @@ def color_transform(
     saturation=0.4,
     hue=0.5 / 3.14,
 ):
+    """
+    Photometric augmentation
+
+    Parameters
+    -----------
+    img1 : PIL Image or numpy.ndarray
+        First of the pair of images
+    img2 : PIL Image or numpy.ndarray
+        Second of the pair of images
+    aug_prob : float
+        Probability of applying the augmentation
+    brightness : float
+        Brightness augmentation factor
+    contrast : float
+        Contrast augmentation factor
+    saturation : float
+        Saturation augmentation factor
+    hue : float
+        Hue augmentation factor
+
+    Returns
+    -------
+    img1 : PIL Image or numpy.ndarray
+        Augmented image 1
+    img2 : PIL Image or numpy.ndarray
+        Augmented image 2
+    """
 
     aug = ColorJitter(
         brightness=brightness, contrast=contrast, saturation=saturation, hue=hue
@@ -31,6 +58,28 @@ def color_transform(
 
 
 def eraser_transform(img1, img2, bounds=[50, 100], aug_prob=0.5):
+
+    """
+    Occlusion augmentation
+
+    Parameters
+    -----------
+    img1 : PIL Image or numpy.ndarray
+        First of the pair of images
+    img2 : PIL Image or numpy.ndarray
+        Second of the pair of images
+    bounds : :obj:`list` of :obj:`int`
+        Bounds of the eraser
+    aug_prob : float
+        Probability of applying the augmentation
+
+    Returns
+    -------
+    img1 : PIL Image or numpy.ndarray
+        Augmented image 1
+    img2 : PIL Image or numpy.ndarray
+        Augmented image 2
+    """
 
     H, W = img1.shape[:2]
 
@@ -62,6 +111,46 @@ def spatial_transform(
     h_flip_prob=0.5,
     v_flip_prob=0.1,
 ):
+
+    """
+    Spatial augmentation
+
+    Parameters
+    -----------
+    img1 : PIL Image or numpy.ndarray
+        First of the pair of images
+    img2 : PIL Image or numpy.ndarray
+        Second of the pair of images
+    flow : numpy.ndarray
+        Flow field
+    crop_size : :obj:`list` of :obj:`int`
+        Size of the crop
+    aug_prob : float
+        Probability of applying the augmentation
+    stretch_prob : float
+        Probability of applying the stretch transform
+    max_stretch : float
+        Maximum stretch factor
+    min_scale : float
+        Minimum scale factor
+    max_scale : float
+        Maximum scale factor
+    flip : bool
+        Whether to apply the flip transform
+    h_flip_prob : float
+        Probability of applying the horizontal flip transform
+    v_flip_prob : float
+        Probability of applying the vertical flip transform
+
+    Returns
+    -------
+    img1 : PIL Image or numpy.ndarray
+        Augmented image 1
+    img2 : PIL Image or numpy.ndarray
+        Augmented image 2
+    flow : numpy.ndarray
+        Augmented flow field
+    """
 
     H, W = img1.shape[:2]
     min_scale = np.maximum((crop_size[0] + 8) / float(H), (crop_size[1] + 8) / float(W))

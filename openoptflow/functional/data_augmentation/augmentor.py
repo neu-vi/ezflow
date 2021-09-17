@@ -2,6 +2,22 @@ from .operations import *
 
 
 class FlowAugmentor:
+
+    """
+    Class for appyling a series of augmentations to a pair of images and a flow field.
+
+    Parameters
+    ----------
+    crop_size : int
+        Size of the crop to be applied to the images.
+    color_aug_params : dict
+        Parameters for the color augmentation.
+    eraser_aug_params : dict
+        Parameters for the eraser augmentation.
+    spatial_aug_params : dict
+        Parameters for the spatial augmentation.
+    """
+
     def __init__(
         self,
         crop_size,
@@ -16,6 +32,10 @@ class FlowAugmentor:
         self.spatial_aug_params = spatial_aug_params
 
     def __call__(self, img1, img2, flow):
+
+        """
+        Applies the augmentations to the pair of images and the flow field.
+        """
 
         img1, img2 = color_transform(img1, img2, **self.color_aug_params)
         img1, img2 = eraser_transform(img1, img2, **self.eraser_aug_params)
