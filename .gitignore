@@ -103,8 +103,6 @@ ENV/
 
 # IDE settings
 .vscode/
+.idea/
 
-# Data
-data/
-*/data/
-*/data/*
+
