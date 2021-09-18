@@ -4,7 +4,8 @@ import numpy as np
 import torch
 import torch.utils.data as data
 
-from ..utils import frame_utils
+from ...functional import FlowAugmentor
+from ...utils import frame_utils
 
 
 class BaseDataset(data.Dataset):
@@ -13,13 +14,39 @@ class BaseDataset(data.Dataset):
 
     Parameters
     ----------
+    is_test : bool
+        Whether to the dataset is a test set
+    init_seed : bool
+        Whether to initialize the random seed
+    augment : bool
+        Whether to perform data augmentation
+    crop_size : :obj:`tuple` of :obj:`int`
+        The size of the image crop
+    aug_params : :obj:`dict`
+        The parameters for data augmentation
 
     """
 
-    def __init__(self):
+    def __init__(
+        self,
+        is_test=False,
+        init_seed=False,
+        augment=True,
+        crop_size=(224, 224),
+        aug_params={
+            "color_aug_params": {"aug_prob": 0.2},
+            "eraser_aug_params": {"aug_prob": 0.5},
+            "spatial_aug_params": {"aug_prob": 0.8},
+        },
+    ):
+
+        self.is_test = is_test
+        self.init_seed = init_seed
+
         self.augmentor = None
-        self.is_test = False
-        self.init_seed = False
+        if augment:
+            self.augmentor = FlowAugmentor(crop_size, **aug_params)
+
         self.flow_list = []
         self.image_list = []
 
@@ -35,6 +62,7 @@ class BaseDataset(data.Dataset):
             img2 = np.array(img2).astype(np.uint8)[..., :3]
             img1 = torch.from_numpy(img1).permute(2, 0, 1).float()
             img2 = torch.from_numpy(img2).permute(2, 0, 1).float()
+
             return img1, img2
 
         if not self.init_seed:

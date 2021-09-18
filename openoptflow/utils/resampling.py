@@ -5,6 +5,7 @@ from scipy import interpolate
 
 
 def forward_interpolate(flow):
+
     flow = flow.detach().cpu().numpy()
     dx, dy = flow[0], flow[1]
 
@@ -34,11 +35,12 @@ def forward_interpolate(flow):
     )
 
     flow = np.stack([flow_x, flow_y], axis=0)
+
     return torch.from_numpy(flow).float()
 
 
 def bilinear_sampler(img, coords, mode="bilinear", mask=False):
-    """ Wrapper for grid_sample, uses pixel coordinates """
+
     H, W = img.shape[-2:]
     xgrid, ygrid = coords.split([1, 1], dim=-1)
     xgrid = 2 * xgrid / (W - 1) - 1
@@ -56,6 +58,7 @@ def bilinear_sampler(img, coords, mode="bilinear", mask=False):
 
 def upflow(flow, scale=8, mode="bilinear"):
     new_size = (scale * flow.shape[2], scale * flow.shape[3])
+
     return scale * F.interpolate(flow, size=new_size, mode=mode, align_corners=True)
 
 
@@ -71,4 +74,5 @@ def convex_upsample_flow(flow, mask_logits, out_stride):  # adapted from RAFT
 
     up_flow = torch.sum(mask_probs * up_flow, dim=2)
     up_flow = up_flow.permute(0, 1, 4, 2, 5, 3)
+
     return up_flow.reshape(N, C, out_stride * H, out_stride * W)
