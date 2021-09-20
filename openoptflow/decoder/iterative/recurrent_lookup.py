@@ -3,6 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from ...modules import ConvGRU
+from ..registry import DECODER_REGISTRY
 
 
 class FlowHead(nn.Module):
@@ -101,6 +102,7 @@ class MotionEncoder(nn.Module):
         return torch.cat([out, flow], dim=1)
 
 
+@DECODER_REGISTRY.register()
 class SmallRecurrentLookupUpdateBlock(nn.Module):
     def __init__(self, corr_radius, corr_levels, hidden_dim=96):
         super(SmallRecurrentLookupUpdateBlock, self).__init__()
@@ -118,6 +120,7 @@ class SmallRecurrentLookupUpdateBlock(nn.Module):
         return net, None, delta_flow
 
 
+@DECODER_REGISTRY.register()
 class RecurrentLookupUpdateBlock(nn.Module):
     def __init__(self, corr_radius, corr_levels, hidden_dim=128, input_dim=128):
         super(RecurrentLookupUpdateBlock, self).__init__()

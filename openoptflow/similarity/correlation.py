@@ -2,8 +2,10 @@ import torch
 import torch.nn.functional as F
 
 from ..utils import bilinear_sampler
+from .registry import SIMILARITY_REGISTRY
 
 
+@SIMILARITY_REGISTRY.register()
 class MutliScalePairwise4DCorr:
     def __init__(self, fmap1, fmap2, num_levels=4, radius=4):
 

@@ -2,7 +2,10 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+from ..registry import DECODER_REGISTRY
 
+
+@DECODER_REGISTRY.register()
 class SoftArgFlowRegression(nn.Module):
     """2D soft argmin/argmax"""
 

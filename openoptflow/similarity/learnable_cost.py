@@ -8,6 +8,7 @@ except:
     pass
 
 from ..modules import ConvNormRelu
+from .registry import SIMILARITY_REGISTRY
 
 
 class Conv2DMatching(nn.Module):
@@ -57,6 +58,7 @@ class Custom2DConvMatching(nn.Module):
         return x
 
 
+@SIMILARITY_REGISTRY.register()
 class LearnableMatchingCost(nn.Module):
     def __init__(
         self,

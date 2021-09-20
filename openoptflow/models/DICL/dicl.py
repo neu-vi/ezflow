@@ -6,9 +6,11 @@ from ...decoder import FlowEntropy, SoftArgFlowRegression
 from ...encoder import GANetBackbone
 from ...modules import ConvNormRelu
 from ...similarity import LearnableMatchingCost
+from ..model_zoo import MODEL_REGISTRY
 from .dap import DisplacementAwareProjection
 
 
+@MODEL_REGISTRY.register()
 class DICL(nn.Module):
     def __init__(
         self,

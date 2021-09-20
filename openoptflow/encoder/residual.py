@@ -2,8 +2,10 @@ import torch
 import torch.nn as nn
 
 from ..modules import BasicBlock, BottleneckBlock
+from .registry import ENCODER_REGISTRY
 
 
+@ENCODER_REGISTRY.register()
 class BasicEncoder(nn.Module):
 
     """
@@ -91,6 +93,7 @@ class BasicEncoder(nn.Module):
         return out
 
 
+@ENCODER_REGISTRY.register()
 class BottleneckEncoder(nn.Module):
 
     """

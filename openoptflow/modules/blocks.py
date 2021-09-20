@@ -1,7 +1,10 @@
 import torch.nn as nn
 import torch.nn.functional as F
 
+from .registry import MODULE_REGISTRY
 
+
+@MODULE_REGISTRY.register()
 class BasicBlock(nn.Module):
 
     """
@@ -74,6 +77,7 @@ class BasicBlock(nn.Module):
         return out
 
 
+@MODULE_REGISTRY.register()
 class BottleneckBlock(nn.Module):
 
     """

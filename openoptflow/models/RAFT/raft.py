@@ -6,6 +6,7 @@ from ...decoder import RecurrentLookupUpdateBlock, SmallRecurrentLookupUpdateBlo
 from ...encoder import BasicEncoder, BottleneckEncoder
 from ...similarity import MutliScalePairwise4DCorr
 from ...utils import coords_grid, upflow
+from ..model_zoo import MODEL_REGISTRY
 
 try:
     autocast = torch.cuda.amp.autocast
@@ -22,6 +23,7 @@ except:
             pass
 
 
+@MODEL_REGISTRY.register()
 class RAFT(nn.Module):
     def __init__(
         self,

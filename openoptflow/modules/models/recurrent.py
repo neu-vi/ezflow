@@ -1,7 +1,10 @@
 import torch
 import torch.nn as nn
 
+from ..registry import MODULE_REGISTRY
 
+
+@MODULE_REGISTRY.register()
 class ConvGRU(nn.Module):
     def __init__(self, hidden_dim=128, input_dim=192 + 128, kernel_size=3):
         super(ConvGRU, self).__init__()

@@ -3,6 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from ..modules import ConvNormRelu
+from .registry import ENCODER_REGISTRY
 
 
 class Conv2x(nn.Module):
@@ -72,6 +73,7 @@ class Conv2x(nn.Module):
         return x
 
 
+@ENCODER_REGISTRY.register()
 class GANetBackbone(nn.Module):
 
     """GANet Feature Backbone"""
