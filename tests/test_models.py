@@ -1,6 +1,6 @@
 import torch
 
-from openoptflow.methods import DICL, RAFT
+from openoptflow.models import DICL, RAFT
 
 img1 = torch.randn(2, 3, 256, 256)
 img2 = torch.randn(2, 3, 256, 256)

@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from ...common import ConvGRU
+from ...modules import ConvGRU
 
 
 class FlowHead(nn.Module):

@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 
-from ..common import BasicBlock, BottleneckBlock
+from ..modules import BasicBlock, BottleneckBlock
 
 
 class BasicEncoder(nn.Module):

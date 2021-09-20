@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from ...base_trainer import BaseTrainer
+from ...trainer import BaseTrainer
 
 
 class MultiScaleLoss(nn.Module):

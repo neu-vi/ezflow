@@ -2,9 +2,9 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from ...common import ConvNormRelu
 from ...decoder import FlowEntropy, SoftArgFlowRegression
 from ...encoder import GANetBackbone
+from ...modules import ConvNormRelu
 from ...similarity import LearnableMatchingCost
 from .dap import DisplacementAwareProjection
 

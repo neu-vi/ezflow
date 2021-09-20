@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from ..common import ConvNormRelu
+from ..modules import ConvNormRelu
 
 
 class Conv2x(nn.Module):

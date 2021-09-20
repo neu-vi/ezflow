@@ -2,10 +2,12 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-if torch.cuda.is_available():
+try:
     from spatial_correlation_sampler import SpatialCorrelationSampler
+except:
+    pass
 
-from ..common import ConvNormRelu
+from ..modules import ConvNormRelu
 
 
 class Conv2DMatching(nn.Module):
