@@ -2,8 +2,9 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+from ...config import configurable
 from ...modules import ConvGRU
-from ..registry import DECODER_REGISTRY
+from ..build import DECODER_REGISTRY
 
 
 class FlowHead(nn.Module):
@@ -104,12 +105,22 @@ class MotionEncoder(nn.Module):
 
 @DECODER_REGISTRY.register()
 class SmallRecurrentLookupUpdateBlock(nn.Module):
-    def __init__(self, corr_radius, corr_levels, hidden_dim=96):
+    @configurable
+    def __init__(self, corr_radius, corr_levels, hidden_dim=96, input_dim=64):
         super(SmallRecurrentLookupUpdateBlock, self).__init__()
 
         self.encoder = SmallMotionEncoder(corr_radius, corr_levels)
-        self.gru = ConvGRU(hidden_dim=hidden_dim, input_dim=82 + 64)
+        self.gru = ConvGRU(hidden_dim=hidden_dim, input_dim=82 + input_dim)
         self.flow_head = FlowHead(hidden_dim, hidden_dim=128)
+
+    @classmethod
+    def from_config(cls, cfg):
+        return {
+            "corr_radius": cfg.DECODER.CORR_RADIUS,
+            "corr_levels": cfg.DECODER.CORR_LEVELS,
+            "hidden_dim": cfg.DECODER.HIDDEN_DIM,
+            "input_dim": cfg.DECODER.INPUT_DIM,
+        }
 
     def forward(self, net, inp, corr, flow):
         motion_features = self.encoder(flow, corr)
@@ -122,6 +133,7 @@ class SmallRecurrentLookupUpdateBlock(nn.Module):
 
 @DECODER_REGISTRY.register()
 class RecurrentLookupUpdateBlock(nn.Module):
+    @configurable
     def __init__(self, corr_radius, corr_levels, hidden_dim=128, input_dim=128):
         super(RecurrentLookupUpdateBlock, self).__init__()
 
@@ -134,6 +146,15 @@ class RecurrentLookupUpdateBlock(nn.Module):
             nn.ReLU(inplace=True),
             nn.Conv2d(256, 64 * 9, 1, padding=0),
         )
+
+    @classmethod
+    def from_config(cls, cfg):
+        return {
+            "corr_radius": cfg.DECODER.CORR_RADIUS,
+            "corr_levels": cfg.DECODER.CORR_LEVELS,
+            "hidden_dim": cfg.DECODER.HIDDEN_DIM,
+            "input_dim": cfg.DECODER.INPUT_DIM,
+        }
 
     def forward(self, net, inp, corr, flow):
         motion_features = self.encoder(flow, corr)

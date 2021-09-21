@@ -4,10 +4,9 @@ import torch.nn.functional as F
 
 from ...decoder import FlowEntropy, SoftArgFlowRegression
 from ...encoder import GANetBackbone
-from ...modules import ConvNormRelu
+from ...modules import ConvNormRelu, DisplacementAwareProjection
 from ...similarity import LearnableMatchingCost
-from ..model_zoo import MODEL_REGISTRY
-from .dap import DisplacementAwareProjection
+from ..build import MODEL_REGISTRY
 
 
 @MODEL_REGISTRY.register()

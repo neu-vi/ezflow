@@ -1,6 +1,6 @@
 import torch.nn as nn
 
-from ...modules import ConvNormRelu
+from .units import ConvNormRelu
 
 
 class DisplacementAwareProjection(nn.Module):

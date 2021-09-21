@@ -1,8 +1,9 @@
 import torch
 import torch.nn as nn
 
+from ..config import configurable
 from ..modules import BasicBlock, BottleneckBlock
-from .registry import ENCODER_REGISTRY
+from .build import ENCODER_REGISTRY
 
 
 @ENCODER_REGISTRY.register()
@@ -12,6 +13,7 @@ class BasicEncoder(nn.Module):
     ResNet style encoder using basic residual blocls
     """
 
+    @configurable
     def __init__(
         self,
         in_channels=3,
@@ -78,6 +80,16 @@ class BasicEncoder(nn.Module):
 
         return [layer1, layer2]
 
+    @classmethod
+    def from_config(cls, cfg):
+        return {
+            "in_channels": cfg.ENCODER.IN_CHANNELS,
+            "out_channels": cfg.ENCODER.OUT_CHANNELS,
+            "norm": cfg.ENCODER.NORM,
+            "p_dropout": cfg.ENCODER.P_DROPOUT,
+            "layer_config": cfg.ENCODER.LAYER_CONFIG,
+        }
+
     def forward(self, x):
 
         is_list = isinstance(x, tuple) or isinstance(x, list)
@@ -100,6 +112,7 @@ class BottleneckEncoder(nn.Module):
     ResNet style encoder using bottleneck residual blocls
     """
 
+    @configurable
     def __init__(
         self,
         in_channels=3,
@@ -165,6 +178,16 @@ class BottleneckEncoder(nn.Module):
         layer2 = BottleneckBlock(out_channels, out_channels, stride=1, norm=norm)
 
         return [layer1, layer2]
+
+    @classmethod
+    def from_config(cls, cfg):
+        return {
+            "in_channels": cfg.ENCODER.IN_CHANNELS,
+            "out_channels": cfg.ENCODER.OUT_CHANNELS,
+            "norm": cfg.ENCODER.NORM,
+            "p_dropout": cfg.ENCODER.P_DROPOUT,
+            "layer_config": cfg.ENCODER.LAYER_CONFIG,
+        }
 
     def forward(self, x):
 

@@ -6,7 +6,7 @@ from ...decoder import RecurrentLookupUpdateBlock, SmallRecurrentLookupUpdateBlo
 from ...encoder import BasicEncoder, BottleneckEncoder
 from ...similarity import MutliScalePairwise4DCorr
 from ...utils import coords_grid, upflow
-from ..model_zoo import MODEL_REGISTRY
+from ..build import MODEL_REGISTRY
 
 try:
     autocast = torch.cuda.amp.autocast
@@ -109,7 +109,6 @@ class RAFT(nn.Module):
         image2,
         iters=12,
         flow_init=None,
-        upsample=True,
         only_flow=True,
         test_mode=False,
     ):

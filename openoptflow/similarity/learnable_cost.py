@@ -7,8 +7,9 @@ try:
 except:
     pass
 
+from ..config import configurable
 from ..modules import ConvNormRelu
-from .registry import SIMILARITY_REGISTRY
+from .build import SIMILARITY_REGISTRY
 
 
 class Conv2DMatching(nn.Module):
@@ -60,6 +61,7 @@ class Custom2DConvMatching(nn.Module):
 
 @SIMILARITY_REGISTRY.register()
 class LearnableMatchingCost(nn.Module):
+    @configurable
     def __init__(
         self,
         max_u=3,
@@ -80,6 +82,16 @@ class LearnableMatchingCost(nn.Module):
         self.max_v = max_v
         self.remove_warp_hole = remove_warp_hole
         self.cuda_cost_compute = cuda_cost_compute
+
+    @classmethod
+    def from_config(cls, cfg):
+
+        return {
+            "max_u": cfg.SIMILARITY.MAX_U,
+            "max_v": cfg.SIMILARITY.MAX_V,
+            "config": cfg.SIMILARITY.CONFIG,
+            "remove_warp_hole": cfg.SIMILARITY.REMOVE_WARP_HOLE,
+        }
 
     def forward(self, x, y):
 

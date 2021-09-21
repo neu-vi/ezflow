@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 
+from ...config import configurable
 from ..registry import MODULE_REGISTRY
 
 
