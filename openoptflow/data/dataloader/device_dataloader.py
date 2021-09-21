@@ -1,12 +1,11 @@
 class DeviceDataLoader:
     """
     A data loader wrapper to move data to a specific compute device.
-    It can be used to wrap the existing pytorch data loader.
 
     Parameters
     ----------
-    data_loader : torch.utils.data.dataloader
-        Whether to the dataset is a test set
+    data_loader : DataLoader
+        the PyTorch DataLoader from torch.utils.data.dataloader
     device : torch.device
         the compute device
     """
