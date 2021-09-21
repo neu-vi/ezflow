@@ -32,3 +32,9 @@
 - [ ] Create logo for the library
 - [ ] Add support for [AutoFlow](https://autoflow-google.github.io/#code)
 - [ ] Register library on Pip and Conda, and set up continuous deployment
+
+<br>
+
+### References
+
+- [detectron2](https://github.com/facebookresearch/detectron2)
