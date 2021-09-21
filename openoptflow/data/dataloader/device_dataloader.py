@@ -16,10 +16,16 @@ class DeviceDataLoader:
         self.device = device
 
     def __iter__(self):
-        """Yield a batch of data after moving it to a device."""
+        """
+        Yield a batch of data after moving it to a device.
+
+        """
         for batch in self.data_loader:
             yield batch.to(self.device, non_blocking=True)
 
     def __len__(self):
-        """Return the number of batches."""
+        """
+        Return the number of batches.
+
+        """
         return len(self.data_loader)
