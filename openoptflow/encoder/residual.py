@@ -81,13 +81,13 @@ class BasicEncoder(nn.Module):
         return [layer1, layer2]
 
     @classmethod
-    def from_config(cls, cfg):
+    def from_config(cls, cfg_grp):
         return {
-            "in_channels": cfg.ENCODER.IN_CHANNELS,
-            "out_channels": cfg.ENCODER.OUT_CHANNELS,
-            "norm": cfg.ENCODER.NORM,
-            "p_dropout": cfg.ENCODER.P_DROPOUT,
-            "layer_config": cfg.ENCODER.LAYER_CONFIG,
+            "in_channels": cfg_grp.IN_CHANNELS,
+            "out_channels": cfg_grp.OUT_CHANNELS,
+            "norm": cfg_grp.NORM,
+            "p_dropout": cfg_grp.P_DROPOUT,
+            "layer_config": cfg_grp.LAYER_CONFIG,
         }
 
     def forward(self, x):
@@ -180,13 +180,13 @@ class BottleneckEncoder(nn.Module):
         return [layer1, layer2]
 
     @classmethod
-    def from_config(cls, cfg):
+    def from_config(cls, cfg_grp):
         return {
-            "in_channels": cfg.ENCODER.IN_CHANNELS,
-            "out_channels": cfg.ENCODER.OUT_CHANNELS,
-            "norm": cfg.ENCODER.NORM,
-            "p_dropout": cfg.ENCODER.P_DROPOUT,
-            "layer_config": cfg.ENCODER.LAYER_CONFIG,
+            "in_channels": cfg_grp.IN_CHANNELS,
+            "out_channels": cfg_grp.OUT_CHANNELS,
+            "norm": cfg_grp.NORM,
+            "p_dropout": cfg_grp.P_DROPOUT,
+            "layer_config": cfg_grp.LAYER_CONFIG,
         }
 
     def forward(self, x):

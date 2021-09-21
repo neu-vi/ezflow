@@ -3,7 +3,7 @@ from ..utils import Registry
 DECODER_REGISTRY = Registry("DECODER")
 
 
-def build_decoder(cfg, name=None):
+def build_decoder(cfg_grp, name=None):
 
     """
     Build a decoder from a registered decoder name.
@@ -22,8 +22,8 @@ def build_decoder(cfg, name=None):
     """
 
     if name is None:
-        name = cfg.DECODER.NAME
+        name = cfg_grp.NAME
 
     decoder = DECODER_REGISTRY.get(name)
 
-    return decoder(cfg)
+    return decoder(cfg_grp)

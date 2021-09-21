@@ -52,10 +52,10 @@ class MutliScalePairwise4DCorr:
         return out.permute(0, 3, 1, 2).contiguous().float()
 
     @classmethod
-    def from_config(cls, cfg):
+    def from_config(cls, cfg_grp):
         return {
-            "num_levels": cfg.SIMILARITY.NUM_LEVELS,
-            "radius": cfg.SIMILARITY.RADIUS,
+            "num_levels": cfg_grp.NUM_LEVELS,
+            "radius": cfg_grp.RADIUS,
         }
 
     @staticmethod

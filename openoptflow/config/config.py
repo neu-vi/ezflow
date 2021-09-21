@@ -10,7 +10,6 @@ from fvcore.common.config import CfgNode as _CfgNode
 
 class CfgNode(_CfgNode):
     def dump(self, *args, **kwargs):
-
         return super().dump(*args, **kwargs)
 
 

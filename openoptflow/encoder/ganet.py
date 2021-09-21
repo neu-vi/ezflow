@@ -125,10 +125,10 @@ class GANetBackbone(nn.Module):
         self.outconv_2 = ConvNormRelu(48, out_channels, kernel_size=3, padding=1)
 
     @classmethod
-    def from_config(cls, cfg):
+    def from_config(cls, cfg_grp):
         return {
-            "in_channels": cfg.ENCODER.IN_CHANNELS,
-            "out_channels": cfg.ENCODER.OUT_CHANNELS,
+            "in_channels": cfg_grp.IN_CHANNELS,
+            "out_channels": cfg_grp.OUT_CHANNELS,
         }
 
     def forward(self, x):

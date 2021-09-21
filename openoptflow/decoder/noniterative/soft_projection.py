@@ -19,11 +19,11 @@ class SoftArgFlowRegression(nn.Module):
         self.operation = operation.lower()
 
     @classmethod
-    def from_config(cls, cfg):
+    def from_config(cls, cfg_grp):
         return {
-            "max_u": cfg.SIMILARITY.MAX_U,
-            "max_v": cfg.SIMILARITY.MAX_V,
-            "operation": cfg.SIMILARITY.OPERATION,
+            "max_u": cfg_grp.MAX_U,
+            "max_v": cfg_grp.MAX_V,
+            "operation": cfg_grp.OPERATION,
         }
 
     def forward(self, x):

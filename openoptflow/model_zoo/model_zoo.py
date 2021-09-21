@@ -9,7 +9,7 @@ import pkg_resources
 from ..config import get_default_cfg
 
 
-def get_cfg_file(cfg_path):
+def get_cfg_path(cfg_path, grp="models"):
 
     """
     Returns the complete path to a config file present in openoptflow
@@ -17,7 +17,7 @@ def get_cfg_file(cfg_path):
     Parameters
     ----------
     cf_path : str
-        Config file name relative to openoptflow's "configs/" directory
+        Config file name relative to openoptflow's "configs/models" directory
 
     Returns
     -------
@@ -26,7 +26,7 @@ def get_cfg_file(cfg_path):
     """
 
     cfg_complete_path = pkg_resources.resource_filename(
-        "detectron2.model_zoo", os.path.join("configs", cfg_path)
+        "openoptflow.model_zoo", os.path.join("configs", grp, cfg_path)
     )
     if not os.path.exists(cfg_complete_path):
         raise RuntimeError(f"{cfg_path} is not available in openoptflow's model zoo!")
@@ -49,7 +49,7 @@ def get_cfg(cfg_path):
         CfgNode or omegaconf.DictConfig: a config object
     """
 
-    cfg_file = get_cfg_file(cfg_path)
+    cfg_file = get_cfg_path(cfg_path)
 
     cfg = get_default_cfg()
     cfg.merge_from_file(cfg_file)

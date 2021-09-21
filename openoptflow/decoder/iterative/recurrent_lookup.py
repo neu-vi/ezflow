@@ -114,12 +114,12 @@ class SmallRecurrentLookupUpdateBlock(nn.Module):
         self.flow_head = FlowHead(hidden_dim, hidden_dim=128)
 
     @classmethod
-    def from_config(cls, cfg):
+    def from_config(cls, cfg_grp):
         return {
-            "corr_radius": cfg.DECODER.CORR_RADIUS,
-            "corr_levels": cfg.DECODER.CORR_LEVELS,
-            "hidden_dim": cfg.DECODER.HIDDEN_DIM,
-            "input_dim": cfg.DECODER.INPUT_DIM,
+            "corr_radius": cfg_grp.CORR_RADIUS,
+            "corr_levels": cfg_grp.CORR_LEVELS,
+            "hidden_dim": cfg_grp.HIDDEN_DIM,
+            "input_dim": cfg_grp.INPUT_DIM,
         }
 
     def forward(self, net, inp, corr, flow):
@@ -150,10 +150,10 @@ class RecurrentLookupUpdateBlock(nn.Module):
     @classmethod
     def from_config(cls, cfg):
         return {
-            "corr_radius": cfg.DECODER.CORR_RADIUS,
-            "corr_levels": cfg.DECODER.CORR_LEVELS,
-            "hidden_dim": cfg.DECODER.HIDDEN_DIM,
-            "input_dim": cfg.DECODER.INPUT_DIM,
+            "corr_radius": cfg_grp.CORR_RADIUS,
+            "corr_levels": cfg_grp.CORR_LEVELS,
+            "hidden_dim": cfg_grp.HIDDEN_DIM,
+            "input_dim": cfg_grp.INPUT_DIM,
         }
 
     def forward(self, net, inp, corr, flow):

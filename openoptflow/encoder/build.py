@@ -3,7 +3,7 @@ from ..utils import Registry
 ENCODER_REGISTRY = Registry("ENCODER")
 
 
-def build_encoder(cfg, name=None):
+def build_encoder(cfg_grp, name=None):
 
     """
     Build an encoder from a registered encoder name.
@@ -22,8 +22,8 @@ def build_encoder(cfg, name=None):
     """
 
     if name is None:
-        name = cfg.ENCODER.NAME
+        name = cfg_grp.NAME
 
     encoder = ENCODER_REGISTRY.get(name)
 
-    return encoder(cfg)
+    return encoder(cfg_grp)

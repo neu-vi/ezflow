@@ -84,13 +84,13 @@ class LearnableMatchingCost(nn.Module):
         self.cuda_cost_compute = cuda_cost_compute
 
     @classmethod
-    def from_config(cls, cfg):
+    def from_config(cls, cfg_grp):
 
         return {
-            "max_u": cfg.SIMILARITY.MAX_U,
-            "max_v": cfg.SIMILARITY.MAX_V,
-            "config": cfg.SIMILARITY.CONFIG,
-            "remove_warp_hole": cfg.SIMILARITY.REMOVE_WARP_HOLE,
+            "max_u": cfg_grp.MAX_U,
+            "max_v": cfg_grp.MAX_V,
+            "config": cfg_grp.CONFIG,
+            "remove_warp_hole": cfg_grp.REMOVE_WARP_HOLE,
         }
 
     def forward(self, x, y):
