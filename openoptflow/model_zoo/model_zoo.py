@@ -34,7 +34,7 @@ def get_cfg_path(cfg_path, grp="models"):
     return cfg_complete_path
 
 
-def get_cfg(cfg_path):
+def get_cfg(cfg_path, custom=False):
 
     """
     Returns a config object for a model in model zoo.
@@ -49,9 +49,10 @@ def get_cfg(cfg_path):
         CfgNode or omegaconf.DictConfig: a config object
     """
 
-    cfg_file = get_cfg_path(cfg_path)
+    if not custom:
+        cfg_path = get_cfg_path(cfg_path)
 
     cfg = get_default_cfg()
-    cfg.merge_from_file(cfg_file)
+    cfg.merge_from_file(cfg_path)
 
     return cfg

@@ -21,7 +21,6 @@
 - [ ] Integrate Optuna/HyperOpt/Ray Tune for hyperparameter tuning
 - [ ] Create config parser and integrate Hydra
 - [ ] Create CLI using Click
-- [ ] Add Registry
 - [ ] Add functionality for testing model size and inference speed
 
 <b>Long-term</b>
