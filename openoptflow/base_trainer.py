@@ -5,6 +5,7 @@ import torch
 import torch.nn as nn
 from torch.utils.tensorboard import SummaryWriter
 
+from .data.dataloader import DeviceDataLoader
 from .utils import AverageMeter
 
 
@@ -55,6 +56,8 @@ class BaseTrainer:
                 print(f"Running on CUDA devices {device_ids}")
 
         self.device = device
+        self.train_loader = DeviceDataLoader(self.train_loader, self.device)
+        self.val_loader = DeviceDataLoader(self.val_loader, self.device)
 
     def _calculate_loss(self, pred, label):
 
@@ -89,7 +92,6 @@ class BaseTrainer:
             iter_loss.reset()
             for iteration, (img, label) in enumerate(self.train_loader):
 
-                img, label = img.to(self.device), label.to(self.device)
                 pred = model(img)
 
                 loss = self._calculate_loss(pred, label)
@@ -142,7 +144,6 @@ class BaseTrainer:
         with torch.no_grad():
             for img, label in self.val_loader:
 
-                img, label = img.to(self.device), label.to(self.device)
                 pred = model(img)
 
                 metric = self._calculate_metric(pred, label)

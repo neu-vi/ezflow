@@ -20,7 +20,7 @@ class DeviceDataLoader:
 
         """
         for batch in self.data_loader:
-            yield batch.to(self.device, non_blocking=True)
+            yield batch.to(self.device)
 
     def __len__(self):
         """
