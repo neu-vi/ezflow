@@ -1,11 +1,11 @@
-from ..model_zoo import get_cfg
+from ..model_zoo import _ModelZooConfigs, get_cfg
 from ..utils import Registry
 
 MODEL_REGISTRY = Registry("MODEL")
 
 
 def build_model(
-    name, cfg_path, custom_cfg=False, cfg=None
+    name, cfg_path=None, custom_cfg=False, cfg=None, default=False
 ):  # To-do: Add load model weight
 
     """
@@ -16,7 +16,14 @@ def build_model(
         raise ValueError(f"Model {name} not found in registry.")
 
     if cfg is None:
-        cfg = get_cfg(cfg_path, custom=custom_cfg)
+
+        if default:
+            cfg_path = _ModelZooConfigs.query(name)
+            cfg = get_cfg(cfg_path)
+
+        else:
+            assert cfg_path is not None, "Please provide a config path."
+            cfg = get_cfg(cfg_path, custom=custom_cfg)
 
     model = MODEL_REGISTRY.get(name)
 

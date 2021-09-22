@@ -1,0 +1,27 @@
+NAME: RAFT_SMALL
+ENCODER:
+  FEATURE: 
+    NAME: BottleneckEncoder
+    IN_CHANNELS: 3
+    OUT_CHANNELS: 256
+    NORM: instance
+    P_DROPOUT: 0.0
+    LAYER_CONFIG: [32, 64, 96]
+  CONTEXT:
+    NAME: BasicEncoder
+    IN_CHANNELS: 3
+    OUT_CHANNELS: 256
+    NORM: batch
+    P_DROPOUT: 0.0
+    LAYER_CONFIG: [32, 64, 96]
+HIDDEN_DIM: 96
+CONTEXT_DIM: 64
+SIMILARITY:
+  NAME: MutliScalePairwise4DCorr
+  NUM_LEVELS: 4
+DECODER:
+  NAME: RecurrentLookupUpdateBlock
+  INPUT_DIM: 128
+CORR_RADIUS: 3
+CORR_LEVELS: 4
+MIXED_PRECISION: False
