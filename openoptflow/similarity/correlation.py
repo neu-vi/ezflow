@@ -9,10 +9,10 @@ from .build import SIMILARITY_REGISTRY
 @SIMILARITY_REGISTRY.register()
 class MutliScalePairwise4DCorr:
     @configurable
-    def __init__(self, fmap1, fmap2, num_levels=4, radius=4):
+    def __init__(self, fmap1, fmap2, num_levels=4, corr_radius=4):
 
         self.num_levels = num_levels
-        self.radius = radius
+        self.corr_radius = corr_radius
         self.corr_pyramid = []
 
         corr = MutliScalePairwise4DCorr.corr(fmap1, fmap2)
@@ -27,7 +27,7 @@ class MutliScalePairwise4DCorr:
 
     def __call__(self, coords):
 
-        r = self.radius
+        r = self.corr_radius
         coords = coords.permute(0, 2, 3, 1)
         batch, h1, w1, _ = coords.shape
 
@@ -52,10 +52,10 @@ class MutliScalePairwise4DCorr:
         return out.permute(0, 3, 1, 2).contiguous().float()
 
     @classmethod
-    def from_config(cls, cfg_grp):
+    def from_config(cls, cfg):
         return {
-            "num_levels": cfg_grp.NUM_LEVELS,
-            "radius": cfg_grp.RADIUS,
+            "num_levels": cfg.NUM_LEVELS,
+            "corr_radius": cfg.CORR_RADIUS,
         }
 
     @staticmethod

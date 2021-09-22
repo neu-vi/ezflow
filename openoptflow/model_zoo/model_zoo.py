@@ -17,7 +17,7 @@ def get_cfg_path(cfg_path, grp="models"):
     Parameters
     ----------
     cf_path : str
-        Config file name relative to openoptflow's "configs/models" directory
+        Config file name relative to openoptflow's "configs/{grp}" directory
 
     Returns
     -------
@@ -29,7 +29,9 @@ def get_cfg_path(cfg_path, grp="models"):
         "openoptflow.model_zoo", os.path.join("configs", grp, cfg_path)
     )
     if not os.path.exists(cfg_complete_path):
-        raise RuntimeError(f"{cfg_path} is not available in openoptflow's model zoo!")
+        raise RuntimeError(
+            f"{grp}/{cfg_path} is not available in openoptflow's model zoo!"
+        )
 
     return cfg_complete_path
 

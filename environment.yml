@@ -1,6 +1,5 @@
 name: flow
 channels:
-  - anaconda
   - fvcore
   - pytorch
   - conda-forge
@@ -8,18 +7,12 @@ channels:
 dependencies:
   - _libgcc_mutex=0.1=main
   - _openmp_mutex=4.5=1_gnu
-  - antlr-python-runtime=4.9.2=py37h89c1867_0
   - attrs=21.2.0=pyhd3eb1b0_0
   - blas=1.0=mkl
-  - brotlipy=0.7.0=py37h27cfd23_1003
   - bzip2=1.0.8=h7b6447c_0
-  - ca-certificates=2021.5.30=ha878542_0
-  - certifi=2021.5.30=py37h89c1867_0
-  - cffi=1.14.6=py37h400218f_0
-  - click=8.0.1=pyhd3eb1b0_0
-  - colorama=0.4.4=pyh9f0ad1d_0
+  - ca-certificates=2021.7.5=h06a4308_1
+  - certifi=2021.5.30=py37h06a4308_0
   - cpuonly=1.0=0
-  - cryptography=3.4.7=py37hd23ed53_0
   - cudatoolkit=10.1.243=h6bb024c_0
   - cycler=0.10.0=py_2
   - dbus=1.13.6=he372182_0
@@ -42,7 +35,8 @@ dependencies:
   - ld_impl_linux-64=2.35.1=h7274673_9
   - libffi=3.3=he6710b0_2
   - libgcc-ng=9.3.0=h5101ec6_17
-  - libgfortran-ng=7.3.0=hdf63c60_0
+  - libgfortran-ng=7.5.0=ha8ba4b0_17
+  - libgfortran4=7.5.0=ha8ba4b0_17
   - libgomp=9.3.0=h5101ec6_17
   - libiconv=1.15=h63c8f33_5
   - libidn2=2.3.1=h27cfd23_0
@@ -76,12 +70,10 @@ dependencies:
   - openssl=1.1.1l=h7f8727e_0
   - pcre=8.45=h9c3ff4c_0
   - pillow=8.3.1=py37h2c7a002_0
+  - portalocker=2.3.0=py37h06a4308_0
   - pthread-stubs=0.4=h36c2ea0_1001
-  - pycparser=2.20=py_2
-  - pyopenssl=20.0.1=pyhd3eb1b0_1
   - pyparsing=2.4.7=pyh9f0ad1d_0
   - pyqt=5.9.2=py37hcca6a23_4
-  - pysocks=1.7.1=py37_1
   - python=3.7.10=h12debd9_4
   - python-dateutil=2.8.1=py_0
   - python_abi=3.7=2_cp37m
@@ -93,40 +85,44 @@ dependencies:
   - sip=4.19.8=py37hf484d3e_0
   - six=1.16.0=pyhd3eb1b0_0
   - sqlite=3.36.0=hc218d9a_0
-  - tabulate=0.8.9=pyhd8ed1ab_0
+  - tabulate=0.8.9=py37h06a4308_0
   - tk=8.6.10=hbc83047_0
   - toml=0.10.2=pyhd3eb1b0_0
   - torchvision=0.10.0=py37_cpu
   - tornado=6.1=py37h5e8e339_1
   - typed-ast=1.4.3=py37h7f8727e_1
   - typing_extensions=3.10.0.0=pyh06a4308_0
-  - unidecode=1.2.0=pyhd3eb1b0_0
-  - whichcraft=0.6.1=pyhd3eb1b0_0
   - xorg-libxau=1.0.9=h7f98852_0
   - xorg-libxdmcp=1.1.3=h7f98852_0
   - xz=5.2.5=h7b6447c_0
-  - yaml=0.2.5=h516909a_0
+  - yaml=0.2.5=h7b6447c_0
   - zipp=3.5.0=pyhd3eb1b0_0
   - zlib=1.2.11=h7b6447c_3
   - zstd=1.4.9=haebb681_0
   - pip:
     - absl-py==0.13.0
     - alabaster==0.7.12
+    - antlr4-python3-runtime==4.8
     - appdirs==1.4.4
     - argh==0.26.2
-    - arrow==1.1.1
+    - arrow==0.13.1
     - babel==2.9.1
     - backports-entry-points-selectable==1.1.0
     - binaryornot==0.4.4
     - black==21.7b0
     - bleach==3.3.0
+    - brotlipy==0.7.0
     - bump2version==0.5.11
     - cachetools==4.2.2
+    - cffi==1.14.6
     - cfgv==3.3.0
     - chardet==4.0.0
     - charset-normalizer==2.0.1
+    - click==8.0.1
+    - colorama==0.4.4
     - cookiecutter==1.7.3
     - coverage==5.5
+    - cryptography==3.4.8
     - distlib==0.3.2
     - dnspython==1.16.0
     - docopt==0.6.2
@@ -160,7 +156,6 @@ dependencies:
     - pkginfo==1.7.1
     - platformdirs==2.0.0
     - pluggy==0.13.1
-    - portalocker==2.3.0
     - poyo==0.5.0
     - pre-commit==2.14.0
     - protobuf==3.17.3
@@ -168,9 +163,12 @@ dependencies:
     - pyasn1==0.4.8
     - pyasn1-modules==0.2.8
     - pycodestyle==2.7.0
+    - pycparser==2.20
     - pyflakes==2.3.1
     - pygments==2.9.0
     - pymongo==3.11.4
+    - pyopenssl==20.0.1
+    - pysocks==1.7.1
     - pytest==6.2.4
     - python-jsonrpc-server==0.3.4
     - python-slugify==5.0.2
@@ -203,10 +201,12 @@ dependencies:
     - tqdm==4.61.2
     - twine==1.14.0
     - ujson==1.35
+    - unidecode==1.3.2
     - urllib3==1.26.6
     - virtualenv==20.5.0
     - watchdog==0.9.0
     - webencodings==0.5.1
     - werkzeug==2.0.1
     - wheel==0.37.0
+    - whichcraft==0.6.1
     - yacs==0.1.8

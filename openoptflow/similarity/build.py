@@ -3,7 +3,7 @@ from ..utils import Registry
 SIMILARITY_REGISTRY = Registry("SIMILARITY")
 
 
-def build_similarity(cfg_grp, name=None):
+def build_similarity(cfg_grp=None, name=None, instantiate=True, **kwargs):
 
     """
     Build a similarity function from a registered similarity function name.
@@ -21,9 +21,19 @@ def build_similarity(cfg_grp, name=None):
         The similarity function object.
     """
 
+    if cfg_grp is None:
+        assert name is not None, "Must provide name or cfg_grp"
+        assert dict(**kwargs) is not None, "Must provide either cfg_grp or kwargs"
+
     if name is None:
         name = cfg_grp.NAME
 
     similarity_fn = SIMILARITY_REGISTRY.get(name)
 
-    return similarity_fn(cfg_grp)
+    if not instantiate:
+        return similarity_fn
+
+    if cfg_grp is None:
+        return similarity_fn(**kwargs)
+
+    return similarity_fn(cfg_grp, **kwargs)

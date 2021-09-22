@@ -14,7 +14,7 @@ class CfgNode(_CfgNode):
 
 
 def get_default_cfg():
-    return CfgNode()
+    return CfgNode(new_allowed=True)
 
 
 def configurable(init_func=None, *, from_config=None):
@@ -93,8 +93,10 @@ def _get_args_from_config(from_config_func, *args, **kwargs):
 
         if inspect.isfunction(from_config_func):
             name = from_config_func.__name__
+
         else:
             name = f"{from_config_func.__self__}.from_config"
+
         raise TypeError(f"{name} must take 'cfg' as the first argument!")
 
     support_var_arg = any(

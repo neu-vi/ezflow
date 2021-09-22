@@ -5,19 +5,19 @@ MODEL_REGISTRY = Registry("MODEL")
 
 
 def build_model(
-    model_name, model_cfg_path, model_cfg=None
+    name, cfg_path, custom_cfg=False, cfg=None
 ):  # To-do: Add load model weight
 
     """
     Builds a model from a model name and config.
     """
 
-    if model_name not in MODEL_REGISTRY:
-        raise ValueError(f"Model {model_name} not found in registry.")
+    if name not in MODEL_REGISTRY:
+        raise ValueError(f"Model {name} not found in registry.")
 
-    if model_cfg is None:
-        model_cfg = get_cfg(model_cfg_path)
+    if cfg is None:
+        cfg = get_cfg(cfg_path, custom=custom_cfg)
 
-    model = MODEL_REGISTRY.get(model_name)
+    model = MODEL_REGISTRY.get(name)
 
-    return model(model_cfg)
+    return model(cfg)
