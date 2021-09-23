@@ -40,7 +40,7 @@ REQUIRE_PATH = "requirements.txt"
 PKG_DESCRIBE = "README.md"
 
 # Directories to ignore in find_packages
-EXCLUDES = "configs"
+EXCLUDES = ()
 
 
 # helper functions
