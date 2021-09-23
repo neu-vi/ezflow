@@ -2,7 +2,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from ..config import configurable
-from .registry import MODULE_REGISTRY
+from .build import MODULE_REGISTRY
 
 
 @MODULE_REGISTRY.register()
@@ -12,6 +12,7 @@ class BasicBlock(nn.Module):
     Basic residual block for ResNet-style architectures
     """
 
+    @configurable
     def __init__(
         self, in_channels, out_channels, stride=1, norm="group", activation="relu"
     ):
@@ -70,6 +71,16 @@ class BasicBlock(nn.Module):
                 norm3,
             )
 
+    @classmethod
+    def from_config(cls, cfg):
+        return {
+            "in_channels": cfg.IN_CHANNELS,
+            "out_channels": cfg.OUT_CHANNELS,
+            "stride": cfg.STRIDE,
+            "norm": cfg.NORM,
+            "activation": cfg.ACTIVATION,
+        }
+
     def forward(self, x):
 
         out = self.residual_fn(x)
@@ -85,6 +96,7 @@ class BottleneckBlock(nn.Module):
     Bottleneck residual block for ResNet-style architectures
     """
 
+    @configurable
     def __init__(
         self, in_channels, out_channels, stride=1, norm="group", activation="relu"
     ):
@@ -151,6 +163,16 @@ class BottleneckBlock(nn.Module):
                 nn.Conv2d(in_channels, out_channels, kernel_size=1, stride=stride),
                 norm4,
             )
+
+    @classmethod
+    def from_config(cls, cfg):
+        return {
+            "in_channels": cfg.IN_CHANNELS,
+            "out_channels": cfg.OUT_CHANNELS,
+            "stride": cfg.STRIDE,
+            "norm": cfg.NORM,
+            "activation": cfg.ACTIVATION,
+        }
 
     def forward(self, x):
 
