@@ -4,6 +4,7 @@ ENCODER:
   IN_CHANNELS: 3
   OUT_CHANNELS: 32
 SIMILARITY:
+  NAME: LearnableMatchingCost
   MAX_U: 3
   MAX_V: 3
   CONFIG: [64, 96, 128, 64, 32, 1]

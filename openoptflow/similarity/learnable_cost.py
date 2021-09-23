@@ -47,6 +47,7 @@ class Conv2DMatching(nn.Module):
 
 @SIMILARITY_REGISTRY.register()
 class Custom2DConvMatching(nn.Module):
+    @configurable
     def __init__(self, config=(16, 32, 16, 1), kernel_size=3, **kwargs):
         super(Custom2DConvMatching, self).__init__()
 
