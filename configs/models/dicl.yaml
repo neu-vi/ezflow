@@ -26,6 +26,7 @@ SCALE_CONTEXTS: [1.0, 1.0, 1.0, 1.0, 1.0]
 DAP:
   USE_DAP: True
   INIT_ID: True
-  TEMP: False
+  MAX_DISPLACEMENT: 3
+  TEMPERATURE: False
   TEMP_FACTOR: 1.e-6
 
