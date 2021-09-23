@@ -12,6 +12,7 @@ from ..modules import ConvNormRelu
 from .build import SIMILARITY_REGISTRY
 
 
+@SIMILARITY_REGISTRY.register()
 class Conv2DMatching(nn.Module):
     def __init__(self, config=(64, 96, 128, 64, 32, 1)):
         super(Conv2DMatching, self).__init__()
@@ -29,6 +30,13 @@ class Conv2DMatching(nn.Module):
             ),
         )
 
+    @classmethod
+    def from_config(cls, cfg):
+
+        return {
+            "config": cfg.CONFIG,
+        }
+
     def forward(self, x):
 
         x = self.matching_net(x)
@@ -36,6 +44,7 @@ class Conv2DMatching(nn.Module):
         return x
 
 
+@SIMILARITY_REGISTRY.register()
 class Custom2DConvMatching(nn.Module):
     def __init__(self, config=(16, 32, 16, 1), kernel_size=3, **kwargs):
         super(Custom2DConvMatching, self).__init__()
@@ -51,6 +60,14 @@ class Custom2DConvMatching(nn.Module):
         matching_net.append(nn.Conv2d(config[-2], config[-1], kernel_size=1))
 
         self.matching_net = nn.Sequential(*matching_net)
+
+    @classmethod
+    def from_config(cls, cfg):
+
+        return {
+            "config": cfg.CONFIG,
+            "kernel_size": cfg.KERNEL_SIZE,
+        }
 
     def forward(self, x):
 

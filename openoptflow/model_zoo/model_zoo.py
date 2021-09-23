@@ -14,6 +14,7 @@ class _ModelZooConfigs:
     MODEL_NAME_TO_CONFIG = {
         "RAFT": "raft.yaml",
         "RAFT_SMALL": "raft_small.yaml",
+        "DICL": "dicl.yaml",
     }
 
     @staticmethod

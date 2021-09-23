@@ -16,12 +16,12 @@ def test_RAFT():
     assert flow.shape == (2, 2, 256, 256)
     del model, flow
 
-    model = build_model("RAFT", default=True)
+    _ = build_model("RAFT", default=True)
 
 
 def test_DICL():
 
-    model = DICL()
+    model = build_model("DICL", default=True)
     _ = model(img1, img2)
     model.eval()
     flow = model(img1, img2)
