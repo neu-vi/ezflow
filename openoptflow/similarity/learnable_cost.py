@@ -14,6 +14,7 @@ from .build import SIMILARITY_REGISTRY
 
 @SIMILARITY_REGISTRY.register()
 class Conv2DMatching(nn.Module):
+    @configurable
     def __init__(self, config=(64, 96, 128, 64, 32, 1)):
         super(Conv2DMatching, self).__init__()
 
