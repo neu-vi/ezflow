@@ -47,8 +47,6 @@ def get_cfg_path(cfg_path, grp="models"):
         "openoptflow.model_zoo", os.path.join("configs", grp, cfg_path)
     )
 
-    print(cfg_complete_path)
-
     if not os.path.exists(cfg_complete_path):
         raise RuntimeError(
             f"{grp}/{cfg_path} is not available in openoptflow's model zoo!"
