@@ -1,15 +1,19 @@
 import torch
 import torch.nn as nn
 
-from ..common import BasicBlock, BottleneckBlock
+from ..config import configurable
+from ..modules import BasicBlock, BottleneckBlock
+from .build import ENCODER_REGISTRY
 
 
+@ENCODER_REGISTRY.register()
 class BasicEncoder(nn.Module):
 
     """
     ResNet style encoder using basic residual blocls
     """
 
+    @configurable
     def __init__(
         self,
         in_channels=3,
@@ -20,6 +24,7 @@ class BasicEncoder(nn.Module):
     ):
         super(BasicEncoder, self).__init__()
 
+        norm = norm.lower()
         assert norm in ("group", "batch", "instance", "none")
 
         start_channels = layer_config[0]
@@ -36,11 +41,15 @@ class BasicEncoder(nn.Module):
         elif norm == "none":
             norm_fn = nn.Sequential()
 
-        layers = [
-            nn.Conv2d(in_channels, start_channels, kernel_size=7, stride=2, padding=3),
-            norm_fn,
-            nn.ReLU(inplace=True),
-        ]
+        layers = nn.ModuleList(
+            [
+                nn.Conv2d(
+                    in_channels, start_channels, kernel_size=7, stride=2, padding=3
+                ),
+                norm_fn,
+                nn.ReLU(inplace=True),
+            ]
+        )
 
         for i in range(len(layer_config)):
             if i == 0:
@@ -76,6 +85,16 @@ class BasicEncoder(nn.Module):
 
         return [layer1, layer2]
 
+    @classmethod
+    def from_config(cls, cfg):
+        return {
+            "in_channels": cfg.IN_CHANNELS,
+            "out_channels": cfg.OUT_CHANNELS,
+            "norm": cfg.NORM,
+            "p_dropout": cfg.P_DROPOUT,
+            "layer_config": cfg.LAYER_CONFIG,
+        }
+
     def forward(self, x):
 
         is_list = isinstance(x, tuple) or isinstance(x, list)
@@ -91,12 +110,14 @@ class BasicEncoder(nn.Module):
         return out
 
 
+@ENCODER_REGISTRY.register()
 class BottleneckEncoder(nn.Module):
 
     """
     ResNet style encoder using bottleneck residual blocls
     """
 
+    @configurable
     def __init__(
         self,
         in_channels=3,
@@ -107,6 +128,7 @@ class BottleneckEncoder(nn.Module):
     ):
         super(BottleneckEncoder, self).__init__()
 
+        norm = norm.lower()
         assert norm in ("group", "batch", "instance", "none")
 
         start_channels = layer_config[0]
@@ -162,6 +184,16 @@ class BottleneckEncoder(nn.Module):
         layer2 = BottleneckBlock(out_channels, out_channels, stride=1, norm=norm)
 
         return [layer1, layer2]
+
+    @classmethod
+    def from_config(cls, cfg):
+        return {
+            "in_channels": cfg.IN_CHANNELS,
+            "out_channels": cfg.OUT_CHANNELS,
+            "norm": cfg.NORM,
+            "p_dropout": cfg.P_DROPOUT,
+            "layer_config": cfg.LAYER_CONFIG,
+        }
 
     def forward(self, x):
 

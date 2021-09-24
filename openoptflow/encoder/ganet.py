@@ -2,7 +2,9 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from ..common import ConvNormRelu
+from ..config import configurable
+from ..modules import ConvNormRelu
+from .build import ENCODER_REGISTRY
 
 
 class Conv2x(nn.Module):
@@ -72,10 +74,12 @@ class Conv2x(nn.Module):
         return x
 
 
+@ENCODER_REGISTRY.register()
 class GANetBackbone(nn.Module):
 
     """GANet Feature Backbone"""
 
+    @configurable
     def __init__(self, in_channels=3, out_channels=32):
         super(GANetBackbone, self).__init__()
 
@@ -119,6 +123,13 @@ class GANetBackbone(nn.Module):
 
         self.deconv2b = Conv2x(64, 48, deconv=True)
         self.outconv_2 = ConvNormRelu(48, out_channels, kernel_size=3, padding=1)
+
+    @classmethod
+    def from_config(cls, cfg):
+        return {
+            "in_channels": cfg.IN_CHANNELS,
+            "out_channels": cfg.OUT_CHANNELS,
+        }
 
     def forward(self, x):
 

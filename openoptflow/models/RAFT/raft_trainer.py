@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 
-from ...base_trainer import BaseTrainer
+from ...trainer import BaseTrainer
 
 
 class SequenceLoss(nn.Module):

@@ -2,10 +2,11 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from ...decoder import RecurrentLookupUpdateBlock, SmallRecurrentLookupUpdateBlock
-from ...encoder import BasicEncoder, BottleneckEncoder
-from ...similarity import MutliScalePairwise4DCorr
+from ...decoder import build_decoder
+from ...encoder import build_encoder
+from ...similarity import build_similarity
 from ...utils import coords_grid, upflow
+from ..build import MODEL_REGISTRY
 
 try:
     autocast = torch.cuda.amp.autocast
@@ -22,73 +23,41 @@ except:
             pass
 
 
+@MODEL_REGISTRY.register()
 class RAFT(nn.Module):
-    def __init__(
-        self,
-        small=False,
-        dropout=0.0,
-        mixed_precision=False,
-    ):
+    def __init__(self, cfg):
         super(RAFT, self).__init__()
 
-        self.mixed_precision = mixed_precision
+        self.fnet = build_encoder(cfg.ENCODER.FEATURE)
+        self.cnet = build_encoder(
+            cfg.ENCODER.CONTEXT, out_channels=cfg.HIDDEN_DIM + cfg.CONTEXT_DIM
+        )
 
-        if small:
+        self.similarity_fn = build_similarity(cfg.SIMILARITY, instantiate=False)
+        self.corr_radius = cfg.CORR_RADIUS
+        self.corr_levels = cfg.CORR_LEVELS
 
-            self.hidden_dim = 96
-            self.context_dim = 64
-            self.corr_radius = 3
-            self.corr_levels = 4
+        self.update_block = build_decoder(
+            name=cfg.DECODER.NAME,
+            corr_radius=self.corr_radius,
+            corr_levels=self.corr_levels,
+            hidden_dim=cfg.HIDDEN_DIM,
+            input_dim=cfg.DECODER.INPUT_DIM,
+        )
 
-            self.fnet = BottleneckEncoder(
-                out_channels=128, norm="instance", p_dropout=dropout
-            )
-            self.cnet = BottleneckEncoder(
-                out_channels=self.hidden_dim + self.context_dim,
-                norm="none",
-                p_dropout=dropout,
-            )
-            self.update_block = SmallRecurrentLookupUpdateBlock(
-                corr_radius=self.corr_radius,
-                corr_levels=self.corr_levels,
-                hidden_dim=self.hidden_dim,
-            )
+        self.context_dim = cfg.CONTEXT_DIM
+        self.hidden_dim = cfg.HIDDEN_DIM
+        self.mixed_precision = cfg.MIXED_PRECISION
 
-        else:
+    def _initialize_flow(self, img):
 
-            self.hidden_dim = 128
-            self.context_dim = 128
-            self.corr_levels = 4
-            self.corr_radius = 4
-
-            self.fnet = BasicEncoder(
-                out_channels=256, norm="instance", p_dropout=dropout
-            )
-            self.cnet = BasicEncoder(
-                out_channels=self.hidden_dim + self.context_dim,
-                norm="batch",
-                p_dropout=dropout,
-            )
-            self.update_block = RecurrentLookupUpdateBlock(
-                corr_radius=self.corr_radius,
-                corr_levels=self.corr_levels,
-                hidden_dim=self.hidden_dim,
-            )
-
-    def freeze_bn(self):
-        for m in self.modules():
-            if isinstance(m, nn.BatchNorm2d):
-                m.eval()
-
-    def initialize_flow(self, img):
-
-        N, C, H, W = img.shape
+        N, _, H, W = img.shape
         coords0 = coords_grid(N, H // 8, W // 8).to(img.device)
         coords1 = coords_grid(N, H // 8, W // 8).to(img.device)
 
         return coords0, coords1
 
-    def upsample_flow(self, flow, mask):
+    def _upsample_flow(self, flow, mask):
 
         N, _, H, W = flow.shape
         mask = mask.view(N, 1, 9, 8, 8, H, W)
@@ -99,6 +68,7 @@ class RAFT(nn.Module):
 
         up_flow = torch.sum(mask * up_flow, dim=2)
         up_flow = up_flow.permute(0, 1, 4, 2, 5, 3)
+
         return up_flow.reshape(N, 2, 8 * H, 8 * W)
 
     def forward(
@@ -107,7 +77,6 @@ class RAFT(nn.Module):
         image2,
         iters=12,
         flow_init=None,
-        upsample=True,
         only_flow=True,
         test_mode=False,
     ):
@@ -124,7 +93,9 @@ class RAFT(nn.Module):
         fmap1 = fmap1.float()
         fmap2 = fmap2.float()
 
-        corr_fn = MutliScalePairwise4DCorr(fmap1, fmap2, radius=self.corr_radius)
+        corr_fn = self.similarity_fn(
+            fmap1, fmap2, num_levels=self.corr_levels, corr_radius=self.corr_radius
+        )
 
         with autocast(enabled=self.mixed_precision):
             cnet = self.cnet(image1)
@@ -132,7 +103,7 @@ class RAFT(nn.Module):
             net = torch.tanh(net)
             inp = torch.relu(inp)
 
-        coords0, coords1 = self.initialize_flow(image1)
+        coords0, coords1 = self._initialize_flow(image1)
 
         if flow_init is not None:
             coords1 = coords1 + flow_init
@@ -151,7 +122,7 @@ class RAFT(nn.Module):
             if up_mask is None:
                 flow_up = upflow(coords1 - coords0)
             else:
-                flow_up = self.upsample_flow(coords1 - coords0, up_mask)
+                flow_up = self._upsample_flow(coords1 - coords0, up_mask)
 
             flow_predictions.append(flow_up)
 

@@ -2,16 +2,29 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+from ...config import configurable
+from ..build import DECODER_REGISTRY
 
+
+@DECODER_REGISTRY.register()
 class SoftArgFlowRegression(nn.Module):
     """2D soft argmin/argmax"""
 
+    @configurable
     def __init__(self, max_u, max_v, operation="argmax"):
         super(SoftArgFlowRegression, self).__init__()
 
         self.max_u = max_u
         self.max_v = max_v
-        self.operation = operation
+        self.operation = operation.lower()
+
+    @classmethod
+    def from_config(cls, cfg):
+        return {
+            "max_u": cfg.MAX_U,
+            "max_v": cfg.MAX_V,
+            "operation": cfg.OPERATION,
+        }
 
     def forward(self, x):
 

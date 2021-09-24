@@ -2,13 +2,19 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-if torch.cuda.is_available():
+try:
     from spatial_correlation_sampler import SpatialCorrelationSampler
+except:
+    pass
 
-from ..common import ConvNormRelu
+from ..config import configurable
+from ..modules import ConvNormRelu
+from .build import SIMILARITY_REGISTRY
 
 
+@SIMILARITY_REGISTRY.register()
 class Conv2DMatching(nn.Module):
+    @configurable
     def __init__(self, config=(64, 96, 128, 64, 32, 1)):
         super(Conv2DMatching, self).__init__()
 
@@ -25,6 +31,13 @@ class Conv2DMatching(nn.Module):
             ),
         )
 
+    @classmethod
+    def from_config(cls, cfg):
+
+        return {
+            "config": cfg.CONFIG,
+        }
+
     def forward(self, x):
 
         x = self.matching_net(x)
@@ -32,7 +45,9 @@ class Conv2DMatching(nn.Module):
         return x
 
 
+@SIMILARITY_REGISTRY.register()
 class Custom2DConvMatching(nn.Module):
+    @configurable
     def __init__(self, config=(16, 32, 16, 1), kernel_size=3, **kwargs):
         super(Custom2DConvMatching, self).__init__()
 
@@ -48,6 +63,14 @@ class Custom2DConvMatching(nn.Module):
 
         self.matching_net = nn.Sequential(*matching_net)
 
+    @classmethod
+    def from_config(cls, cfg):
+
+        return {
+            "config": cfg.CONFIG,
+            "kernel_size": cfg.KERNEL_SIZE,
+        }
+
     def forward(self, x):
 
         x = self.matching_net(x)
@@ -55,7 +78,9 @@ class Custom2DConvMatching(nn.Module):
         return x
 
 
+@SIMILARITY_REGISTRY.register()
 class LearnableMatchingCost(nn.Module):
+    @configurable
     def __init__(
         self,
         max_u=3,
@@ -76,6 +101,16 @@ class LearnableMatchingCost(nn.Module):
         self.max_v = max_v
         self.remove_warp_hole = remove_warp_hole
         self.cuda_cost_compute = cuda_cost_compute
+
+    @classmethod
+    def from_config(cls, cfg):
+
+        return {
+            "max_u": cfg.MAX_U,
+            "max_v": cfg.MAX_V,
+            "config": cfg.CONFIG,
+            "remove_warp_hole": cfg.REMOVE_WARP_HOLE,
+        }
 
     def forward(self, x, y):
 

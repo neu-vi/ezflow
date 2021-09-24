@@ -1,12 +1,15 @@
-import torch
 import torch.nn as nn
 
-from ...common import ConvNormRelu
+from ..config import configurable
+from .build import MODULE_REGISTRY
+from .units import ConvNormRelu
 
 
+@MODULE_REGISTRY.register()
 class DisplacementAwareProjection(nn.Module):
     """Displacement-aware projection layer"""
 
+    @configurable
     def __init__(self, max_displacement=3, temperature=False, temp_factor=1e-6):
         super(DisplacementAwareProjection, self).__init__()
 
@@ -30,6 +33,14 @@ class DisplacementAwareProjection(nn.Module):
                 norm=None,
                 activation=None,
             )
+
+    @classmethod
+    def from_config(cls, cfg):
+        return {
+            "max_displacement": cfg.MAX_DISPLACEMENT,
+            "temperature": cfg.TEMPERATURE,
+            "temp_factor": cfg.TEMP_FACTOR,
+        }
 
     def forward(self, x):
 

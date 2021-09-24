@@ -1,6 +1,6 @@
 import torch
 
-from openoptflow.methods import DICL, RAFT
+from openoptflow.models import DICL, RAFT, build_model
 
 img1 = torch.randn(2, 3, 256, 256)
 img2 = torch.randn(2, 3, 256, 256)
@@ -8,7 +8,7 @@ img2 = torch.randn(2, 3, 256, 256)
 
 def test_RAFT():
 
-    model = RAFT(small=False)
+    model = build_model("RAFT", "raft.yaml")
     _ = model(img1, img2)
     model.eval()
     _ = model(img1, img2, only_flow=False)
@@ -16,17 +16,12 @@ def test_RAFT():
     assert flow.shape == (2, 2, 256, 256)
     del model, flow
 
-    model = RAFT(small=True)
-    _ = model(img1, img2)
-    _ = model(img1, img2, test_mode=True)
-    flow = model(img1, img2, test_mode=True, only_flow=True)
-    assert flow.shape == (2, 2, 256, 256)
-    del model, flow
+    _ = build_model("RAFT", default=True)
 
 
 def test_DICL():
 
-    model = DICL()
+    model = build_model("DICL", default=True)
     _ = model(img1, img2)
     model.eval()
     flow = model(img1, img2)

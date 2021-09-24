@@ -5,8 +5,8 @@ import torch
 import torch.nn as nn
 from torch.utils.tensorboard import SummaryWriter
 
-from .data.dataloader import DeviceDataLoader
-from .utils import AverageMeter
+from ..data.dataloader import DeviceDataLoader
+from ..utils import AverageMeter
 
 
 class BaseTrainer:

@@ -2,46 +2,77 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from ...common import ConvNormRelu
-from ...decoder import FlowEntropy, SoftArgFlowRegression
-from ...encoder import GANetBackbone
-from ...similarity import LearnableMatchingCost
-from .dap import DisplacementAwareProjection
+from ...decoder import FlowEntropy, build_decoder
+from ...encoder import build_encoder
+from ...modules import ConvNormRelu, build_module
+from ...similarity import build_similarity
+from ..build import MODEL_REGISTRY
 
 
+@MODEL_REGISTRY.register()
 class DICL(nn.Module):
-    def __init__(
-        self,
-        dap=True,
-        dap_init_id=True,
-        search_range=(3, 3, 3, 3, 3),
-        context_net=True,
-        sup_raw_flow=False,
-        scale_factors=(1 / 4, 1 / 8, 1 / 16, 1 / 32, 1 / 64),
-        scale_contexts=(1.0, 1.0, 1.0, 1.0, 1.0),
-    ):
+    def __init__(self, cfg):
         super(DICL, self).__init__()
 
-        self.dap = dap
-        self.context_net = context_net
-        self.sup_raw_flow = sup_raw_flow
-        self.scale_factors = scale_factors
-        self.scale_contexts = scale_contexts
-        self.feature_net = GANetBackbone()
+        self.context_net = cfg.CONTEXT_NET
+        self.use_dap = cfg.DAP.USE_DAP
+        self.sup_raw_flow = cfg.SUP_RAW_FLOW
+        self.scale_factors = cfg.SCALE_FACTORS
+        self.scale_contexts = cfg.SCALE_CONTEXTS
 
+        self.feature_net = build_encoder(cfg.ENCODER)
         self.entropy_fn = FlowEntropy()
 
-        self.flow_decoder2 = SoftArgFlowRegression(search_range[0], search_range[0])
-        self.flow_decoder3 = SoftArgFlowRegression(search_range[1], search_range[1])
-        self.flow_decoder4 = SoftArgFlowRegression(search_range[2], search_range[2])
-        self.flow_decoder5 = SoftArgFlowRegression(search_range[3], search_range[3])
-        self.flow_decoder6 = SoftArgFlowRegression(search_range[4], search_range[4])
+        matching_net = build_similarity(cfg.SIMILARITY.MATCHING_NET)
 
-        self.cost_fn2 = LearnableMatchingCost(search_range[0], search_range[0])
-        self.cost_fn3 = LearnableMatchingCost(search_range[1], search_range[1])
-        self.cost_fn4 = LearnableMatchingCost(search_range[2], search_range[2])
-        self.cost_fn5 = LearnableMatchingCost(search_range[3], search_range[3])
-        self.cost_fn6 = LearnableMatchingCost(search_range[4], search_range[4])
+        search_range = cfg.SEARCH_RANGE
+
+        self.cost_fn2 = build_similarity(
+            cfg.SIMILARITY,
+            max_u=search_range[0],
+            max_v=search_range[0],
+            matching_net=matching_net,
+        )
+        self.cost_fn3 = build_similarity(
+            cfg.SIMILARITY,
+            max_u=search_range[1],
+            max_v=search_range[1],
+            matching_net=matching_net,
+        )
+        self.cost_fn4 = build_similarity(
+            cfg.SIMILARITY,
+            max_u=search_range[2],
+            max_v=search_range[2],
+            matching_net=matching_net,
+        )
+        self.cost_fn5 = build_similarity(
+            cfg.SIMILARITY,
+            max_u=search_range[3],
+            max_v=search_range[3],
+            matching_net=matching_net,
+        )
+        self.cost_fn6 = build_similarity(
+            cfg.SIMILARITY,
+            max_u=search_range[4],
+            max_v=search_range[4],
+            matching_net=matching_net,
+        )
+
+        self.flow_decoder2 = build_decoder(
+            cfg.DECODER, max_u=search_range[0], max_v=search_range[0]
+        )
+        self.flow_decoder3 = build_decoder(
+            cfg.DECODER, max_u=search_range[1], max_v=search_range[1]
+        )
+        self.flow_decoder4 = build_decoder(
+            cfg.DECODER, max_u=search_range[2], max_v=search_range[2]
+        )
+        self.flow_decoder5 = build_decoder(
+            cfg.DECODER, max_u=search_range[3], max_v=search_range[3]
+        )
+        self.flow_decoder6 = build_decoder(
+            cfg.DECODER, max_u=search_range[4], max_v=search_range[4]
+        )
 
         if self.context_net:
 
@@ -87,24 +118,27 @@ class DICL(nn.Module):
 
         self._init_weights()
 
-        if self.dap:
-            self.dap_layer2 = DisplacementAwareProjection(
-                max_displacement=search_range[0]
+        if cfg.DAP.USE_DAP:
+
+            name = "DisplacementAwareProjection"
+
+            self.dap_layer2 = build_module(
+                cfg.DAP, name=name, max_displacement=search_range[0]
             )
-            self.dap_layer3 = DisplacementAwareProjection(
-                max_displacement=search_range[1]
+            self.dap_layer3 = build_module(
+                cfg.DAP, name=name, max_displacement=search_range[1]
             )
-            self.dap_layer4 = DisplacementAwareProjection(
-                max_displacement=search_range[2]
+            self.dap_layer4 = build_module(
+                cfg.DAP, name=name, max_displacement=search_range[2]
             )
-            self.dap_layer5 = DisplacementAwareProjection(
-                max_displacement=search_range[3]
+            self.dap_layer5 = build_module(
+                cfg.DAP, name=name, max_displacement=search_range[3]
             )
-            self.dap_layer6 = DisplacementAwareProjection(
-                max_displacement=search_range[4]
+            self.dap_layer6 = build_module(
+                cfg.DAP, name=name, max_displacement=search_range[4]
             )
 
-            if dap_init_id:
+            if cfg.DAP.INIT_ID:
                 nn.init.eye_(
                     self.dap_layer2.dap_layer.conv.weight.squeeze(-1).squeeze(-1)
                 )
@@ -133,7 +167,7 @@ class DICL(nn.Module):
 
     def _warp(self, x, flow):
 
-        B, C, H, W = x.size()
+        B, _, H, W = x.size()
 
         xx = torch.arange(0, W).view(1, -1).repeat(H, 1)
         yy = torch.arange(0, H).view(-1, 1).repeat(1, W)
@@ -191,7 +225,7 @@ class DICL(nn.Module):
             recompute_scale_factor=True,
         )
 
-        if self.dap:
+        if self.use_dap:
             cost = dap_layer(cost)
 
         if warp_flow:
@@ -277,6 +311,7 @@ class DICL(nn.Module):
             (x2.shape[2], x2.shape[3]),
             self.scale_contexts[0],
         )
+
         if self.training:
 
             if self.sup_raw_flow:

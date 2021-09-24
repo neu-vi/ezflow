@@ -1,14 +1,18 @@
 import torch
 import torch.nn.functional as F
 
+from ..config import configurable
 from ..utils import bilinear_sampler
+from .build import SIMILARITY_REGISTRY
 
 
+@SIMILARITY_REGISTRY.register()
 class MutliScalePairwise4DCorr:
-    def __init__(self, fmap1, fmap2, num_levels=4, radius=4):
+    @configurable
+    def __init__(self, fmap1, fmap2, num_levels=4, corr_radius=4):
 
         self.num_levels = num_levels
-        self.radius = radius
+        self.corr_radius = corr_radius
         self.corr_pyramid = []
 
         corr = MutliScalePairwise4DCorr.corr(fmap1, fmap2)
@@ -23,7 +27,7 @@ class MutliScalePairwise4DCorr:
 
     def __call__(self, coords):
 
-        r = self.radius
+        r = self.corr_radius
         coords = coords.permute(0, 2, 3, 1)
         batch, h1, w1, _ = coords.shape
 
@@ -46,6 +50,13 @@ class MutliScalePairwise4DCorr:
         out = torch.cat(out_pyramid, dim=-1)
 
         return out.permute(0, 3, 1, 2).contiguous().float()
+
+    @classmethod
+    def from_config(cls, cfg):
+        return {
+            "num_levels": cfg.NUM_LEVELS,
+            "corr_radius": cfg.CORR_RADIUS,
+        }
 
     @staticmethod
     def corr(fmap1, fmap2):

@@ -1,6 +1,8 @@
 import torch.nn as nn
 import torch.nn.functional as F
 
+from ..config import configurable
+
 
 class ConvNormRelu(nn.Module):
     def __init__(
