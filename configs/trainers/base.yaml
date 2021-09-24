@@ -1,0 +1,31 @@
+TRAINING:
+  DATA:
+    BATCH_SIZE: 64
+    AUGMENTATION: True
+    SHUFFLE: True
+  OPTIMIZER:
+    NAME: Adam
+    PARAMS:
+      LEARNING_RATE: 0.001
+      BETAS: [0.9, 0.999]
+      EPS: 1e-08
+  SCHEDULER:
+    USE: True
+    NAME: StepLR
+    PARAMS:
+      STEP_SIZE: 10
+      GAMMA: 0.1
+  EARLY_STOPPING: True
+  MAX_EPOCHS: 20
+  CRITERION:
+    NAME: CrossEntropyLoss
+    PARAMS: null
+  METRIC:
+    NAME: Accuracy
+    PARAMS: null
+VALIDATION:
+  INTERVAL: 1
+  METRIC:
+    NAME: Accuracy
+    PARAMS: null
+LOG: True
