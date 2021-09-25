@@ -1,13 +1,20 @@
 import torch
 import torch.nn as nn
 
+from ...config import configurable
+
 
 class SequenceLoss(nn.Module):
+    @configurable
     def __init__(self, gamma=0.8, max_flow=400):
         super(SequenceLoss, self).__init__()
 
         self.gamma = gamma
         self.max_flow = max_flow
+
+    @classmethod
+    def from_config(cls, cfg):
+        return {"gamma": cfg.GAMMA, "max_flow": cfg.MAX_FLOW}
 
     def forward(self, pred, label):
 
