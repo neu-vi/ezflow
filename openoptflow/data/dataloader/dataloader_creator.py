@@ -19,7 +19,9 @@ class DataloaderCreator:
         self.num_workers = num_workers
         self.drop_last = drop_last
 
-    def add_flying_chairs(self, crop_size, split="training"):
+    def add_flying_chairs(
+        self, crop_size, split="training", root_dir="datasets/FlyingChairs_release/data"
+    ):
         self.dataset_list.append(
             FlyingChairs(
                 aug_params={
@@ -29,19 +31,20 @@ class DataloaderCreator:
                     "do_flip": True,
                 },
                 split=split,
+                root_dir=root_dir,
             )
         )
 
-    def add_flying_things(self, split="training"):
+    def add_flying_things(self, split="training", root_dir=""):
         raise NotImplementedError
 
-    def add_sintel(self, split="training"):
+    def add_sintel(self, split="training", root_dir=""):
         raise NotImplementedError
 
-    def add_kitti(self, split="training"):
+    def add_kitti(self, split="training", root_dir=""):
         raise NotImplementedError
 
-    def add_autoflow(self, split="training"):
+    def add_autoflow(self, split="training", root_dir=""):
         raise NotImplementedError
 
     def get_dataloader(self):
