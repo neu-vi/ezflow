@@ -13,10 +13,6 @@ class CfgNode(_CfgNode):
         return super().dump(*args, **kwargs)
 
 
-def get_default_cfg():
-    return CfgNode(new_allowed=True)
-
-
 def configurable(init_func=None, *, from_config=None):
 
     """
