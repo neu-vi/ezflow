@@ -17,12 +17,12 @@ class FlyingChairs(BaseDataset):
         self,
         aug_params,
         split="training",
-        path="datasets/FlyingChairs_release/data",
+        root_dir="datasets/FlyingChairs_release/data",
     ):
         super(FlyingChairs, self).__init__(aug_params)
 
-        images = sorted(glob(osp.join(path, "*.ppm")))
-        flows = sorted(glob(osp.join(path, "*.flo")))
+        images = sorted(glob(osp.join(root_dir, "*.ppm")))
+        flows = sorted(glob(osp.join(root_dir, "*.flo")))
         assert len(images) // 2 == len(flows)
 
         split_list = np.loadtxt("chairs_split.txt", dtype=np.int32)
