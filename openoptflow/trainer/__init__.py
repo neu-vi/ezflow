@@ -1,1 +1,2 @@
-from .base_trainer import BaseTrainer
+from .registry import *
+from .trainer import Trainer

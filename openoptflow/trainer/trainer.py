@@ -5,13 +5,14 @@ import torch
 import torch.nn as nn
 from torch.utils.tensorboard import SummaryWriter
 
-from ..data.dataloader import DeviceDataLoader
+from ..data import DeviceDataLoader
 from ..utils import AverageMeter
+from .registry import loss_functions, metrics, optimizers, schedulers
 
 
-class DefaultTrainer:
+class Trainer:
     """
-    Default Trainer class
+    Trainer class
     """
 
     def __init__(
