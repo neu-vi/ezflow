@@ -10,10 +10,12 @@ def build_similarity(cfg_grp=None, name=None, instantiate=True, **kwargs):
 
     Parameters
     ----------
+    cfg : CfgNode
+        Config to pass to the similarity function.
     name : str
         Name of the registered similarity function.
-    cfg : CfgNode
-        Config to pass to the similarity function .
+    instantiate : bool
+        Whether to instantiate the similarity function.
 
     Returns
     -------

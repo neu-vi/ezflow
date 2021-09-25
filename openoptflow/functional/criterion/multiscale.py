@@ -2,10 +2,11 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from ...trainer import BaseTrainer
+from ...config import configurable
 
 
 class MultiScaleLoss(nn.Module):
+    @configurable
     def __init__(
         self,
         norm="l1",
@@ -16,11 +17,23 @@ class MultiScaleLoss(nn.Module):
     ):
         super(MultiScaleLoss, self).__init__()
 
-        self.norm = norm
+        self.norm = norm.lower()
+        assert self.norm in ("l1", "l2", "robust"), "Norm must be one of L1, L2, Robust"
+
         self.weights = weights
         self.extra_mask = extra_mask
         self.use_valid_range = use_valid_range
         self.valid_range = valid_range
+
+    @classmethod
+    def from_config(cls, cfg):
+        return {
+            "norm": cfg.NORM,
+            "weights": cfg.WEIGHTS,
+            "extra_mask": cfg.EXTRA_MASK,
+            "use_valid_range": cfg.USE_VALID_RANGE,
+            "valid_range": cfg.VALID_RANGE,
+        }
 
     def forward(self, pred, label):
 
@@ -38,12 +51,14 @@ class MultiScaleLoss(nn.Module):
             real_flow[:, 0, :, :] = real_flow[:, 0, :, :] * (w / level_pred.shape[3])
             real_flow[:, 1, :, :] = real_flow[:, 1, :, :] * (h / level_pred.shape[2])
 
-            if self.norm == "L2":
+            if self.norm == "l2":
                 loss_value = torch.norm(real_flow - label, p=2, dim=1)
+
             elif self.norm == "robust":
                 loss_value = (real_flow - label).abs().sum(dim=1) + 1e-8
                 loss_value = loss_value ** 0.4
-            elif self.norm == "L1":
+
+            elif self.norm == "l1":
                 loss_value = (real_flow - label).abs().sum(dim=1)
 
             if self.use_valid_range and self.valid_range is not None:
@@ -71,34 +86,3 @@ class MultiScaleLoss(nn.Module):
         loss = loss / len(pred)
 
         return loss
-
-
-class DICLTrainer(BaseTrainer):
-    def __init__(
-        self,
-        model,
-        train_loader,
-        val_loader,
-        optimizer,
-        save_dir=".",
-        save_interval=5,
-        log_dir=".",
-        device="cpu",
-        **kwargs
-    ):
-        super(DICLTrainer, self).__init__(
-            model,
-            train_loader,
-            val_loader,
-            optimizer,
-            save_dir,
-            save_interval,
-            log_dir,
-            device,
-        )
-
-        self.loss_fn = MultiScaleLoss(**kwargs)
-
-    def _calculate_loss(self, pred, label):
-
-        return self.loss_fn(pred, label)
