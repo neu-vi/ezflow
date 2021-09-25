@@ -52,7 +52,7 @@ class DataloaderCreator:
 
         dataset = self.dataset_list[0]
 
-        if len(self.dataset_list > 1):
+        if len(self.dataset_list) > 1:
             for i in range(len(self.dataset_list) - 1):
                 dataset += self.dataset_list[i + 1]
 
