@@ -9,6 +9,35 @@ from fvcore.common.config import CfgNode as _CfgNode
 
 
 class CfgNode(_CfgNode):
+    def to_dict(self, cfg_node=None, key_list=[]):
+
+        """ Convert a config node to dictionary """
+
+        VALID_TYPES = {tuple, list, str, int, float, bool}
+
+        if cfg_node is None:
+            cfg_node = self
+
+        if not isinstance(cfg_node, CfgNode):
+
+            if type(cfg_node) not in VALID_TYPES:
+                print(
+                    "Key {} with value {} is not a valid type; valid types: {}".format(
+                        ".".join(key_list), type(cfg_node), VALID_TYPES
+                    ),
+                )
+
+            return cfg_node
+
+        else:
+
+            cfg_dict = dict(cfg_node)
+
+            for k, v in cfg_dict.items():
+                cfg_dict[k] = self.to_dict(v, key_list + [k])
+
+            return cfg_dict
+
     def dump(self, *args, **kwargs):
         return super().dump(*args, **kwargs)
 

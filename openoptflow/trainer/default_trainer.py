@@ -9,9 +9,9 @@ from ..data.dataloader import DeviceDataLoader
 from ..utils import AverageMeter
 
 
-class BaseTrainer:
+class DefaultTrainer:
     """
-    Base Trainer class
+    Default Trainer class
     """
 
     def __init__(
