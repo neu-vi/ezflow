@@ -40,7 +40,11 @@ class MultiScaleLoss(nn.Module):
         loss = 0
         h, w = label.size()[-2:]
 
-        if (type(pred) is not tuple) and (type(pred) is not set):
+        if (
+            (type(pred) is not tuple)
+            and (type(pred) is not list)
+            and (type(pred) is not set)
+        ):
             pred = {pred}
 
         for i, level_pred in enumerate(pred):
