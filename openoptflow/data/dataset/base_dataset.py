@@ -94,7 +94,7 @@ class BaseDataset(data.Dataset):
         if self.augmentor is not None:
             img1, img2, flow = self.augmentor(img1, img2, flow)
 
-        return img1, img2, flow
+        return (img1, img2), flow
 
     def __rmul__(self, v):
         """

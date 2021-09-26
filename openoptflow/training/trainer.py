@@ -76,7 +76,8 @@ class Trainer:
             epoch_loss.reset()
             for iteration, (inp, target) in enumerate(self.train_loader):
 
-                pred = model(inp)
+                img1, img2 = inp
+                pred = model(img1, img2)
 
                 loss = loss_fn(pred, target)
 
@@ -127,10 +128,11 @@ class Trainer:
     def _validate_model(self, model):
 
         model = model.to(self.device)
+        model.eval()
+
         metric_meter = AverageMeter()
         batch_size = self.val_loader.batch_size
 
-        model.eval()
         with torch.no_grad():
             for inp, target in self.val_loader:
 
