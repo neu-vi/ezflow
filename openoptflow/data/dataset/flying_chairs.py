@@ -25,7 +25,14 @@ class FlyingChairs(BaseDataset):
         flows = sorted(glob(osp.join(root_dir, "*.flo")))
         assert len(images) // 2 == len(flows)
 
-        split_list = np.loadtxt("chairs_split.txt", dtype=np.int32)
+        try:
+            split_list = np.loadtxt(
+                osp.join(root_dir, "FlyingChairs_train_val.txt"), dtype=np.int32
+            )
+        except OSError:
+            print("FlyingChairs_train_val.txt was not found in " + root_dir)
+            exit()
+
         for i in range(len(flows)):
             xid = split_list[i]
             if (split == "training" and xid == 1) or (
