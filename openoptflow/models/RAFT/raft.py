@@ -28,6 +28,8 @@ class RAFT(nn.Module):
     def __init__(self, cfg):
         super(RAFT, self).__init__()
 
+        self.cfg = cfg
+
         self.fnet = build_encoder(cfg.ENCODER.FEATURE)
         self.cnet = build_encoder(
             cfg.ENCODER.CONTEXT, out_channels=cfg.HIDDEN_DIM + cfg.CONTEXT_DIM
@@ -44,10 +46,6 @@ class RAFT(nn.Module):
             hidden_dim=cfg.HIDDEN_DIM,
             input_dim=cfg.DECODER.INPUT_DIM,
         )
-
-        self.context_dim = cfg.CONTEXT_DIM
-        self.hidden_dim = cfg.HIDDEN_DIM
-        self.mixed_precision = cfg.MIXED_PRECISION
 
     def _initialize_flow(self, img):
 
@@ -73,22 +71,19 @@ class RAFT(nn.Module):
 
     def forward(
         self,
-        image1,
-        image2,
-        iters=12,
+        img1,
+        img2,
         flow_init=None,
-        only_flow=True,
-        test_mode=False,
     ):
 
-        image1 = 2 * (image1 / 255.0) - 1.0
-        image2 = 2 * (image2 / 255.0) - 1.0
+        img1 = 2 * (img1 / 255.0) - 1.0
+        img2 = 2 * (img2 / 255.0) - 1.0
 
-        image1 = image1.contiguous()
-        image2 = image2.contiguous()
+        img1 = img1.contiguous()
+        img2 = img2.contiguous()
 
-        with autocast(enabled=self.mixed_precision):
-            fmap1, fmap2 = self.fnet([image1, image2])
+        with autocast(enabled=self.self.config.MIXED_PRECISION):
+            fmap1, fmap2 = self.fnet([img1, img2])
 
         fmap1 = fmap1.float()
         fmap2 = fmap2.float()
@@ -97,24 +92,26 @@ class RAFT(nn.Module):
             fmap1, fmap2, num_levels=self.corr_levels, corr_radius=self.corr_radius
         )
 
-        with autocast(enabled=self.mixed_precision):
-            cnet = self.cnet(image1)
-            net, inp = torch.split(cnet, [self.hidden_dim, self.context_dim], dim=1)
+        with autocast(enabled=self.self.config.MIXED_PRECISION):
+            cnet = self.cnet(img1)
+            net, inp = torch.split(
+                cnet, [self.cfg.HIDDEN_DIM, self.cfg.CONTEXT_DIM], dim=1
+            )
             net = torch.tanh(net)
             inp = torch.relu(inp)
 
-        coords0, coords1 = self._initialize_flow(image1)
+        coords0, coords1 = self._initialize_flow(img1)
 
         if flow_init is not None:
             coords1 = coords1 + flow_init
 
         flow_predictions = []
-        for _ in range(iters):
+        for _ in range(self.cfg.UPDATE_ITERS):
             coords1 = coords1.detach()
             corr = corr_fn(coords1)
 
             flow = coords1 - coords0
-            with autocast(enabled=self.mixed_precision):
+            with autocast(enabled=self.self.config.MIXED_PRECISION):
                 net, up_mask, delta_flow = self.update_block(net, inp, corr, flow)
 
             coords1 = coords1 + delta_flow
@@ -126,8 +123,8 @@ class RAFT(nn.Module):
 
             flow_predictions.append(flow_up)
 
-        if test_mode or not self.training:
-            if only_flow:
+        if not self.training:
+            if self.cfg.TEST_RETURN_ONLY_FLOW:
                 return flow_up
             return coords1 - coords0, flow_up
 

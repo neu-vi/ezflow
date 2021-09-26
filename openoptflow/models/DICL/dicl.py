@@ -14,9 +14,8 @@ class DICL(nn.Module):
     def __init__(self, cfg):
         super(DICL, self).__init__()
 
+        self.cfg = cfg
         self.context_net = cfg.CONTEXT_NET
-        self.use_dap = cfg.DAP.USE_DAP
-        self.sup_raw_flow = cfg.SUP_RAW_FLOW
         self.scale_factors = cfg.SCALE_FACTORS
         self.scale_contexts = cfg.SCALE_CONTEXTS
 
@@ -225,7 +224,7 @@ class DICL(nn.Module):
             recompute_scale_factor=True,
         )
 
-        if self.use_dap:
+        if self.cfg.DAP.USE_DAP:
             cost = dap_layer(cost)
 
         if warp_flow:
@@ -235,7 +234,7 @@ class DICL(nn.Module):
 
         if self.context_net:
 
-            if self.sup_raw_flow:
+            if self.cfg.SUP_RAW_FLOW:
                 raw_flow = flow
             else:
                 raw_flow = None
@@ -314,7 +313,7 @@ class DICL(nn.Module):
 
         if self.training:
 
-            if self.sup_raw_flow:
+            if self.cfg.SUP_RAW_FLOW:
                 return (
                     flow2,
                     raw_flow2,

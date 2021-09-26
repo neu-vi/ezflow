@@ -134,7 +134,8 @@ class Trainer:
         with torch.no_grad():
             for inp, target in self.val_loader:
 
-                pred = model(inp)
+                img1, img2 = inp
+                pred = model(img1, img2)
 
                 metric = self._calculate_metric(pred, target)
                 metric_meter.update(metric.item(), n=batch_size)
