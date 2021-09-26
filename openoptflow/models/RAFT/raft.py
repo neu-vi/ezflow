@@ -82,7 +82,7 @@ class RAFT(nn.Module):
         img1 = img1.contiguous()
         img2 = img2.contiguous()
 
-        with autocast(enabled=self.self.config.MIXED_PRECISION):
+        with autocast(enabled=self.cfg.MIXED_PRECISION):
             fmap1, fmap2 = self.fnet([img1, img2])
 
         fmap1 = fmap1.float()
@@ -92,7 +92,7 @@ class RAFT(nn.Module):
             fmap1, fmap2, num_levels=self.corr_levels, corr_radius=self.corr_radius
         )
 
-        with autocast(enabled=self.self.config.MIXED_PRECISION):
+        with autocast(enabled=self.cfg.MIXED_PRECISION):
             cnet = self.cnet(img1)
             net, inp = torch.split(
                 cnet, [self.cfg.HIDDEN_DIM, self.cfg.CONTEXT_DIM], dim=1
@@ -111,7 +111,7 @@ class RAFT(nn.Module):
             corr = corr_fn(coords1)
 
             flow = coords1 - coords0
-            with autocast(enabled=self.self.config.MIXED_PRECISION):
+            with autocast(enabled=self.cfg.MIXED_PRECISION):
                 net, up_mask, delta_flow = self.update_block(net, inp, corr, flow)
 
             coords1 = coords1 + delta_flow
