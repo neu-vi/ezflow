@@ -29,6 +29,8 @@ def get_cfg_path(cfg_path, grp="models"):
         The complete path to the config file.
     """
 
+    assert grp in ("models", "trainers"), "Grp must be either 'models' or 'trainers' "
+
     cfg_complete_path = pkg_resources.resource_filename(
         "openoptflow.model_zoo", os.path.join("configs", grp, cfg_path)
     )
@@ -41,7 +43,7 @@ def get_cfg_path(cfg_path, grp="models"):
     return cfg_complete_path
 
 
-def get_cfg(cfg_path, custom=False):
+def get_cfg(cfg_path, custom=False, grp="models"):
 
     """
     Returns a config object for a model in model zoo.
@@ -57,7 +59,7 @@ def get_cfg(cfg_path, custom=False):
     """
 
     if not custom:
-        cfg_path = get_cfg_path(cfg_path)
+        cfg_path = get_cfg_path(cfg_path, grp=grp)
 
     cfg = get_cfg_obj()
     cfg.merge_from_file(cfg_path)

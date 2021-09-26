@@ -14,7 +14,6 @@ from ..utils import Registry
 loss_functions = Registry("loss_functions")
 optimizers = Registry("optimizers")
 schedulers = Registry("schedulers")
-metrics = Registry("metrics")
 
 loss_functions.register("CrossEntropyLoss", CrossEntropyLoss)
 loss_functions.register("MSELoss", MSELoss)

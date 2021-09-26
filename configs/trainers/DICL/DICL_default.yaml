@@ -1,6 +1,5 @@
 _BASE_: "../base.yaml"
-TRAINING:
-  CRITERION:
-    NAME: "MultiScaleLoss"
-    PARAMS:
+CRITERION:
+  NAME: "MultiScaleLoss"
+  PARAMS: null
       

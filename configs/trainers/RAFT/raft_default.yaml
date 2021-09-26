@@ -1,6 +1,5 @@
 _BASE_: "../base.yaml"
-TRAINING:
-  CRITERION:
-    NAME: "SequenceLoss"
-    PARAMS:
+CRITERION:
+  NAME: "SequenceLoss"
+  PARAMS: null
       
