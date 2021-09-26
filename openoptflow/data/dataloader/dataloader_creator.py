@@ -48,7 +48,7 @@ class DataloaderCreator:
         raise NotImplementedError
 
     def get_dataloader(self):
-        assert len(self.dataset_list) == 0, "No datasets were added"
+        assert len(self.dataset_list) != 0, "No datasets were added"
 
         dataset = self.dataset_list[0]
 
