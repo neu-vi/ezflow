@@ -85,16 +85,20 @@ class BaseDataset(data.Dataset):
 
         # grayscale images
         if len(img1.shape) == 2:
-            img1 = np.tile(img1[None, ...], (3, 1, 1))
-            img2 = np.tile(img2[None, ...], (3, 1, 1))
+            img1 = np.tile(img1[..., None], (1, 1, 3))
+            img2 = np.tile(img2[..., None], (1, 1, 3))
         else:
-            img1 = img1[:3, ...]
-            img2 = img2[:3, ...]
+            img1 = img1[..., :3]
+            img2 = img2[..., :3]
 
         if self.augmentor is not None:
             img1, img2, flow = self.augmentor(
                 img1, img2, flow
             )  # Shape issues here; need to fix
+
+        img1 = torch.from_numpy(img1).permute(2, 0, 1)
+        img2 = torch.from_numpy(img2).permute(2, 0, 1)
+        flow = torch.from_numpy(flow).permute(2, 0, 1)
 
         return (img1, img2), flow
 

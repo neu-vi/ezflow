@@ -107,7 +107,7 @@ class Trainer:
 
                 epoch_loss.update(loss.item(), self.train_loader.batch_size)
 
-                if iteration % self.cfg.LOG_INTERVAL == 0:
+                if iteration % self.cfg.LOG_ITERATIONS_INTERVAL == 0:
 
                     total_iters = iteration + (epochs * len(self.train_loader.dataset))
                     writer.add_scalar(
@@ -132,7 +132,7 @@ class Trainer:
             print(f"Epoch {epochs}: Training loss = {epoch_loss.sum}")
             writer.add_scalar("epochs_training_loss", epoch_loss.sum, epochs + 1)
 
-            if epochs % self.SAVE_INTERVAL == 0:
+            if epochs % self.cfg.CKPT_INTERVAL == 0:
                 model_name = model.__class__.__name__.lower()
                 torch.save(
                     model.state_dict(),
@@ -210,7 +210,7 @@ class Trainer:
         os.makedirs(self.cfg.CKPT_DIR, exist_ok=True)
         os.makedirs(self.cfg.LOG_DIR, exist_ok=True)
 
-        print(f"Training {model_name} for {n_epochs}")
+        print(f"Training {model_name.upper()} for {n_epochs} epochs")
         model = self._train_model(n_epochs, loss_fn, optimizer, scheduler)
         print("Training complete!")
 

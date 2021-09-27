@@ -15,7 +15,6 @@ def color_transform(
 ):
     """
     Photometric augmentation
-
     Parameters
     -----------
     img1 : PIL Image or numpy.ndarray
@@ -32,7 +31,6 @@ def color_transform(
         Saturation augmentation factor
     hue : float
         Hue augmentation factor
-
     Returns
     -------
     img1 : PIL Image or numpy.ndarray
@@ -61,7 +59,6 @@ def eraser_transform(img1, img2, bounds=[50, 100], aug_prob=0.5):
 
     """
     Occlusion augmentation
-
     Parameters
     -----------
     img1 : PIL Image or numpy.ndarray
@@ -72,7 +69,6 @@ def eraser_transform(img1, img2, bounds=[50, 100], aug_prob=0.5):
         Bounds of the eraser
     aug_prob : float
         Probability of applying the augmentation
-
     Returns
     -------
     img1 : PIL Image or numpy.ndarray
@@ -114,7 +110,6 @@ def spatial_transform(
 
     """
     Spatial augmentation
-
     Parameters
     -----------
     img1 : PIL Image or numpy.ndarray
@@ -141,7 +136,6 @@ def spatial_transform(
         Probability of applying the horizontal flip transform
     v_flip_prob : float
         Probability of applying the vertical flip transform
-
     Returns
     -------
     img1 : PIL Image or numpy.ndarray
