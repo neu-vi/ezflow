@@ -73,7 +73,7 @@ class Trainer:
 
         best_model = deepcopy(self.model)
 
-        model = self.model.to(self.device)
+        model = self.model
         model.train()
 
         epoch_loss = AverageMeter()
@@ -108,15 +108,20 @@ class Trainer:
                 epoch_loss.update(loss.item(), self.train_loader.batch_size)
 
                 if iteration % self.cfg.LOG_INTERVAL == 0:
+
+                    total_iters = iteration + (epochs * len(self.train_loader.dataset))
                     writer.add_scalar(
                         "avg_training_loss",
                         epoch_loss.avg,
-                        iteration + (epochs * len(self.train_loader.dataset)),
+                        total_iters,
+                    )
+                    print(
+                        f"Total iteration = {total_iters}, Average training loss = {epoch_loss.avg}"
                     )
 
             if epochs % self.cfg.VAL_INTERVAL == 0:
 
-                new_avg_metric = self._val_model(model)
+                new_avg_metric = self._validate_model(model)
                 if new_avg_metric > avg_metric:
                     best_model = deepcopy(model)
                     avg_metric = new_avg_metric
@@ -144,7 +149,6 @@ class Trainer:
 
     def _validate_model(self, model):
 
-        model = model.to(self.device)
         model.eval()
 
         metric_meter = AverageMeter()
@@ -224,7 +228,7 @@ class Trainer:
         model = model.to(self.device)
         model.eval()
         with torch.no_grad():
-            metric = self._val_model(model)
+            metric = self._validate_model(model)
 
         return metric
 
