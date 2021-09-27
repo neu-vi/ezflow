@@ -56,8 +56,8 @@ class Trainer:
 
         self.device = device
         self.model = model.to(self.device)
-        self.train_loader = DeviceDataLoader(train_loader, self.device)
-        self.val_loader = DeviceDataLoader(val_loader, self.device)
+        # self.train_loader = DeviceDataLoader(train_loader, self.device)
+        # self.val_loader = DeviceDataLoader(val_loader, self.device)         Uncomment later
 
     def _calculate_metric(self, pred, target):
 
@@ -84,6 +84,12 @@ class Trainer:
             for iteration, (inp, target) in enumerate(self.train_loader):
 
                 img1, img2 = inp
+                img1, img2, target = (
+                    img1.to(self.device),
+                    img2.to(self.device),
+                    target.to(self.device),
+                )  # Remove later
+
                 pred = model(img1, img2)
 
                 loss = loss_fn(pred, target)
@@ -144,6 +150,12 @@ class Trainer:
             for inp, target in self.val_loader:
 
                 img1, img2 = inp
+                img1, img2, target = (
+                    img1.to(self.device),
+                    img2.to(self.device),
+                    target.to(self.device),
+                )  # Remove later
+
                 pred = model(img1, img2)
 
                 metric = self._calculate_metric(pred, target)
