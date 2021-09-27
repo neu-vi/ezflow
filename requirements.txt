@@ -52,7 +52,7 @@ matplotlib
 mccabe==0.6.1
 mkl-fft==1.3.0
 mkl-random 
-mkl-service==2.3.0
+mkl-service
 mypy-extensions==0.4.3
 networkx==2.6.2
 nodeenv==1.6.0

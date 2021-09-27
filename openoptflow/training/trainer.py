@@ -40,6 +40,10 @@ class Trainer:
                     model = nn.DataParallel(model)
 
             else:
+
+                if type(device) != str:
+                    device = str(device)
+
                 device_ids = device.split(",")
                 device_ids = [int(id) for id in device_ids]
                 cuda_str = "cuda:" + device
