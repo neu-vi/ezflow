@@ -19,20 +19,10 @@ class DataloaderCreator:
         self.num_workers = num_workers
         self.drop_last = drop_last
 
-    def add_flying_chairs(
-        self, crop_size, split="training", root_dir="datasets/FlyingChairs_release/data"
-    ):
+    def add_flying_chairs(self, root_dir, split="training", augment=True, **kwargs):
+
         self.dataset_list.append(
-            FlyingChairs(
-                aug_params={
-                    "crop_size": crop_size,
-                    "min_scale": -0.1,
-                    "max_scale": 1.0,
-                    "do_flip": True,
-                },
-                split=split,
-                root_dir=root_dir,
-            )
+            FlyingChairs(root_dir, split, augment=augment, **kwargs)
         )
 
     def add_flying_things(self, split="training", root_dir=""):

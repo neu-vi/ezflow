@@ -1,6 +1,8 @@
+from ..registry import FUNCTIONAL_REGISTRY
 from .operations import *
 
 
+@FUNCTIONAL_REGISTRY.register()
 class FlowAugmentor:
 
     """

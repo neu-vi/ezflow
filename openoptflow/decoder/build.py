@@ -10,10 +10,12 @@ def build_decoder(cfg_grp=None, name=None, instantiate=True, **kwargs):
 
     Parameters
     ----------
+    cfg_grp : CfgNode
+        Config to pass to the decoder.
     name : str
         Name of the registered decoder.
-    cfg : CfgNode
-        Config to pass to the decoder.
+    instantiate : bool
+        Whether to instantiate the decoder.
 
     Returns
     -------

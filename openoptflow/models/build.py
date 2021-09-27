@@ -1,4 +1,5 @@
-from ..model_zoo import _ModelZooConfigs, get_cfg
+from ..config import get_cfg
+from ..model_zoo import _ModelZooConfigs
 from ..utils import Registry
 
 MODEL_REGISTRY = Registry("MODEL")

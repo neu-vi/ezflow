@@ -10,10 +10,12 @@ def build_encoder(cfg_grp=None, name=None, instantiate=True, **kwargs):
 
     Parameters
     ----------
-    name : str
-        Name of the registered encoder.
     cfg : CfgNode
         Config to pass to the encoder.
+    name : str
+        Name of the registered encoder.
+    instantiate : bool
+        Whether to instantiate the encoder.
 
     Returns
     -------

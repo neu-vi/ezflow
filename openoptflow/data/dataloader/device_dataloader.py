@@ -5,12 +5,13 @@ class DeviceDataLoader:
     Parameters
     ----------
     data_loader : DataLoader
-        the PyTorch DataLoader from torch.utils.data.dataloader
+        The PyTorch DataLoader from torch.utils.data.dataloader
     device : torch.device
-        the compute device
+        The compute device
     """
 
     def __init__(self, data_loader, device):
+
         self.data_loader = data_loader
         self.device = device
 
