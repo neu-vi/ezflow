@@ -25,11 +25,11 @@ class Trainer:
 
         if device == "-1" or device == -1 or device == "cpu":
             device = torch.device("cpu")
-            print("Running on CPU")
+            print("Running on CPU\n")
 
         elif not torch.cuda.is_available():
             device = torch.device("cpu")
-            print("CUDA device(s) not available. Running on CPU")
+            print("CUDA device(s) not available. Running on CPU\n")
 
         else:
             if device == "all":
@@ -38,6 +38,7 @@ class Trainer:
                     model = DDP(model)
                 else:
                     model = nn.DataParallel(model)
+                print(f"Running on all available CUDA devices\n")
 
             else:
 
@@ -52,7 +53,7 @@ class Trainer:
                     model = DDP(model)
                 else:
                     model = nn.DataParallel(model, device_ids=device_ids)
-                print(f"Running on CUDA devices {device_ids}")
+                print(f"Running on CUDA devices {device_ids}\n")
 
         self.device = device
         self.model = model.to(self.device)
@@ -210,7 +211,11 @@ class Trainer:
         os.makedirs(self.cfg.CKPT_DIR, exist_ok=True)
         os.makedirs(self.cfg.LOG_DIR, exist_ok=True)
 
-        print(f"Training {model_name.upper()} for {n_epochs} epochs")
+        print("Training config:\n")
+        print(self.cfg)
+        print("-" * 80)
+
+        print(f"Training {model_name.upper()} for {n_epochs} epochs\n")
         model = self._train_model(n_epochs, loss_fn, optimizer, scheduler)
         print("Training complete!")
 
