@@ -23,6 +23,8 @@ class Trainer:
         if isinstance(device, list) or isinstance(device, tuple):
             device = ",".join(map(str, device))
 
+        print("\n")
+
         if device == "-1" or device == -1 or device == "cpu":
             device = torch.device("cpu")
             print("Running on CPU\n")
@@ -83,7 +85,8 @@ class Trainer:
         epochs = 0
         while epochs < n_epochs:
 
-            print(f"Epoch {epochs+1} of {n_epochs} ")
+            print(f"Epoch {epochs+1} of {n_epochs}")
+            print("-" * 80)
 
             epoch_loss.reset()
             for iteration, (inp, target) in enumerate(self.train_loader):
@@ -117,7 +120,7 @@ class Trainer:
                         total_iters,
                     )
                     print(
-                        f"Total iteration = {total_iters}, Average training loss = {epoch_loss.avg}"
+                        f"Total iterations:{total_iters}, Average training loss:{epoch_loss.avg}"
                     )
 
             if epochs % self.cfg.VAL_INTERVAL == 0:
@@ -143,6 +146,7 @@ class Trainer:
                 )
 
             epochs += 1
+            print("\n")
 
         writer.close()
 
@@ -223,7 +227,7 @@ class Trainer:
             model.state_dict(),
             os.path.join(self.cfg.CKPT_DIR, model_name + "_best.pth"),
         )
-        print("Saved best model!")
+        print("Saved best model!\n")
 
     def validate(self, model=None):
 
