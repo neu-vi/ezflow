@@ -18,7 +18,10 @@ class Trainer:
     def __init__(self, cfg, model, train_loader, val_loader):
 
         self.cfg = cfg
-        device = cfg.DEVICE.lower()
+        device = cfg.DEVICE
+
+        if isinstance(device, list) or isinstance(device, tuple):
+            device = ",".join(map(str, device))
 
         if device == "-1" or device == "cpu":
             device = torch.device("cpu")
