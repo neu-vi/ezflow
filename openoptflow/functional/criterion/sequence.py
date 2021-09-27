@@ -2,8 +2,10 @@ import torch
 import torch.nn as nn
 
 from ...config import configurable
+from ..registry import FUNCTIONAL_REGISTRY
 
 
+@FUNCTIONAL_REGISTRY.register()
 class SequenceLoss(nn.Module):
     @configurable
     def __init__(self, gamma=0.8, max_flow=400):

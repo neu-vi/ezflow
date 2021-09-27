@@ -28,9 +28,8 @@ def read_flow(fn):
             h = np.fromfile(f, np.int32, count=1)
             # print 'Reading %d x %d flo file\n' % (w, h)
             data = np.fromfile(f, np.float32, count=2 * int(w) * int(h))
-            # Reshape data into 3D array (columns, rows, bands)
-            # The reshape here is for visualization, the original code is (w,h,2)
-            return np.resize(data, (int(h), int(w), 2))
+            # Reshape data into 3D array (banda, columns, rows)
+            return np.resize(data, (2, int(h), int(w)))
 
 
 def read_pfm(file):
@@ -103,18 +102,30 @@ def write_flow(filename, uv, v=None):
     f.close()
 
 
-def read_gen(file_name, pil=False):
+def read_gen(file_name):
+
     ext = splitext(file_name)[-1]
+
     if ext == ".png" or ext == ".jpeg" or ext == ".ppm" or ext == ".jpg":
-        return Image.open(file_name)
+        img = Image.open(file_name)
+        img = np.asarray(img)
+        img = img.transpose(2, 0, 1)
+
+        return img
+
     elif ext == ".bin" or ext == ".raw":
         return np.load(file_name)
+
     elif ext == ".flo":
         return read_flow(file_name).astype(np.float32)
+
     elif ext == ".pfm":
+
         flow = read_pfm(file_name).astype(np.float32)
+
         if len(flow.shape) == 2:
             return flow
         else:
             return flow[:, :, :-1]
+
     return []

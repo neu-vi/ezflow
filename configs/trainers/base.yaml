@@ -15,13 +15,13 @@ SCHEDULER:
     step_size: 10
     gamma: 0.1
 CRITERION:
-  CUSTOM: False
-  NAME: MSELoss
+  CUSTOM: True
+  NAME: MultiScaleLoss
   PARAMS: null
 DEVICE: "0,1,2"
 DISTRIBUTED: True
 LOG_DIR: "./logs"
-LOG_INTERVAl: 1
+LOG_INTERVAL: 1000
 VAL_INTERVAL: 2
 CKPT_DIR: "./ckpts"
 EPOCHS: 20

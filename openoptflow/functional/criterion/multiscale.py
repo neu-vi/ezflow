@@ -3,8 +3,10 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from ...config import configurable
+from ..registry import FUNCTIONAL_REGISTRY
 
 
+@FUNCTIONAL_REGISTRY.register()
 class MultiScaleLoss(nn.Module):
     @configurable
     def __init__(

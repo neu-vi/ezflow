@@ -15,11 +15,24 @@ class FlyingChairs(BaseDataset):
 
     def __init__(
         self,
-        aug_params,
+        root_dir,
         split="training",
-        root_dir="datasets/FlyingChairs_release/data",
+        is_test=False,
+        init_seed=False,
+        augment=True,
+        aug_params={
+            "crop_size": (224, 224),
+            "color_aug_params": {"aug_prob": 0.2},
+            "eraser_aug_params": {"aug_prob": 0.5},
+            "spatial_aug_params": {"aug_prob": 0.8},
+        },
     ):
-        super(FlyingChairs, self).__init__(aug_params)
+        super(FlyingChairs, self).__init__(
+            augment,
+            aug_params,
+            is_test,
+            init_seed,
+        )
 
         images = sorted(glob(osp.join(root_dir, "*.ppm")))
         flows = sorted(glob(osp.join(root_dir, "*.flo")))

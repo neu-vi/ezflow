@@ -29,15 +29,15 @@ class BaseDataset(data.Dataset):
 
     def __init__(
         self,
-        is_test=False,
-        init_seed=False,
         augment=True,
-        crop_size=(224, 224),
         aug_params={
+            "crop_size": (224, 224),
             "color_aug_params": {"aug_prob": 0.2},
             "eraser_aug_params": {"aug_prob": 0.5},
             "spatial_aug_params": {"aug_prob": 0.8},
         },
+        is_test=False,
+        init_seed=False,
     ):
 
         self.is_test = is_test
@@ -45,7 +45,7 @@ class BaseDataset(data.Dataset):
 
         self.augmentor = None
         if augment:
-            self.augmentor = FlowAugmentor(crop_size, **aug_params)
+            self.augmentor = FlowAugmentor(**aug_params)
 
         self.flow_list = []
         self.image_list = []
@@ -85,14 +85,16 @@ class BaseDataset(data.Dataset):
 
         # grayscale images
         if len(img1.shape) == 2:
-            img1 = np.tile(img1[..., None], (1, 1, 3))
+            img1 = np.tile(img1[..., None], (1, 1, 3))  # Shape issues here; need to fix
             img2 = np.tile(img2[..., None], (1, 1, 3))
         else:
             img1 = img1[..., :3]
             img2 = img2[..., :3]
 
         if self.augmentor is not None:
-            img1, img2, flow = self.augmentor(img1, img2, flow)
+            img1, img2, flow = self.augmentor(
+                img1, img2, flow
+            )  # Shape issues here; need to fix
 
         return (img1, img2), flow
 

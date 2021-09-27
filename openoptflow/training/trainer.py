@@ -23,7 +23,7 @@ class Trainer:
         if isinstance(device, list) or isinstance(device, tuple):
             device = ",".join(map(str, device))
 
-        if device == "-1" or device == "cpu":
+        if device == "-1" or device == -1 or device == "cpu":
             device = torch.device("cpu")
             print("Running on CPU")
 
@@ -56,8 +56,12 @@ class Trainer:
 
         self.device = device
         self.model = model.to(self.device)
+
+        self.train_loader = train_loader
+        self.val_loader = val_loader
+
         # self.train_loader = DeviceDataLoader(train_loader, self.device)
-        # self.val_loader = DeviceDataLoader(val_loader, self.device)         Uncomment later
+        # self.val_loader = DeviceDataLoader(val_loader, self.device)   Uncomment later when DeviceDataLoader is fixed
 
     def _calculate_metric(self, pred, target):
 
@@ -88,7 +92,7 @@ class Trainer:
                     img1.to(self.device),
                     img2.to(self.device),
                     target.to(self.device),
-                )  # Remove later
+                )  # Remove later when DeviceDataLoader is fixed
 
                 pred = model(img1, img2)
 
@@ -154,7 +158,7 @@ class Trainer:
                     img1.to(self.device),
                     img2.to(self.device),
                     target.to(self.device),
-                )  # Remove later
+                )  # Remove later when DeviceDataLoader is fixed
 
                 pred = model(img1, img2)
 
