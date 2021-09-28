@@ -1,3 +1,5 @@
+import torch
+
 from ..config import get_cfg
 from ..model_zoo import _ModelZooConfigs
 from ..utils import Registry
@@ -30,6 +32,6 @@ def build_model(
     model = model(cfg)
 
     if weights_path is not None:
-        model.load_state_dict(weights_path)
+        model.load_state_dict(torch.load(weights_path))
 
     return model
