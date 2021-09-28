@@ -64,9 +64,6 @@ class Trainer:
         self.train_loader = train_loader
         self.val_loader = val_loader
 
-        # self.train_loader = DeviceDataLoader(train_loader, self.device)
-        # self.val_loader = DeviceDataLoader(val_loader, self.device)   Uncomment later when DeviceDataLoader is fixed
-
     def _calculate_metric(self, pred, target):
 
         return endpointerror(pred, target)
@@ -97,7 +94,7 @@ class Trainer:
                     img1.to(self.device),
                     img2.to(self.device),
                     target.to(self.device),
-                )  # Remove later when DeviceDataLoader is fixed
+                )
 
                 pred = model(img1, img2)
 
@@ -168,7 +165,7 @@ class Trainer:
                     img1.to(self.device),
                     img2.to(self.device),
                     target.to(self.device),
-                )  # Remove later when DeviceDataLoader is fixed
+                )
 
                 pred = model(img1, img2)
 
