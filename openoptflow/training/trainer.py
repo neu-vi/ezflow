@@ -139,7 +139,7 @@ class Trainer:
 
             if epochs % self.cfg.CKPT_INTERVAL == 0:
                 torch.save(
-                    model.state_dict(),
+                    best_model.state_dict(),
                     os.path.join(
                         self.cfg.CKPT_DIR,
                         self.model_name + "_epochs" + str(epochs) + ".pth",
