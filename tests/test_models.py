@@ -1,9 +1,21 @@
 import torch
+from torchvision import transforms as T
 
-from openoptflow.models import DICL, RAFT, build_model
+from openoptflow.models import DefaultPredictor, build_model
 
 img1 = torch.randn(2, 3, 256, 256)
 img2 = torch.randn(2, 3, 256, 256)
+
+
+def test_DefaultPredictor():
+
+    transform = T.Compose(
+        [T.Resize((224, 224)), T.ColorJitter(brightness=0.5, hue=0.3)]
+    )
+
+    predictor = DefaultPredictor("RAFT", "raft.yaml", data_transform=transform)
+    flow = predictor(img1, img2)
+    assert flow.shape == (2, 2, 224, 224)
 
 
 def test_RAFT():
