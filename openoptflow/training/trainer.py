@@ -35,6 +35,8 @@ class Trainer:
             print("CUDA device(s) not available. Running on CPU\n")
 
         else:
+            self.model_parallel = True
+
             if device == "all":
                 device = torch.device("cuda")
                 if cfg.DISTRIBUTED:
@@ -135,8 +137,11 @@ class Trainer:
             writer.add_scalar("epochs_training_loss", epoch_loss.sum, epochs + 1)
 
             if epochs % self.cfg.CKPT_INTERVAL == 0:
+
+                if self.model_parallel:
+                    save_model = best_model.module
                 torch.save(
-                    best_model.state_dict(),
+                    save_model.state_dict(),
                     os.path.join(
                         self.cfg.CKPT_DIR,
                         self.model_name + "_epochs" + str(epochs) + ".pth",
@@ -216,11 +221,14 @@ class Trainer:
         print("-" * 80)
 
         print(f"Training {self.model_name.upper()} for {n_epochs} epochs\n")
-        model = self._train_model(n_epochs, loss_fn, optimizer, scheduler)
+        best_model = self._train_model(n_epochs, loss_fn, optimizer, scheduler)
         print("Training complete!")
 
+        if self.model_parallel:
+            best_model = best_model.module
+
         torch.save(
-            model.state_dict(),
+            best_model.state_dict(),
             os.path.join(self.cfg.CKPT_DIR, self.model_name + "_best.pth"),
         )
         print("Saved best model!\n")
