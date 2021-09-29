@@ -18,6 +18,7 @@ class Trainer:
     def __init__(self, cfg, model, train_loader, val_loader):
 
         self.cfg = cfg
+        self.model_name = model.__class__.__name__.lower()
         device = cfg.DEVICE
 
         if isinstance(device, list) or isinstance(device, tuple):
@@ -34,6 +35,8 @@ class Trainer:
             print("CUDA device(s) not available. Running on CPU\n")
 
         else:
+            self.model_parallel = True
+
             if device == "all":
                 device = torch.device("cuda")
                 if cfg.DISTRIBUTED:
@@ -62,9 +65,6 @@ class Trainer:
 
         self.train_loader = train_loader
         self.val_loader = val_loader
-
-        # self.train_loader = DeviceDataLoader(train_loader, self.device)
-        # self.val_loader = DeviceDataLoader(val_loader, self.device)   Uncomment later when DeviceDataLoader is fixed
 
     def _calculate_metric(self, pred, target):
 
@@ -96,7 +96,7 @@ class Trainer:
                     img1.to(self.device),
                     img2.to(self.device),
                     target.to(self.device),
-                )  # Remove later when DeviceDataLoader is fixed
+                )
 
                 pred = model(img1, img2)
 
@@ -137,11 +137,14 @@ class Trainer:
             writer.add_scalar("epochs_training_loss", epoch_loss.sum, epochs + 1)
 
             if epochs % self.cfg.CKPT_INTERVAL == 0:
-                model_name = model.__class__.__name__.lower()
+
+                if self.model_parallel:
+                    save_model = best_model.module
                 torch.save(
-                    model.state_dict(),
+                    save_model.state_dict(),
                     os.path.join(
-                        self.cfg.CKPT_DIR, model_name + "_epochs" + str(epochs) + ".pth"
+                        self.cfg.CKPT_DIR,
+                        self.model_name + "_epochs" + str(epochs) + ".pth",
                     ),
                 )
 
@@ -167,7 +170,7 @@ class Trainer:
                     img1.to(self.device),
                     img2.to(self.device),
                     target.to(self.device),
-                )  # Remove later when DeviceDataLoader is fixed
+                )
 
                 pred = model(img1, img2)
 
@@ -210,8 +213,6 @@ class Trainer:
         if n_epochs is None:
             n_epochs = self.cfg.EPOCHS
 
-        model_name = self.model.__class__.__name__.lower()
-
         os.makedirs(self.cfg.CKPT_DIR, exist_ok=True)
         os.makedirs(self.cfg.LOG_DIR, exist_ok=True)
 
@@ -219,13 +220,16 @@ class Trainer:
         print(self.cfg)
         print("-" * 80)
 
-        print(f"Training {model_name.upper()} for {n_epochs} epochs\n")
-        model = self._train_model(n_epochs, loss_fn, optimizer, scheduler)
+        print(f"Training {self.model_name.upper()} for {n_epochs} epochs\n")
+        best_model = self._train_model(n_epochs, loss_fn, optimizer, scheduler)
         print("Training complete!")
 
+        if self.model_parallel:
+            best_model = best_model.module
+
         torch.save(
-            model.state_dict(),
-            os.path.join(self.cfg.CKPT_DIR, model_name + "_best.pth"),
+            best_model.state_dict(),
+            os.path.join(self.cfg.CKPT_DIR, self.model_name + "_best.pth"),
         )
         print("Saved best model!\n")
 
@@ -238,6 +242,8 @@ class Trainer:
         model.eval()
         with torch.no_grad():
             metric = self._validate_model(model)
+
+        print(f"Average validation metric = {metric}")
 
         return metric
 
