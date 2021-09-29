@@ -26,6 +26,11 @@ class DefaultPredictor:
                 weights_path=model_weights_path,
             )
 
+        elif default:
+            self.model = build_model(
+                model_name, default=True, weights_path=model_weights_path
+            )
+
         else:
             assert (
                 model_cfg is not None
