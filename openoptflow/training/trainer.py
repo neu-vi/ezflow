@@ -235,6 +235,8 @@ class Trainer:
         with torch.no_grad():
             metric = self._validate_model(model)
 
+        print(f"Average validation metric = {metric}")
+
         return metric
 
 
