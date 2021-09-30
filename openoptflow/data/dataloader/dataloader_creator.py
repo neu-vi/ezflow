@@ -25,12 +25,18 @@ class DataloaderCreator:
             FlyingChairs(root_dir, split, augment=augment, **kwargs)
         )
 
-    def add_flying_things(self, split="training", root_dir=""):
-        raise NotImplementedError
+    def add_flying_things3d(
+        self, root_dir, split="TRAIN", dstype="frames_cleanpass", augment=True, **kwargs
+    ):
+
+        self.dataset_list.append(
+            FlyingThings3D(root_dir, split, dstype, augment=augment, **kwargs)
+        )
 
     def add_mpi_sintel(
         root_dir, split="training", dstype="clean", augment=True, **kwargs
     ):
+
         self.dataset_list.append(
             MpiSintel(root_dir, split, dstype, augment=augment, **kwargs)
         )
