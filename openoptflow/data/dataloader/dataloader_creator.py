@@ -28,8 +28,12 @@ class DataloaderCreator:
     def add_flying_things(self, split="training", root_dir=""):
         raise NotImplementedError
 
-    def add_sintel(self, split="training", root_dir=""):
-        raise NotImplementedError
+    def add_mpi_sintel(
+        root_dir, split="training", dstype="clean", augment=True, **kwargs
+    ):
+        self.dataset_list.append(
+            MpiSintel(root_dir, split, dstype, augment=augment, **kwargs)
+        )
 
     def add_kitti(self, split="training", root_dir=""):
         raise NotImplementedError
