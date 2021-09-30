@@ -7,14 +7,15 @@ def main(args):
 
     # Load training configuration
 
-    cfg = get_training_cfg(args.cfg_path)
+    cfg = get_training_cfg(args.train_cfg)
 
     if args.device:
         cfg.DEVICE = args.device
 
     # Create dataloaders
 
-    if cfg.DATA.AUGMENTATION.PARAMS:
+    aug_params = None
+    if cfg.DATA.AUGMENTATION.USE and cfg.DATA.AUGMENTATION.PARAMS:
         aug_params = cfg.DATA.AUGMENTATION.PARAMS.to_dict()
 
     train_loader = DataloaderCreator(cfg.DATA.BATCH_SIZE, num_workers=cfg.NUM_WORKERS)
@@ -55,7 +56,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description="Train an openoptflow model")
     parser.add_argument(
-        "--cfg_path",
+        "--train_cfg",
         type=str,
         required=True,
         help="Path to the training configuration file",
