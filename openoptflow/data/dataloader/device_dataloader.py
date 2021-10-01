@@ -1,3 +1,10 @@
+def to_device(data, device):
+    if isinstance(data, (list, tuple)):
+        return [to_device(x, device) for x in data]
+
+    return data.to(device)
+
+
 class DeviceDataLoader:
     """
     A data loader wrapper to move data to a specific compute device.
@@ -21,7 +28,7 @@ class DeviceDataLoader:
 
         """
         for batch in self.data_loader:
-            yield batch.to(self.device)
+            yield to_device(batch, self.device)
 
     def __len__(self):
         """
