@@ -5,6 +5,7 @@ from torch.optim.lr_scheduler import (
     CosineAnnealingWarmRestarts,
     CyclicLR,
     MultiStepLR,
+    OneCycleLR,
     ReduceLROnPlateau,
     StepLR,
 )
@@ -31,3 +32,4 @@ schedulers.register(CyclicLR, "CyclicLR")
 schedulers.register(MultiStepLR, "MultiStepLR")
 schedulers.register(ReduceLROnPlateau, "ReduceLROnPlateau")
 schedulers.register(StepLR, "StepLR")
+schedulers.register(OneCycleLR, "OneCycleLR")
