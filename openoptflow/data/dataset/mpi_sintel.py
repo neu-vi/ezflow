@@ -1,3 +1,4 @@
+import os
 import os.path as osp
 from glob import glob
 
@@ -45,7 +46,6 @@ class MpiSintel(BaseDataset):
             image_list = sorted(glob(osp.join(image_root, scene, "*.png")))
             for i in range(len(image_list) - 1):
                 self.image_list += [[image_list[i], image_list[i + 1]]]
-                self.extra_info += [(scene, i)]  # scene and frame_id
 
             if split != "test":
                 self.flow_list += sorted(glob(osp.join(flow_root, scene, "*.flo")))

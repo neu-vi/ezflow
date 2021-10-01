@@ -38,6 +38,9 @@ class FlyingChairs(BaseDataset):
         flows = sorted(glob(osp.join(root_dir, "*.flo")))
         assert len(images) // 2 == len(flows)
 
+        if split == "validation":
+            self.is_test = True
+
         try:
             split_list = np.loadtxt(
                 osp.join(root_dir, "FlyingChairs_train_val.txt"), dtype=np.int32

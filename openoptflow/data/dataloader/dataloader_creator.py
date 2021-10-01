@@ -34,7 +34,7 @@ class DataloaderCreator:
         )
 
     def add_mpi_sintel(
-        root_dir, split="training", dstype="clean", augment=True, **kwargs
+        self, root_dir, split="training", dstype="clean", augment=True, **kwargs
     ):
 
         self.dataset_list.append(
@@ -43,11 +43,11 @@ class DataloaderCreator:
 
     def add_kitti(self, root_dir, split="training", augment=True, **kwargs):
 
-        self.dataset_list.append(root_dir, split, augment=True, **kwargs)
+        self.dataset_list.append(Kitti(root_dir, split, augment=True, **kwargs))
 
     def add_hd1k(self, root_dir, augment=True, **kwargs):
 
-        self.dataset_list.append(root_dir, augment=True, **kwargs)
+        self.dataset_list.append(HD1K(root_dir, augment=True, **kwargs))
 
     def add_autoflow(self, split="training", root_dir=""):
         raise NotImplementedError
