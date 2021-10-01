@@ -6,7 +6,7 @@ import numpy as np
 from .base_dataset import BaseDataset
 
 
-class Kitti(BaseDataset):
+class HD1K(BaseDataset):
     """
     Dataset Class for preparing the Kitti dataset for training and validation.
 
@@ -16,7 +16,6 @@ class Kitti(BaseDataset):
     def __init__(
         self,
         root_dir,
-        split="training",
         is_test=False,
         init_seed=False,
         augment=True,
@@ -27,24 +26,27 @@ class Kitti(BaseDataset):
             "spatial_aug_params": {"aug_prob": 0.8},
         },
     ):
-        super(Kitti, self).__init__(
+        super(HD1K, self).__init__(
             augment,
             aug_params,
             is_test,
             init_seed,
         )
 
-        if split == "testing":
-            self.is_test = True
+        seq_ix = 0
+        while 1:
+            flows = sorted(
+                glob(os.path.join(root, "hd1k_flow_gt", "flow_occ/%06d_*.png" % seq_ix))
+            )
+            images = sorted(
+                glob(os.path.join(root, "hd1k_input", "image_2/%06d_*.png" % seq_ix))
+            )
 
-        root = osp.join(root_dir, split)
-        images1 = sorted(glob(osp.join(root_dir, "image_2/*_10.png")))
-        images2 = sorted(glob(osp.join(root_dir, "image_2/*_11.png")))
+            if len(flows) == 0:
+                break
 
-        for img1, img2 in zip(images1, images2):
-            frame_id = img1.split("/")[-1]
-            self.extra_info += [[frame_id]]
-            self.image_list += [[img1, img2]]
+            for i in range(len(flows) - 1):
+                self.flow_list += [flows[i]]
+                self.image_list += [[images[i], images[i + 1]]]
 
-        if split == "training":
-            self.flow_list = sorted(glob(osp.join(root_dir, "flow_occ/*_10.png")))
+            seq_ix += 1
