@@ -120,7 +120,7 @@ class Trainer:
                         total_iters,
                     )
                     print(
-                        f"Total iterations:{total_iters}, Average training loss:{epoch_loss.avg}"
+                        f"Epoch iterations: {iteration}, Total iterations:{total_iters}, Average training loss:{epoch_loss.avg}"
                     )
 
             if epochs % self.cfg.VAL_INTERVAL == 0:
