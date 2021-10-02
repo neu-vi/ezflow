@@ -27,7 +27,8 @@ class SequenceLoss(nn.Module):
 
         # Temp Fix
         valid = (label[0].abs() < 1000) & (label[1].abs() < 1000)
-        valid = (valid >= 0.5) & mag < self.max_flow
+        valid = valid.float()
+        valid = (valid >= 0.5) & (mag < self.max_flow)
 
         for i in range(n_preds):
 
