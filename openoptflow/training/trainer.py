@@ -113,14 +113,14 @@ class Trainer:
 
                 if iteration % self.cfg.LOG_ITERATIONS_INTERVAL == 0:
 
-                    total_iters = iteration + (epochs * len(self.train_loader.dataset))
+                    total_iters = iteration + (epochs * len(self.train_loader))
                     writer.add_scalar(
                         "avg_training_loss",
                         epoch_loss.avg,
                         total_iters,
                     )
                     print(
-                        f"Total iterations:{total_iters}, Average training loss:{epoch_loss.avg}"
+                        f"Epoch iterations: {iteration}, Total iterations:{total_iters}, Average training loss:{epoch_loss.avg}"
                     )
 
             if epochs % self.cfg.VAL_INTERVAL == 0:
