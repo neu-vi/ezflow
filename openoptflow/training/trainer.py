@@ -132,6 +132,7 @@ class Trainer:
                 if new_avg_metric < min_avg_metric:
                     best_model = deepcopy(model)
                     min_avg_metric = new_avg_metric
+                    print("New best performing model!")
 
                 writer.add_scalar("avg_validation_metric", new_avg_metric, epochs + 1)
                 print(f"Epoch {epochs+1}: Average validation metric = {new_avg_metric}")
@@ -175,6 +176,8 @@ class Trainer:
 
                 metric = self._calculate_metric(pred, target)
                 metric_meter.update(metric.item())
+
+        model.train()
 
         return metric_meter.avg
 
