@@ -63,6 +63,6 @@ def eval_model(model, dataloader, device, distributed=False, metric=None):
             metric = metric_fn(pred, target)
             metric_meter.update(metric.item())
 
-    print(f"Average evaluation metric = {metric}")
+    print(f"Average evaluation metric = {metric_meter.avg}")
 
     return metric_meter.avg
