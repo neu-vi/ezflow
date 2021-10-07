@@ -43,11 +43,11 @@ class DataloaderCreator:
 
     def add_kitti(self, root_dir, split="training", augment=True, **kwargs):
 
-        self.dataset_list.append(Kitti(root_dir, split, augment=True, **kwargs))
+        raise NotImplementedError
 
     def add_hd1k(self, root_dir, augment=True, **kwargs):
 
-        self.dataset_list.append(HD1K(root_dir, augment=True, **kwargs))
+        raise NotImplementedError
 
     def add_autoflow(self, split="training", root_dir=""):
         raise NotImplementedError

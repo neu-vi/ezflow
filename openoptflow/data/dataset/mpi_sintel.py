@@ -35,7 +35,9 @@ class MpiSintel(BaseDataset):
             is_test,
             init_seed,
         )
-
+        assert (
+            split == "training" or split == "test"
+        ), "Incorrect split name for MPI Sintel. Accepted split values: training, test"
         image_root = osp.join(root_dir, split, dstype)
         flow_root = osp.join(root_dir, split, "flow")
 

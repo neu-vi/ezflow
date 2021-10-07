@@ -34,14 +34,20 @@ class FlyingThings3D(BaseDataset):
             is_test,
             init_seed,
         )
+        assert (
+            split == "TRAIN" or split == "TEST"
+        ), "Incorrect split name for Flying Things 3D. Accepted split values: TRAIN, TEST"
+
+        if split == "TEST":
+            self.is_test = True
 
         for cam in ["left"]:
             for direction in ["into_future", "into_past"]:
-                image_dirs = sorted(glob(osp.join(root_dir, dstype, split, "/*/*")))
+                image_dirs = sorted(glob(osp.join(root_dir, dstype, split + "/*/*")))
                 image_dirs = sorted([osp.join(f, cam) for f in image_dirs])
 
                 flow_dirs = sorted(
-                    glob(osp.join(root_dir, "optical_flow/", split, "/*/*"))
+                    glob(osp.join(root_dir, "optical_flow/", split + "/*/*"))
                 )
                 flow_dirs = sorted([osp.join(f, direction, cam) for f in flow_dirs])
 

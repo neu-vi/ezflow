@@ -33,17 +33,17 @@ class Kitti(BaseDataset):
             is_test,
             init_seed,
         )
-
+        assert (
+            split == "training" or split == "validation"
+        ), "Incorrect split name for Kitti. Accepted split values: training, testing"
         if split == "testing":
             self.is_test = True
 
-        root = osp.join(root_dir, split)
+        root_dir = osp.join(root_dir, split)
         images1 = sorted(glob(osp.join(root_dir, "image_2/*_10.png")))
         images2 = sorted(glob(osp.join(root_dir, "image_2/*_11.png")))
 
         for img1, img2 in zip(images1, images2):
-            frame_id = img1.split("/")[-1]
-            self.extra_info += [[frame_id]]
             self.image_list += [[img1, img2]]
 
         if split == "training":

@@ -33,6 +33,9 @@ class FlyingChairs(BaseDataset):
             is_test,
             init_seed,
         )
+        assert (
+            split == "training" or split == "validation"
+        ), "Incorrect split name for Flying Chairs. Accepted split values: training, validation"
 
         images = sorted(glob(osp.join(root_dir, "*.ppm")))
         flows = sorted(glob(osp.join(root_dir, "*.flo")))
