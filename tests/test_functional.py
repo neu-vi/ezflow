@@ -7,8 +7,8 @@ img1 = np.random.rand(256, 256, 3).astype(np.uint8)
 img2 = np.random.rand(256, 256, 3).astype(np.uint8)
 flow = np.random.rand(256, 256, 2).astype(np.float32)
 
-flow_pred = [torch.rand(2, 2, 256, 256)]
-flow_gt = torch.rand(2, 2, 256, 256)
+flow_pred = [torch.rand(4, 2, 256, 256)]
+flow_gt = torch.rand(4, 2, 256, 256)
 
 
 def test_FlowAugmentor():

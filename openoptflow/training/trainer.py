@@ -18,6 +18,7 @@ class Trainer:
     def __init__(self, cfg, model, train_loader, val_loader):
 
         self.cfg = cfg
+        self.model_name = model.__class__.__name__.lower()
         device = cfg.DEVICE
 
         if isinstance(device, list) or isinstance(device, tuple):
@@ -34,6 +35,8 @@ class Trainer:
             print("CUDA device(s) not available. Running on CPU\n")
 
         else:
+            self.model_parallel = True
+
             if device == "all":
                 device = torch.device("cuda")
                 if cfg.DISTRIBUTED:
@@ -63,9 +66,6 @@ class Trainer:
         self.train_loader = train_loader
         self.val_loader = val_loader
 
-        # self.train_loader = DeviceDataLoader(train_loader, self.device)
-        # self.val_loader = DeviceDataLoader(val_loader, self.device)   Uncomment later when DeviceDataLoader is fixed
-
     def _calculate_metric(self, pred, target):
 
         return endpointerror(pred, target)
@@ -80,7 +80,7 @@ class Trainer:
         model.train()
 
         epoch_loss = AverageMeter()
-        avg_metric = 0.0
+        min_avg_metric = float("inf")
 
         epochs = 0
         while epochs < n_epochs:
@@ -96,7 +96,7 @@ class Trainer:
                     img1.to(self.device),
                     img2.to(self.device),
                     target.to(self.device),
-                )  # Remove later when DeviceDataLoader is fixed
+                )
 
                 pred = model(img1, img2)
 
@@ -109,39 +109,43 @@ class Trainer:
                 if scheduler is not None:
                     scheduler.step()
 
-                epoch_loss.update(loss.item(), self.train_loader.batch_size)
+                epoch_loss.update(loss.item())
 
                 if iteration % self.cfg.LOG_ITERATIONS_INTERVAL == 0:
 
-                    total_iters = iteration + (epochs * len(self.train_loader.dataset))
+                    total_iters = iteration + (epochs * len(self.train_loader))
                     writer.add_scalar(
-                        "avg_training_loss",
+                        "avg_batch_training_loss",
                         epoch_loss.avg,
                         total_iters,
                     )
                     print(
-                        f"Total iterations:{total_iters}, Average training loss:{epoch_loss.avg}"
+                        f"Epoch iterations: {iteration}, Total iterations: {total_iters}, Average batch training loss: {epoch_loss.avg}"
                     )
+
+            print(f"\nEpoch {epochs+1}: Training loss = {epoch_loss.sum}")
+            writer.add_scalar("epochs_training_loss", epoch_loss.sum, epochs + 1)
 
             if epochs % self.cfg.VAL_INTERVAL == 0:
 
                 new_avg_metric = self._validate_model(model)
-                if new_avg_metric > avg_metric:
+                if new_avg_metric < min_avg_metric:
                     best_model = deepcopy(model)
-                    avg_metric = new_avg_metric
+                    min_avg_metric = new_avg_metric
+                    print("New best performing model!")
 
-                writer.add_scalar("validation_metric", avg_metric, epochs + 1)
-                print(f"Epoch {epochs}: Validation metric = {avg_metric}")
-
-            print(f"Epoch {epochs}: Training loss = {epoch_loss.sum}")
-            writer.add_scalar("epochs_training_loss", epoch_loss.sum, epochs + 1)
+                writer.add_scalar("avg_validation_metric", new_avg_metric, epochs + 1)
+                print(f"Epoch {epochs+1}: Average validation metric = {new_avg_metric}")
 
             if epochs % self.cfg.CKPT_INTERVAL == 0:
-                model_name = model.__class__.__name__.lower()
+
+                if self.model_parallel:
+                    save_model = best_model.module
                 torch.save(
-                    model.state_dict(),
+                    save_model.state_dict(),
                     os.path.join(
-                        self.cfg.CKPT_DIR, model_name + "_epochs" + str(epochs) + ".pth"
+                        self.cfg.CKPT_DIR,
+                        self.model_name + "_epochs" + str(epochs) + ".pth",
                     ),
                 )
 
@@ -157,7 +161,6 @@ class Trainer:
         model.eval()
 
         metric_meter = AverageMeter()
-        batch_size = self.val_loader.batch_size
 
         with torch.no_grad():
             for inp, target in self.val_loader:
@@ -167,12 +170,14 @@ class Trainer:
                     img1.to(self.device),
                     img2.to(self.device),
                     target.to(self.device),
-                )  # Remove later when DeviceDataLoader is fixed
+                )
 
                 pred = model(img1, img2)
 
                 metric = self._calculate_metric(pred, target)
-                metric_meter.update(metric.item(), n=batch_size)
+                metric_meter.update(metric.item())
+
+        model.train()
 
         return metric_meter.avg
 
@@ -210,8 +215,6 @@ class Trainer:
         if n_epochs is None:
             n_epochs = self.cfg.EPOCHS
 
-        model_name = self.model.__class__.__name__.lower()
-
         os.makedirs(self.cfg.CKPT_DIR, exist_ok=True)
         os.makedirs(self.cfg.LOG_DIR, exist_ok=True)
 
@@ -219,13 +222,16 @@ class Trainer:
         print(self.cfg)
         print("-" * 80)
 
-        print(f"Training {model_name.upper()} for {n_epochs} epochs\n")
-        model = self._train_model(n_epochs, loss_fn, optimizer, scheduler)
+        print(f"Training {self.model_name.upper()} for {n_epochs} epochs\n")
+        best_model = self._train_model(n_epochs, loss_fn, optimizer, scheduler)
         print("Training complete!")
 
+        if self.model_parallel:
+            best_model = best_model.module
+
         torch.save(
-            model.state_dict(),
-            os.path.join(self.cfg.CKPT_DIR, model_name + "_best.pth"),
+            best_model.state_dict(),
+            os.path.join(self.cfg.CKPT_DIR, self.model_name + "_best.pth"),
         )
         print("Saved best model!\n")
 
@@ -238,6 +244,8 @@ class Trainer:
         model.eval()
         with torch.no_grad():
             metric = self._validate_model(model)
+
+        print(f"Average validation metric = {metric}")
 
         return metric
 
