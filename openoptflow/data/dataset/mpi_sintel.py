@@ -47,9 +47,6 @@ class MpiSintel(BaseDataset):
         image_root = osp.join(root_dir, split, dstype)
         flow_root = osp.join(root_dir, split, "flow")
 
-        if split == "test":
-            self.is_test = True
-
         for scene in os.listdir(image_root):
             image_list = sorted(glob(osp.join(image_root, scene, "*.png")))
             for i in range(len(image_list) - 1):
