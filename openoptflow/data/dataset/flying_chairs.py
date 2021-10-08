@@ -33,10 +33,16 @@ class FlyingChairs(BaseDataset):
             is_test,
             init_seed,
         )
+        assert (
+            split.lower() == "training" or split.lower() == "validation"
+        ), "Incorrect split values. Accepted split values: training, validation"
 
         images = sorted(glob(osp.join(root_dir, "*.ppm")))
         flows = sorted(glob(osp.join(root_dir, "*.flo")))
         assert len(images) // 2 == len(flows)
+
+        if split == "validation":
+            self.is_test = True
 
         try:
             split_list = np.loadtxt(
