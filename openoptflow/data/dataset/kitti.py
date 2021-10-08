@@ -34,9 +34,12 @@ class Kitti(BaseDataset):
             init_seed,
         )
         assert (
-            split == "training" or split == "validation"
-        ), "Incorrect split name for Kitti. Accepted split values: training, testing"
-        if split == "testing":
+            split.lower() == "training" or split.lower() == "validation"
+        ), "Incorrect split values. Accepted split values: training, validation"
+
+        split = split.lower()
+        if split == "validation":
+            split = "testing"
             self.is_test = True
 
         root_dir = osp.join(root_dir, split)

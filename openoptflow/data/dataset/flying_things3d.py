@@ -16,7 +16,7 @@ class FlyingThings3D(BaseDataset):
     def __init__(
         self,
         root_dir,
-        split="TRAIN",
+        split="training",
         dstype="frames_cleanpass",
         is_test=False,
         init_seed=False,
@@ -35,10 +35,14 @@ class FlyingThings3D(BaseDataset):
             init_seed,
         )
         assert (
-            split == "TRAIN" or split == "TEST"
-        ), "Incorrect split name for Flying Things 3D. Accepted split values: TRAIN, TEST"
+            split.lower() == "training" or split.lower() == "validation"
+        ), "Incorrect split values. Accepted split values: training, validation"
 
-        if split == "TEST":
+        if split.lower() == "training":
+            split = "TRAIN"
+
+        if split.lower() == "validation":
+            split = "TEST"
             self.is_test = True
 
         for cam in ["left"]:

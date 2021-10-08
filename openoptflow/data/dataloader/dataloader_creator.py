@@ -26,7 +26,12 @@ class DataloaderCreator:
         )
 
     def add_flying_things3d(
-        self, root_dir, split="TRAIN", dstype="frames_cleanpass", augment=True, **kwargs
+        self,
+        root_dir,
+        split="training",
+        dstype="frames_cleanpass",
+        augment=True,
+        **kwargs
     ):
 
         self.dataset_list.append(
