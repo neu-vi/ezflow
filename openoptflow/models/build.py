@@ -7,6 +7,13 @@ from ..utils import Registry
 MODEL_REGISTRY = Registry("MODEL")
 
 
+def get_default_model_cfg(model_name):
+
+    cfg_path = _ModelZooConfigs.query(model_name)
+
+    return get_cfg(cfg_path)
+
+
 def build_model(
     name, cfg_path=None, custom_cfg=False, cfg=None, default=False, weights_path=None
 ):
