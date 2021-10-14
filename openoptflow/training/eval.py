@@ -54,7 +54,7 @@ def eval_model(model, dataloader, device, distributed=False, metric=None):
         record_shapes=True,
         profile_memory=True,
         schedule=torch.profiler.schedule(wait=1, warmup=1, active=10),
-        on_trace_ready=torch.profiler.tensorboard_trace_handler("./log"),
+        on_trace_ready=torch.profiler.tensorboard_trace_handler("./eval_log"),
     ) as prof:
 
         with torch.no_grad():
