@@ -205,7 +205,7 @@ class Trainer:
                                 self.cfg.CKPT_DIR, self.model_name + "_best.pth"
                             ),
                         )
-                        print(f"Saved new best model at epoch {epochs+1}")
+                        print(f"Saved new best model at epoch {epochs+1}!")
 
                 if new_avg_val_metric < min_avg_val_metric:
 
