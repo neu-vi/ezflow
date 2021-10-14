@@ -317,7 +317,7 @@ class Trainer:
 
         torch.save(
             best_model.state_dict(),
-            os.path.join(self.cfg.CKPT_DIR, self.model_name + "_best.pth"),
+            os.path.join(self.cfg.CKPT_DIR, self.model_name + "_best_final.pth"),
         )
         print("Saved best model!\n")
 
