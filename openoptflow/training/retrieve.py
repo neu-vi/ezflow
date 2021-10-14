@@ -24,7 +24,7 @@ class _TrainerConfigs:
             return cfg_file
 
         raise ValueError(
-            f"Trainer name '{model_name}' not found in the training configs"
+            f"Trainer name '{trainer_name}' not found in the training configs"
         )
 
 
