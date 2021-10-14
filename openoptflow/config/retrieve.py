@@ -29,15 +29,22 @@ def get_cfg_path(cfg_path, grp="models"):
         The complete path to the config file.
     """
 
+    grp = grp.lower()
     assert grp in ("models", "trainers"), "Grp must be either 'models' or 'trainers' "
 
-    cfg_complete_path = pkg_resources.resource_filename(
-        "openoptflow.model_zoo", os.path.join("configs", grp, cfg_path)
-    )
+    if grp == "models":
+        cfg_complete_path = pkg_resources.resource_filename(
+            "openoptflow.model_zoo", os.path.join("configs", cfg_path)
+        )
+
+    elif grp == "trainers":
+        cfg_complete_path = pkg_resources.resource_filename(
+            "openoptflow.training", os.path.join("configs", cfg_path)
+        )
 
     if not os.path.exists(cfg_complete_path):
         raise RuntimeError(
-            f"{grp}/{cfg_path} is not available in openoptflow's model zoo!"
+            f"{grp}/{cfg_path} is not available in openoptflow's model zoo or trainer configs!"
         )
 
     return cfg_complete_path

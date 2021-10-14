@@ -1,4 +1,4 @@
-_BASE_: "../base.yaml"
+_BASE_: "./base.yaml"
 CRITERION:
   NAME: "SequenceLoss"
   PARAMS: null
