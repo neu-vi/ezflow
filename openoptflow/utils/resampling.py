@@ -63,7 +63,7 @@ def upflow(flow, scale=8, mode="bilinear"):
 
 
 def convex_upsample_flow(flow, mask_logits, out_stride):  # adapted from RAFT
-    """ Upsample flow field [H/8, W/8, 2] -> [H, W, 2] using convex combination """
+    """Upsample flow field [H/8, W/8, 2] -> [H, W, 2] using convex combination"""
 
     N, C, H, W = flow.shape
     mask_logits = mask_logits.view(N, 1, 9, out_stride, out_stride, H, W)

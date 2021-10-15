@@ -11,7 +11,7 @@ from fvcore.common.config import CfgNode as _CfgNode
 class CfgNode(_CfgNode):
     def to_dict(self, cfg_node=None, key_list=[]):
 
-        """ Convert a config node to dictionary """
+        """Convert a config node to dictionary"""
 
         VALID_TYPES = {tuple, list, str, int, float, bool}
 
