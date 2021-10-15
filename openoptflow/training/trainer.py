@@ -17,8 +17,11 @@ class Trainer:
     def __init__(self, cfg, model, train_loader, val_loader):
 
         self.cfg = cfg
+
         self.model = model
         self.model_name = model.__class__.__name__.lower()
+        self._setup_model(model)
+
         self.train_loader = train_loader
         self.val_loader = val_loader
 
@@ -114,7 +117,6 @@ class Trainer:
 
         writer = SummaryWriter(log_dir=self.cfg.LOG_DIR)
 
-        self._setup_model(self.model)
         model = self.model
         best_model = deepcopy(model)
         model.train()
@@ -132,7 +134,7 @@ class Trainer:
 
         for epochs in range(start_epoch, start_epoch + n_epochs):
 
-            print(f"Epoch {epochs+1} of {n_epochs}")
+            print(f"Epoch {epochs+1} of {start_epoch+n_epochs}")
             print("-" * 80)
 
             epoch_loss.reset()
@@ -361,11 +363,15 @@ class Trainer:
             if scheduler_ckpt is not None:
                 scheduler_state_dict = torch.load(scheduler_ckpt)
 
-        self.model.load_state_dict(model_state_dict)
+        model = self.model.module
+        model.load_state_dict(model_state_dict)
+        self._setup_model(model)
 
         loss_fn, optimizer, scheduler = self._setup_training()
         optimizer.load_state_dict(optimizer_state_dict)
-        scheduler.load_state_dict(scheduler_state_dict)
+
+        if scheduler is not None:
+            scheduler.load_state_dict(scheduler_state_dict)
 
         if n_epochs is None and use_cfg:
             n_epochs = self.cfg.RESUME_TRAINING.EPOCHS
