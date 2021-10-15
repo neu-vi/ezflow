@@ -18,12 +18,12 @@ class Trainer:
 
         self.cfg = cfg
         self.model = model
+        self.model_name = model.__class__.__name__.lower()
         self.train_loader = train_loader
         self.val_loader = val_loader
 
     def _setup_model(self, model):
 
-        self.model_name = model.__class__.__name__.lower()
         device = self.cfg.DEVICE
 
         if isinstance(device, list) or isinstance(device, tuple):
