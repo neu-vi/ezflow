@@ -53,6 +53,6 @@ def get_training_cfg(cfg_path=None, cfg_name=None, custom=True):
 
     if cfg_path is None:
         cfg_path = _TrainerConfigs.query(cfg_name)
-        return get_cfg(cfg_path, custom=True, grp="trainers")
+        return get_cfg(cfg_path, custom=False, grp="trainers")
 
     return get_cfg(cfg_path, custom=custom, grp="trainers")

@@ -17,9 +17,7 @@ class Trainer:
     def __init__(self, cfg, model, train_loader, val_loader):
 
         self.cfg = cfg
-
-        self._setup_model(model)
-
+        self.model = model
         self.train_loader = train_loader
         self.val_loader = val_loader
 
@@ -116,9 +114,9 @@ class Trainer:
 
         writer = SummaryWriter(log_dir=self.cfg.LOG_DIR)
 
-        best_model = deepcopy(self.model)
-
+        self._setup_model(self.model)
         model = self.model
+        best_model = deepcopy(model)
         model.train()
 
         self.loss_fn = loss_fn

@@ -70,7 +70,7 @@ def get_model_zoo_configs():
 
     # Use absolute paths while symlinking.
     source_configs_dir = os.path.join(
-        os.path.dirname(os.path.realpath(__file__)), "configs/models"
+        os.path.dirname(os.path.realpath(__file__)), "configs"
     )
     destination = os.path.join(
         os.path.dirname(os.path.realpath(__file__)),
@@ -94,46 +94,8 @@ def get_model_zoo_configs():
             # Fall back to copying if symlink fails: ex. on Windows.
             shutil.copytree(source_configs_dir, destination)
 
-    config_paths = glob.glob("configs/models/**/*.yaml", recursive=True) + glob.glob(
-        "configs/models/**/*.py", recursive=True
-    )
-    return config_paths
-
-
-def get_training_configs():
-    """
-    Return a list of configs to include in package for training. Copy over these configs inside
-    openoptflow/training.
-    """
-
-    # Use absolute paths while symlinking.
-    source_configs_dir = os.path.join(
-        os.path.dirname(os.path.realpath(__file__)), "configs/trainers"
-    )
-    destination = os.path.join(
-        os.path.dirname(os.path.realpath(__file__)),
-        "openoptflow",
-        "training",
-        "configs",
-    )
-    # Symlink the config directory inside package to have a cleaner pip install.
-
-    # Remove stale symlink/directory from a previous build.
-    if os.path.exists(source_configs_dir):
-        if os.path.islink(destination):
-            os.unlink(destination)
-        elif os.path.isdir(destination):
-            shutil.rmtree(destination)
-
-    if not os.path.exists(destination):
-        try:
-            os.symlink(source_configs_dir, destination)
-        except OSError:
-            # Fall back to copying if symlink fails: ex. on Windows.
-            shutil.copytree(source_configs_dir, destination)
-
-    config_paths = glob.glob("configs/trainers/**/*.yaml", recursive=True) + glob.glob(
-        "configs/trainers/**/*.py", recursive=True
+    config_paths = glob.glob("configs/**/*.yaml", recursive=True) + glob.glob(
+        "configs/**/*.py", recursive=True
     )
     return config_paths
 
@@ -155,10 +117,7 @@ CONFIG = {
     "packages": find_packages(
         where=PROJECT, include=["openoptflow", "openoptflow.*"], exclude=EXCLUDES
     ),
-    "package_data": {
-        "openoptflow.model_zoo": get_model_zoo_configs(),
-        "openoptflow.training": get_training_configs(),
-    },
+    "package_data": {"openoptflow.model_zoo": get_model_zoo_configs()},
     "install_requires": list(get_requires()),
     "python_requires": ">=3.6",
     "test_suite": "tests",
