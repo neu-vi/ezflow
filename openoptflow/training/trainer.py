@@ -128,7 +128,7 @@ class Trainer:
         min_avg_val_metric = float("inf")
 
         if start_epoch is not None:
-            print(f"Resuming training from epoch {start_epoch}\n")
+            print(f"Resuming training from epoch {start_epoch+1}\n")
         else:
             start_epoch = 0
 
