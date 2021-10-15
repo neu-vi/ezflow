@@ -244,7 +244,7 @@ class Trainer:
                     consolidated_save_dict,
                     os.path.join(
                         self.cfg.CKPT_DIR,
-                        self.model_name + "_epochs" + str(epochs) + ".pth",
+                        self.model_name + "_epochs" + str(epochs + 1) + ".pth",
                     ),
                 )
 
