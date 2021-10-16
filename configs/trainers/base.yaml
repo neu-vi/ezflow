@@ -1,7 +1,9 @@
 DATA:
+  ROOT_DIR: null
   BATCH_SIZE: 64
-  AUGMENTATION: True
-  SHUFFLE: True
+  AUGMENTATION:
+    USE: True
+    PARAMS: null 
 OPTIMIZER:
   NAME: Adam
   PARAMS:
