@@ -12,7 +12,7 @@ TAG_CHAR = np.array([202021.25], np.float32)
 
 
 def read_flow(fn):
-    """ Read .flo file in Middlebury format"""
+    """Read .flo file in Middlebury format"""
     # Code adapted from:
     # http://stackoverflow.com/questions/28013200/reading-middlebury-flow-files-with-python-bytes-array-numpy
 

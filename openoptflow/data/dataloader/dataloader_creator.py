@@ -25,13 +25,33 @@ class DataloaderCreator:
             FlyingChairs(root_dir, split, augment=augment, **kwargs)
         )
 
-    def add_flying_things(self, split="training", root_dir=""):
+    def add_flying_things3d(
+        self,
+        root_dir,
+        split="training",
+        dstype="frames_cleanpass",
+        augment=True,
+        **kwargs
+    ):
+
+        self.dataset_list.append(
+            FlyingThings3D(root_dir, split, dstype, augment=augment, **kwargs)
+        )
+
+    def add_mpi_sintel(
+        self, root_dir, split="training", dstype="clean", augment=True, **kwargs
+    ):
+
+        self.dataset_list.append(
+            MpiSintel(root_dir, split, dstype, augment=augment, **kwargs)
+        )
+
+    def add_kitti(self, root_dir, split="training", augment=True, **kwargs):
+
         raise NotImplementedError
 
-    def add_sintel(self, split="training", root_dir=""):
-        raise NotImplementedError
+    def add_hd1k(self, root_dir, augment=True, **kwargs):
 
-    def add_kitti(self, split="training", root_dir=""):
         raise NotImplementedError
 
     def add_autoflow(self, split="training", root_dir=""):

@@ -1,10 +1,11 @@
-from torch.nn import CrossEntropyLoss, MSELoss
+from torch.nn import CrossEntropyLoss, L1Loss, MSELoss
 from torch.optim import SGD, Adadelta, Adagrad, Adam, AdamW, RMSprop
 from torch.optim.lr_scheduler import (
     CosineAnnealingLR,
     CosineAnnealingWarmRestarts,
     CyclicLR,
     MultiStepLR,
+    OneCycleLR,
     ReduceLROnPlateau,
     StepLR,
 )
@@ -17,6 +18,7 @@ schedulers = Registry("schedulers")
 
 loss_functions.register(CrossEntropyLoss, "CrossEntropyLoss")
 loss_functions.register(MSELoss, "MSELoss")
+loss_functions.register(L1Loss, "L1Loss")
 
 optimizers.register(SGD, "SGD")
 optimizers.register(Adam, "Adam")
@@ -31,3 +33,4 @@ schedulers.register(CyclicLR, "CyclicLR")
 schedulers.register(MultiStepLR, "MultiStepLR")
 schedulers.register(ReduceLROnPlateau, "ReduceLROnPlateau")
 schedulers.register(StepLR, "StepLR")
+schedulers.register(OneCycleLR, "OneCycleLR")

@@ -92,13 +92,11 @@ class BaseDataset(data.Dataset):
             img2 = img2[..., :3]
 
         if self.augmentor is not None:
-            img1, img2, flow = self.augmentor(
-                img1, img2, flow
-            )  # Shape issues here; need to fix
+            img1, img2, flow = self.augmentor(img1, img2, flow)
 
-        img1 = torch.from_numpy(img1).permute(2, 0, 1)
-        img2 = torch.from_numpy(img2).permute(2, 0, 1)
-        flow = torch.from_numpy(flow).permute(2, 0, 1)
+        img1 = torch.from_numpy(img1).permute(2, 0, 1).float()
+        img2 = torch.from_numpy(img2).permute(2, 0, 1).float()
+        flow = torch.from_numpy(flow).permute(2, 0, 1).float()
 
         return (img1, img2), flow
 

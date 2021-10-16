@@ -1,3 +1,5 @@
+import torch
+
 from ..config import get_cfg
 from ..model_zoo import _ModelZooConfigs
 from ..utils import Registry
@@ -5,9 +7,16 @@ from ..utils import Registry
 MODEL_REGISTRY = Registry("MODEL")
 
 
+def get_default_model_cfg(model_name):
+
+    cfg_path = _ModelZooConfigs.query(model_name)
+
+    return get_cfg(cfg_path)
+
+
 def build_model(
-    name, cfg_path=None, custom_cfg=False, cfg=None, default=False
-):  # To-do: Add load model weight
+    name, cfg_path=None, custom_cfg=False, cfg=None, default=False, weights_path=None
+):
 
     """
     Builds a model from a model name and config.
@@ -27,5 +36,9 @@ def build_model(
             cfg = get_cfg(cfg_path, custom=custom_cfg)
 
     model = MODEL_REGISTRY.get(name)
+    model = model(cfg)
 
-    return model(cfg)
+    if weights_path is not None:
+        model.load_state_dict(torch.load(weights_path))
+
+    return model
