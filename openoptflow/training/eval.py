@@ -9,6 +9,19 @@ from ..utils import AverageMeter, Profiler
 from .metrics import endpointerror
 
 
+def warmup(model, dataloader, device):
+    inp, target = iter(dataloader).next()
+
+    img1, img2 = inp
+    img1, img2, target = (
+        img1.to(device),
+        img2.to(device),
+        target.to(device),
+    )
+
+    model(img1, img2)
+
+
 def run_inference(model, dataloader, device, metric_fn):
     metric_meter = AverageMeter()
     times = []
@@ -40,17 +53,67 @@ def run_inference(model, dataloader, device, metric_fn):
     return metric_meter
 
 
-def warmup(model, dataloader, device):
-    inp, target = iter(dataloader).next()
+def profile_inference(model, dataloader, device, metric_fn, profiler):
+    metric_meter = AverageMeter()
+    times = []
 
-    img1, img2 = inp
-    img1, img2, target = (
-        img1.to(device),
-        img2.to(device),
-        target.to(device),
+    with profile(
+        activities=profiler.activites,
+        record_shapes=profiler.record_shapes,
+        profile_memory=profiler.profile_memory,
+        schedule=profiler.schedule,
+        on_trace_ready=profiler.on_trace_ready,
+    ) as prof:
+
+        with torch.no_grad():
+
+            for inp, target in dataloader:
+                start_time = time.time()
+
+                img1, img2 = inp
+                img1, img2, target = (
+                    img1.to(device),
+                    img2.to(device),
+                    target.to(device),
+                )
+
+                pred = model(img1, img2)
+
+                if torch.cuda.is_available():
+                    torch.cuda.synchronize()
+
+                prof.step()
+                end_time = time.time()
+                times.append(end_time - start_time)
+
+                metric = metric_fn(pred, target)
+                metric_meter.update(metric.item())
+
+    print(
+        prof.key_averages(group_by_input_shape=True).table(
+            sort_by="self_cpu_memory_usage", row_limit=10
+        )
+    )
+    print(
+        prof.key_averages(group_by_input_shape=True).table(
+            sort_by="cpu_memory_usage", row_limit=10
+        )
+    )
+    print(
+        prof.key_averages(group_by_input_shape=True).table(
+            sort_by="self_cuda_memory_usage", row_limit=10
+        )
+    )
+    print(
+        prof.key_averages(group_by_input_shape=True).table(
+            sort_by="cuda_memory_usage", row_limit=10
+        )
     )
 
-    model(img1, img2)
+    print("=" * 100)
+
+    print(f"Average inference time: {sum(times)/len(times)}")
+    return metric_meter
 
 
 def eval_model(
@@ -103,38 +166,7 @@ def eval_model(
     if profiler is None:
         metric_meter = run_inference(model, dataloader, device, metric_fn)
     else:
-        with profile(
-            activities=profiler.activites,
-            record_shapes=profiler.record_shapes,
-            profile_memory=profiler.profile_memory,
-            schedule=profiler.schedule,
-            on_trace_ready=profiler.on_trace_ready,
-        ) as prof:
-
-            metric_meter = run_inference(model, dataloader, device, metric_fn)
-
-            prof.step()
-
-        print(
-            prof.key_averages(group_by_input_shape=True).table(
-                sort_by="self_cpu_memory_usage", row_limit=10
-            )
-        )
-        print(
-            prof.key_averages(group_by_input_shape=True).table(
-                sort_by="cpu_memory_usage", row_limit=10
-            )
-        )
-        print(
-            prof.key_averages(group_by_input_shape=True).table(
-                sort_by="self_cuda_memory_usage", row_limit=10
-            )
-        )
-        print(
-            prof.key_averages(group_by_input_shape=True).table(
-                sort_by="cuda_memory_usage", row_limit=10
-            )
-        )
+        metric_meter = profile_inference(model, dataloader, device, metric_fn, profiler)
 
     print(f"Average evaluation metric = {metric_meter.avg}")
 
