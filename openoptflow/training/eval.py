@@ -35,7 +35,7 @@ def run_inference(model, dataloader, device, metric_fn):
             metric = metric_fn(pred, target)
             metric_meter.update(metric.item())
 
-    print(f"Average inference time: {sum(times)/epochs}")
+    print(f"Average inference time: {sum(times)/len(times)}")
     return metric_meter
 
 
