@@ -9,6 +9,7 @@ from torch.profiler import (
 class Profiler:
     def __init__(
         self,
+        model_name,
         log_dir,
         profile_cpu=False,
         profile_cuda=False,
@@ -20,12 +21,14 @@ class Profiler:
         active=1,
         repeat=10,
     ):
+
         assert warmup != 0, "warmup cannot be 0, this can skew profiler results"
         assert (
             log_dir is not None
         ), "log_dir path is not provided to save profiling logs"
 
         self.activites = []
+        self.model_name = model_name.upper()
         if profile_cpu:
             self.activites.append(ProfilerActivity.CPU)
 
