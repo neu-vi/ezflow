@@ -3,6 +3,7 @@ import time
 import torch
 from torch.nn import DataParallel
 from torch.nn.parallel import DistributedDataParallel as DDP
+from torch.profiler import profile
 
 from ..utils import AverageMeter, Profiler
 from .metrics import endpointerror
