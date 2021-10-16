@@ -1,12 +1,131 @@
+import time
+
 import torch
 from torch.nn import DataParallel
 from torch.nn.parallel import DistributedDataParallel as DDP
+from torch.profiler import profile
 
-from ..utils import AverageMeter
+from ..utils import AverageMeter, Profiler
 from .metrics import endpointerror
 
 
-def eval_model(model, dataloader, device, distributed=False, metric=None):
+def warmup(model, dataloader, device):
+    inp, target = iter(dataloader).next()
+
+    img1, img2 = inp
+    img1, img2, target = (
+        img1.to(device),
+        img2.to(device),
+        target.to(device),
+    )
+
+    model(img1, img2)
+
+
+def run_inference(model, dataloader, device, metric_fn):
+    metric_meter = AverageMeter()
+    times = []
+
+    with torch.no_grad():
+
+        for inp, target in dataloader:
+            start_time = time.time()
+
+            img1, img2 = inp
+            img1, img2, target = (
+                img1.to(device),
+                img2.to(device),
+                target.to(device),
+            )
+
+            pred = model(img1, img2)
+
+            if torch.cuda.is_available():
+                torch.cuda.synchronize()
+
+            end_time = time.time()
+            times.append(end_time - start_time)
+
+            metric = metric_fn(pred, target)
+            metric_meter.update(metric.item())
+
+    if torch.cuda.is_available():
+        print("\n", "=" * 100)
+        print(f"Total memory: {torch.cuda.get_device_properties(device).total_memory}")
+        print(f"Reserved memory: {torch.cuda.memory_reserved(device)}")
+        print(f"Allocated memory: {torch.cuda.memory_allocated(device)}")
+
+    print("\n", "=" * 100)
+    print(f"Average inference time: {sum(times)/len(times)}")
+    return metric_meter
+
+
+def profile_inference(model, dataloader, device, metric_fn, profiler):
+    metric_meter = AverageMeter()
+    times = []
+
+    with profile(
+        activities=profiler.activites,
+        record_shapes=profiler.record_shapes,
+        profile_memory=profiler.profile_memory,
+        schedule=profiler.schedule,
+        on_trace_ready=profiler.on_trace_ready,
+    ) as prof:
+
+        with torch.no_grad():
+
+            for inp, target in dataloader:
+                start_time = time.time()
+
+                img1, img2 = inp
+                img1, img2, target = (
+                    img1.to(device),
+                    img2.to(device),
+                    target.to(device),
+                )
+
+                pred = model(img1, img2)
+
+                if torch.cuda.is_available():
+                    torch.cuda.synchronize()
+
+                prof.step()
+                end_time = time.time()
+                times.append(end_time - start_time)
+
+                metric = metric_fn(pred, target)
+                metric_meter.update(metric.item())
+
+    print(
+        prof.key_averages(group_by_input_shape=True).table(
+            sort_by="self_cpu_memory_usage", row_limit=10
+        )
+    )
+    print(
+        prof.key_averages(group_by_input_shape=True).table(
+            sort_by="cpu_memory_usage", row_limit=10
+        )
+    )
+    print(
+        prof.key_averages(group_by_input_shape=True).table(
+            sort_by="self_cuda_memory_usage", row_limit=10
+        )
+    )
+    print(
+        prof.key_averages(group_by_input_shape=True).table(
+            sort_by="cuda_memory_usage", row_limit=10
+        )
+    )
+
+    print("=" * 100)
+
+    print(f"Average inference time: {sum(times)/len(times)}")
+    return metric_meter
+
+
+def eval_model(
+    model, dataloader, device, distributed=False, metric=None, profiler=None
+):
 
     if isinstance(device, list) or isinstance(device, tuple):
         device = ",".join(map(str, device))
@@ -46,22 +165,15 @@ def eval_model(model, dataloader, device, distributed=False, metric=None):
     model.eval()
 
     metric_fn = metric or endpointerror
-    metric_meter = AverageMeter()
 
-    with torch.no_grad():
-        for inp, target in dataloader:
+    warmup(model, dataloader, device)
+    if torch.cuda.is_available():
+        torch.cuda.synchronize()
 
-            img1, img2 = inp
-            img1, img2, target = (
-                img1.to(device),
-                img2.to(device),
-                target.to(device),
-            )
-
-            pred = model(img1, img2)
-
-            metric = metric_fn(pred, target)
-            metric_meter.update(metric.item())
+    if profiler is None:
+        metric_meter = run_inference(model, dataloader, device, metric_fn)
+    else:
+        metric_meter = profile_inference(model, dataloader, device, metric_fn, profiler)
 
     print(f"Average evaluation metric = {metric_meter.avg}")
 
