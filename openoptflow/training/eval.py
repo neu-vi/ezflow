@@ -40,7 +40,7 @@ def run_inference(model, dataloader, device, metric):
 
 
 def warmup(model, dataloader, device):
-    inp, target = iter(flying_chairs_train_dl).next()
+    inp, target = iter(dataloader).next()
 
     img1, img2 = inp
     img1, img2, target = (
