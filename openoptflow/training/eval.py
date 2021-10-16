@@ -49,6 +49,11 @@ def run_inference(model, dataloader, device, metric_fn):
             metric = metric_fn(pred, target)
             metric_meter.update(metric.item())
 
+    if torch.cuda.is_available():
+        print(f"Total memory: {torch.cuda.get_device_properties(device)}")
+        print(f"Reserved memory: {torch.cuda.memory_reserved(device)}")
+        print(f"Allocated memory: {torch.cuda.memory_allocated(device)}")
+
     print(f"Average inference time: {sum(times)/len(times)}")
     return metric_meter
 
