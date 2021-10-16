@@ -8,7 +8,7 @@ from ..utils import AverageMeter, Profiler
 from .metrics import endpointerror
 
 
-def run_inference(model, dataloader, device, metric):
+def run_inference(model, dataloader, device, metric_fn):
     metric_meter = AverageMeter()
     times = []
 
@@ -100,7 +100,7 @@ def eval_model(
         torch.cuda.synchronize()
 
     if profiler is None:
-        metric_meter = run_inference(model, dataloader, device, metric)
+        metric_meter = run_inference(model, dataloader, device, metric_fn)
     else:
         with profile(
             activities=profiler.activites,
@@ -110,7 +110,7 @@ def eval_model(
             on_trace_ready=profiler.on_trace_ready,
         ) as prof:
 
-            metric_meter = run_inference(model, dataloader, device, metric)
+            metric_meter = run_inference(model, dataloader, device, metric_fn)
 
             prof.step()
 
