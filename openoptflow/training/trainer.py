@@ -34,6 +34,8 @@ class Trainer:
 
         print("\n")
 
+        self.model_parallel = False
+
         if device == "-1" or device == -1 or device == "cpu":
             device = torch.device("cpu")
             print("Running on CPU\n")
@@ -229,6 +231,8 @@ class Trainer:
 
                 if self.model_parallel:
                     save_model = model.module
+                else:
+                    save_model = model
 
                 consolidated_save_dict = {
                     "model_state_dict": save_model.state_dict(),
