@@ -10,6 +10,7 @@ from torch.optim.lr_scheduler import (
     StepLR,
 )
 
+from ..functional import CosineWarmupScheduler
 from ..utils import Registry
 
 loss_functions = Registry("loss_functions")
@@ -34,3 +35,4 @@ schedulers.register(MultiStepLR, "MultiStepLR")
 schedulers.register(ReduceLROnPlateau, "ReduceLROnPlateau")
 schedulers.register(StepLR, "StepLR")
 schedulers.register(OneCycleLR, "OneCycleLR")
+schedulers.register(CosineWarmupScheduler, "CosineWarmupScheduler")
