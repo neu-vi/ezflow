@@ -13,7 +13,7 @@ class CosineWarmupScheduler(optim.lr_scheduler._LRScheduler):
 
         self.warmup = warmup
         self.max_num_iters = max_iters
-        
+
     def get_lr(self):
 
         lr_factor = self.get_lr_factor(epoch=self.last_epoch)
