@@ -35,8 +35,7 @@ def test_GANetBackbone():
 def test_PyramidEncoder():
 
     encoder = ENCODER_REGISTRY.get("PyramidEncoder")(in_channels=3, config=(16, 32, 64))
-    feature_pyramid1, feature_pyramid2 = encoder(img, img)
-    assert len(feature_pyramid1) == 3
-    assert len(feature_pyramid2) == 3
+    feature_pyramid = encoder(img)
+    assert len(feature_pyramid) == 3
 
-    del encoder, feature_pyramid1, feature_pyramid2
+    del encoder, feature_pyramid

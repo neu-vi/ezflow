@@ -5,6 +5,7 @@ import torch.nn.functional as F
 from ...decoder import build_decoder
 from ...encoder import build_encoder
 from ...functional import CorrelationLayer
+from ...utils import warp
 from ..build import MODEL_REGISTRY
 
 
@@ -15,4 +16,9 @@ class PWCNet(nn.Module):
 
         self.cfg = cfg
         self.encoder = build_encoder(cfg.ENCODER)
+        self.correlation_layer = CorrelationLayer(
+            pad_size=cfg.CORRELATION.PAD_SIZE,
+            max_displacement=cfg.CORRELATION.MAX_DISPLACEMENT,
+        )
+
         self.decoder = build_decoder(cfg.DECODER)

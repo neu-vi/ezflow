@@ -49,20 +49,14 @@ class PyramidEncoder(nn.Module):
             "config": cfg.CONFIG,
         }
 
-    def forward(self, img1, img2):
+    def forward(self, img):
 
-        img1_pyramid = []
-        img2_pyramid = []
-
-        x1 = img1
-        x2 = img2
+        feature_pyramid = []
+        x = img
 
         for i in range(len(self.encoder)):
 
-            x1 = self.encoder[i](x1)
-            x2 = self.encoder[i](x2)
+            x = self.encoder[i](x)
+            feature_pyramid.append(x)
 
-            img1_pyramid.append(x1)
-            img2_pyramid.append(x2)
-
-        return img1_pyramid, img2_pyramid
+        return feature_pyramid
