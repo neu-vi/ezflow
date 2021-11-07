@@ -8,7 +8,7 @@ from .registry import FUNCTIONAL_REGISTRY
 
 
 @FUNCTIONAL_REGISTRY.register()
-class Correlation(nn.Module):
+class CorrelationLayer(nn.Module):
 
     """
     This PyTorch implementation of the official Correlation layer only supports specific values of the following parameters:

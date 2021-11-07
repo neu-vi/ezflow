@@ -2,7 +2,7 @@ import numpy as np
 import torch
 
 from openoptflow.functional import (
-    Correlation,
+    CorrelationLayer,
     FlowAugmentor,
     MultiScaleLoss,
     SequenceLoss,
@@ -37,12 +37,12 @@ def test_MultiScaleLoss():
     del loss_fn
 
 
-def test_Correlation():
+def test_CorrelationLayer():
 
     features1 = torch.rand(2, 8, 32, 32)
     features2 = torch.rand(2, 8, 32, 32)
 
-    corr_fn = Correlation()
+    corr_fn = CorrelationLayer()
     _ = corr_fn(features1, features2)
 
     del corr_fn, features1, features2
