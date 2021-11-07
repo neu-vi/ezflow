@@ -51,7 +51,7 @@ class ConvDecoder(nn.Module):
                 conv(in_channels, config[i + 1], kernel_size=3, stride=1)
             )
 
-        self.to_flow = nn.Sequential()
+        self.to_flow = nn.Identity()
 
         if to_flow:
 

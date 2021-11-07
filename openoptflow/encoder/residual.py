@@ -39,7 +39,7 @@ class BasicEncoder(nn.Module):
             norm_fn = nn.InstanceNorm2d(start_channels)
 
         elif norm == "none":
-            norm_fn = nn.Sequential()
+            norm_fn = nn.Identity()
 
         layers = nn.ModuleList(
             [
@@ -62,7 +62,7 @@ class BasicEncoder(nn.Module):
 
         layers.append(nn.Conv2d(layer_config[-1], out_channels, kernel_size=1))
 
-        dropout = nn.Sequential()
+        dropout = nn.Identity()
         if self.training and p_dropout > 0:
             dropout = nn.Dropout2d(p=p_dropout)
         layers.append(dropout)
@@ -143,7 +143,7 @@ class BottleneckEncoder(nn.Module):
             norm_fn = nn.InstanceNorm2d(start_channels)
 
         elif norm == "none":
-            norm_fn = nn.Sequential()
+            norm_fn = nn.Identity()
 
         layers = [
             nn.Conv2d(in_channels, start_channels, kernel_size=7, stride=2, padding=3),
@@ -162,7 +162,7 @@ class BottleneckEncoder(nn.Module):
 
         layers.append(nn.Conv2d(layer_config[-1], out_channels, kernel_size=1))
 
-        dropout = nn.Sequential()
+        dropout = nn.Identity()
         if self.training and p_dropout > 0:
             dropout = nn.Dropout2d(p=p_dropout)
         layers.append(dropout)
