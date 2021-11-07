@@ -39,3 +39,13 @@ def test_DICL():
     flow = model(img1, img2)
     assert flow.shape == (2, 2, 256, 256)
     del model, flow
+
+
+def test_PWCNet():
+
+    model = build_model("PWCNet", default=True)
+    _ = model(img1, img2)
+    model.eval()
+    flow = model(img1, img2)
+    assert flow.shape == (2, 2, 256, 256)
+    del model, flow
