@@ -28,7 +28,7 @@ class ConvNormRelu(nn.Module):
                 self.norm = nn.InstanceNorm2d(out_channels)
 
         else:
-            self.norm = nn.Sequential()
+            self.norm = nn.Identity()
 
         if activation is not None:
             if activation.lower() == "leakyrelu":
@@ -36,7 +36,7 @@ class ConvNormRelu(nn.Module):
             else:
                 self.activation = nn.ReLU(inplace=True)
         else:
-            self.activation = nn.Sequential()
+            self.activation = nn.Identity()
 
         if deconv:
             self.conv = nn.ConvTranspose2d(

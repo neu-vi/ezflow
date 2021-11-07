@@ -6,6 +6,7 @@ from ...decoder import FlowEntropy, build_decoder
 from ...encoder import build_encoder
 from ...modules import ConvNormRelu, build_module
 from ...similarity import build_similarity
+from ...utils import warp
 from ..build import MODEL_REGISTRY
 
 
@@ -164,30 +165,6 @@ class DICL(nn.Module):
                 nn.init.constant_(m.weight, 1)
                 nn.init.constant_(m.bias, 0)
 
-    def _warp(self, x, flow):
-
-        B, _, H, W = x.size()
-
-        xx = torch.arange(0, W).view(1, -1).repeat(H, 1)
-        yy = torch.arange(0, H).view(-1, 1).repeat(1, W)
-        xx = xx.view(1, 1, H, W).repeat(B, 1, 1, 1)
-        yy = yy.view(1, 1, H, W).repeat(B, 1, 1, 1)
-
-        grid = torch.cat((xx, yy), 1).float()
-        vgrid = torch.Tensor(grid) + flow
-        vgrid[:, 0, :, :] = 2.0 * vgrid[:, 0, :, :] / max(W - 1, 1) - 1.0
-        vgrid[:, 1, :, :] = 2.0 * vgrid[:, 1, :, :] / max(H - 1, 1) - 1.0
-        vgrid = vgrid.permute(0, 2, 3, 1)
-
-        output = nn.functional.grid_sample(x, vgrid, align_corners=True)
-
-        mask = torch.Tensor(torch.ones(x.size()))
-        mask = nn.functional.grid_sample(mask, vgrid, align_corners=True)
-        mask[mask < 0.9999] = 0
-        mask[mask > 0] = 1
-
-        return output * mask, mask
-
     def _process_level(
         self,
         x,
@@ -211,8 +188,8 @@ class DICL(nn.Module):
             context_net = getattr(self, "context_net" + level)
 
         if warp_flow:
-            warp, _ = self._warp(y, prev_upflow)
-            cost = cost_fn(x, warp)
+            warped_flow = warp(y, prev_upflow)
+            cost = cost_fn(x, warped_flow)
         else:
             cost = cost_fn(x, y)
 

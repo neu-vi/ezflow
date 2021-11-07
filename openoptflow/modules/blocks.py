@@ -43,11 +43,11 @@ class BasicBlock(nn.Module):
                     norm3 = nn.InstanceNorm2d(out_channels)
 
         else:
-            norm1 = nn.Sequential()
-            norm2 = nn.Sequential()
+            norm1 = nn.Identity()
+            norm2 = nn.Identity()
 
             if stride != 1:
-                norm3 = nn.Sequential()
+                norm3 = nn.Identity()
 
         if activation.lower() == "leakyrelu":
             self.activation = nn.LeakyReLU(negative_slope=0.1, inplace=True)
@@ -64,7 +64,7 @@ class BasicBlock(nn.Module):
             norm2,
         )
 
-        self.shortcut = nn.Sequential()
+        self.shortcut = nn.Identity()
         if stride != 1:
             self.shortcut = nn.Sequential(
                 nn.Conv2d(in_channels, out_channels, kernel_size=1, stride=stride),
@@ -128,12 +128,12 @@ class BottleneckBlock(nn.Module):
                 norm4 = nn.InstanceNorm2d(out_channels)
 
         else:
-            norm1 = nn.Sequential()
-            norm2 = nn.Sequential()
-            norm3 = nn.Sequential()
+            norm1 = nn.Identity()
+            norm2 = nn.Identity()
+            norm3 = nn.Identity()
 
             if not stride == 1:
-                norm4 = nn.Sequential()
+                norm4 = nn.Identity()
 
         if activation.lower() == "leakyrelu":
             self.activation = nn.LeakyReLU(negative_slope=0.1, inplace=True)
@@ -157,7 +157,7 @@ class BottleneckBlock(nn.Module):
             norm3,
         )
 
-        self.shortcut = nn.Sequential()
+        self.shortcut = nn.Identity()
         if stride != 1:
             self.shortcut = nn.Sequential(
                 nn.Conv2d(in_channels, out_channels, kernel_size=1, stride=stride),
