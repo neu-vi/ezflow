@@ -10,6 +10,7 @@ def test_LearnableMatchingCost():
 
     cost_fn = LearnableMatchingCost()
     _ = cost_fn(feature1, feature1)
+    del cost_fn
 
 
 def test_MultiScalePairwise4DCorr():

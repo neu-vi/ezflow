@@ -2,7 +2,6 @@ import torch
 
 from openoptflow.encoder import ENCODER_REGISTRY
 
-
 img = torch.randn(2, 3, 256, 256)
 
 
@@ -31,6 +30,7 @@ def test_GANetBackbone():
     assert output.shape[:2] == (2, 32)
 
     del encoder, output
+
 
 def test_PyramidEncoder():
 
