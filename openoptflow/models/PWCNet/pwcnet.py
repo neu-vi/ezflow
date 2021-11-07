@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from ...decoder import build_decoder
+from ...decoder import ConvDecoder
 from ...encoder import build_encoder
 from ...functional import CorrelationLayer
 from ...utils import warp
@@ -55,15 +55,13 @@ class PWCNet(nn.Module):
                 concat_channels = search_range
             else:
                 concat_channels = (
-                    search_range + decoder_cfg[i] + cfg.SIMILARITY.MAX_DISPLACEMENT,
+                    search_range + decoder_cfg[i] + cfg.SIMILARITY.MAX_DISPLACEMENT
                 )
 
-            to_flow = False if i == len(decoder_cfg) - 1 else True
-
             self.decoder_layers.append(
-                build_decoder(
+                ConvDecoder(
                     config=decoder_cfg,
-                    to_flow=to_flow,
+                    to_flow=True,
                     concat_channels=concat_channels,
                 )
             )
@@ -157,6 +155,8 @@ class PWCNet(nn.Module):
 
     def forward(self, img1, img2):
 
+        H, W = img1.shape[-2:]
+
         feature_pyramid1 = self.encoder(img1)
         feature_pyramid2 = self.encoder(img2)
 
@@ -165,7 +165,7 @@ class PWCNet(nn.Module):
 
         flow_preds = []
 
-        for i in range(len(feature_pyramid1)):
+        for i in range(len(self.decoder_layers)):
 
             if i == 0:
                 corr = self._corr_relu(feature_pyramid1[i], feature_pyramid2[i])
@@ -182,23 +182,33 @@ class PWCNet(nn.Module):
                     [corr, feature_pyramid1[i], up_flow, up_features], dim=1
                 )
 
-            flow = self.decoder_layers[i](concatenated_features)
+            flow, features = self.decoder_layers[i](concatenated_features)
             flow_preds.append(flow)
 
             up_flow = self.deconv_layers[i](flow)
-            up_features = self.up_feature_layers[i](concatenated_features)
+            up_features = self.up_feature_layers[i](features)
 
         flow_preds.reverse()
-
-        features = flow_preds[0]
-        flow = nn.Conv2d(
-            features.shape[1], 2, kernel_size=3, stride=1, padding=1, bias=True
-        )(features)
-        flow += self.dc_conv(features)
-        flow_preds[0] = flow
+        flow_preds[0] += self.dc_conv(features)
 
         if self.training:
             return flow_preds
 
         else:
+
+            flow = flow_preds[0]
+
+            if self.cfg.INTERPOLATE_FLOW:
+
+                H_, W_ = flow.shape[-2:]
+                flow = F.interpolate(
+                    flow, img1.shape[-2:], mode="bilinear", align_corners=True
+                )
+                flow_u = flow[:, 0, :, :] * (W / W_)
+                flow_v = flow[:, 1, :, :] * (H / H_)
+                flow = torch.stack([flow_u, flow_v], dim=1)
+
+            if self.cfg.FLOW_SCALE_FACTOR is not None:
+                flow *= self.cfg.FLOW_SCALE_FACTOR
+
             return flow

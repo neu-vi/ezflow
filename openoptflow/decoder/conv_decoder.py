@@ -79,4 +79,4 @@ class ConvDecoder(nn.Module):
             else:
                 x = y
 
-        return self.to_flow(x)
+        return self.to_flow(x), x
