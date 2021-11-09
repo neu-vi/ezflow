@@ -1,7 +1,4 @@
 import torch.nn as nn
-import torch.nn.functional as F
-
-from ..config import configurable
 
 
 class ConvNormRelu(nn.Module):
@@ -16,6 +13,8 @@ class ConvNormRelu(nn.Module):
     ):
         super(ConvNormRelu, self).__init__()
 
+        bias = False
+
         if norm is not None:
 
             if norm.lower() == "group":
@@ -29,6 +28,7 @@ class ConvNormRelu(nn.Module):
 
         else:
             self.norm = nn.Identity()
+            bias = True
 
         if activation is not None:
             if activation.lower() == "leakyrelu":
@@ -38,12 +38,15 @@ class ConvNormRelu(nn.Module):
         else:
             self.activation = nn.Identity()
 
+        if "kernel_size" not in kwargs.keys():
+            kwargs["kernel_size"] = 3
+
         if deconv:
             self.conv = nn.ConvTranspose2d(
-                in_channels, out_channels, bias=False, **kwargs
+                in_channels, out_channels, bias=bias, **kwargs
             )
         else:
-            self.conv = nn.Conv2d(in_channels, out_channels, bias=False, **kwargs)
+            self.conv = nn.Conv2d(in_channels, out_channels, bias=bias, **kwargs)
 
     def forward(self, x):
 
