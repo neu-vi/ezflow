@@ -1,6 +1,11 @@
 import torch
 
-from openoptflow.similarity import LearnableMatchingCost, MutliScalePairwise4DCorr
+from openoptflow import similarity
+from openoptflow.similarity import (
+    LearnableMatchingCost,
+    MutliScalePairwise4DCorr,
+    SeparableConv4D,
+)
 
 feature1 = torch.rand(2, 32, 16, 16)
 feature1 = torch.rand(2, 32, 16, 16)
@@ -16,3 +21,11 @@ def test_LearnableMatchingCost():
 def test_MultiScalePairwise4DCorr():
 
     _ = MutliScalePairwise4DCorr(feature1, feature1)
+
+
+def test_SeparableConv4D():
+
+    inp = torch.randn(2, 2, 2, 2, 2, 2)
+    similarity_fn = SeparableConv4D(2, 4)
+    _ = similarity_fn(inp)
+    del similarity_fn, inp
