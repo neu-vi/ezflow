@@ -19,7 +19,7 @@ class MpiSintel(BaseDataset):
         root_dir,
         split="training",
         dstype="clean",
-        is_test=False,
+        is_prediction=False,
         init_seed=False,
         augment=True,
         aug_params={
@@ -32,17 +32,18 @@ class MpiSintel(BaseDataset):
         super(MpiSintel, self).__init__(
             augment,
             aug_params,
-            is_test,
+            is_prediction,
             init_seed,
         )
         assert (
             split.lower() == "training" or split.lower() == "validation"
         ), "Incorrect split values. Accepted split values: training, validation"
 
+        self.is_prediction = is_prediction
+
         split = split.lower()
         if split == "validation":
             split = "test"
-            self.is_test = True
 
         image_root = osp.join(root_dir, split, dstype)
         flow_root = osp.join(root_dir, split, "flow")

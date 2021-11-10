@@ -14,7 +14,7 @@ class BaseDataset(data.Dataset):
 
     Parameters
     ----------
-    is_test : bool
+    is_prediction : bool
         Whether to the dataset is a test set
     init_seed : bool
         Whether to initialize the random seed
@@ -36,11 +36,11 @@ class BaseDataset(data.Dataset):
             "eraser_aug_params": {"aug_prob": 0.5},
             "spatial_aug_params": {"aug_prob": 0.8},
         },
-        is_test=False,
+        is_prediction=False,
         init_seed=False,
     ):
 
-        self.is_test = is_test
+        self.is_prediction = is_prediction
         self.init_seed = init_seed
 
         self.augmentor = None
@@ -55,7 +55,7 @@ class BaseDataset(data.Dataset):
         Returns the corresponding images and the flow between them.
 
         """
-        if self.is_test:
+        if self.is_prediction:
             img1 = frame_utils.read_gen(self.image_list[index][0])
             img2 = frame_utils.read_gen(self.image_list[index][1])
             img1 = np.array(img1).astype(np.uint8)[..., :3]

@@ -16,7 +16,7 @@ class HD1K(BaseDataset):
     def __init__(
         self,
         root_dir,
-        is_test=False,
+        is_prediction=False,
         init_seed=False,
         augment=True,
         aug_params={
@@ -29,9 +29,11 @@ class HD1K(BaseDataset):
         super(HD1K, self).__init__(
             augment,
             aug_params,
-            is_test,
+            is_prediction,
             init_seed,
         )
+
+        self.is_prediction = is_prediction
 
         seq_ix = 0
         while 1:

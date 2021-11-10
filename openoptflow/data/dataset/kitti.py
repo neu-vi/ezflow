@@ -17,7 +17,7 @@ class Kitti(BaseDataset):
         self,
         root_dir,
         split="training",
-        is_test=False,
+        is_prediction=False,
         init_seed=False,
         augment=True,
         aug_params={
@@ -30,17 +30,18 @@ class Kitti(BaseDataset):
         super(Kitti, self).__init__(
             augment,
             aug_params,
-            is_test,
+            is_prediction,
             init_seed,
         )
         assert (
             split.lower() == "training" or split.lower() == "validation"
         ), "Incorrect split values. Accepted split values: training, validation"
 
+        self.is_prediction = is_prediction
+
         split = split.lower()
         if split == "validation":
             split = "testing"
-            self.is_test = True
 
         root_dir = osp.join(root_dir, split)
         images1 = sorted(glob(osp.join(root_dir, "image_2/*_10.png")))

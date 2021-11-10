@@ -18,7 +18,7 @@ class FlyingThings3D(BaseDataset):
         root_dir,
         split="training",
         dstype="frames_cleanpass",
-        is_test=False,
+        is_prediction=False,
         init_seed=False,
         augment=True,
         aug_params={
@@ -31,19 +31,20 @@ class FlyingThings3D(BaseDataset):
         super(FlyingThings3D, self).__init__(
             augment,
             aug_params,
-            is_test,
+            is_prediction,
             init_seed,
         )
         assert (
             split.lower() == "training" or split.lower() == "validation"
         ), "Incorrect split values. Accepted split values: training, validation"
 
+        self.is_prediction = is_prediction
+
         if split.lower() == "training":
             split = "TRAIN"
 
         if split.lower() == "validation":
             split = "TEST"
-            self.is_test = True
 
         for cam in ["left"]:
             for direction in ["into_future", "into_past"]:
