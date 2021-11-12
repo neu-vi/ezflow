@@ -1,0 +1,9 @@
+NAME: FlowNetS
+ENCODER:
+  NAME: ConvEncoder
+  IN_CHANNELS: 3
+  LAYER_CONFIG: 
+    CHANNELS: [64, 128, 256, 256, 512, 512, 512, 512, 1024, 1024]
+    KERNEL: [7, 5, 5, 3, 3, 3, 3, 3, 3, 3]
+    STRIDE: [2, 2, 2, 1, 2, 1, 2, 1, 2, 1]
+  NORM: "batch"
