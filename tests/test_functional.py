@@ -4,6 +4,7 @@ import torch
 from openoptflow.functional import (
     CorrelationLayer,
     FlowAugmentor,
+    IterSpatialCorrelationSampler,
     MultiScaleLoss,
     SequenceLoss,
 )
@@ -43,6 +44,17 @@ def test_CorrelationLayer():
     features2 = torch.rand(2, 8, 32, 32)
 
     corr_fn = CorrelationLayer()
+    _ = corr_fn(features1, features2)
+
+    del corr_fn, features1, features2
+
+
+def test_IterSpatialCorrelationSampler():
+
+    features1 = torch.rand(2, 8, 32, 32)
+    features2 = torch.rand(2, 8, 32, 32)
+
+    corr_fn = IterSpatialCorrelationSampler()
     _ = corr_fn(features1, features2)
 
     del corr_fn, features1, features2
