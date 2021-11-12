@@ -39,3 +39,14 @@ def test_PyramidEncoder():
     assert len(feature_pyramid) == 3
 
     del encoder, feature_pyramid
+
+
+def test_ConvEncoder():
+
+    encoder = ENCODER_REGISTRY.get("ConvEncoder")(
+        in_channels=3, channels=(16, 32, 64), kernels=(3, 3, 3), strides=(1, 1, 1)
+    )
+    output = encoder(img)
+    assert output.shape[:2] == (2, 64)
+
+    del encoder
