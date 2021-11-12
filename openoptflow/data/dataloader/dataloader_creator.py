@@ -10,7 +10,14 @@ class DataloaderCreator:
     """
 
     def __init__(
-        self, batch_size, pin_memory=False, shuffle=True, num_workers=4, drop_last=True
+        self,
+        batch_size,
+        pin_memory=False,
+        shuffle=True,
+        num_workers=4,
+        drop_last=True,
+        init_seed=False,
+        is_prediction=False,
     ):
         self.dataset_list = []
         self.batch_size = batch_size
@@ -18,11 +25,20 @@ class DataloaderCreator:
         self.shuffle = shuffle
         self.num_workers = num_workers
         self.drop_last = drop_last
+        self.init_seed = init_seed
+        self.is_prediction = is_prediction
 
     def add_flying_chairs(self, root_dir, split="training", augment=True, **kwargs):
 
         self.dataset_list.append(
-            FlyingChairs(root_dir, split, augment=augment, **kwargs)
+            FlyingChairs(
+                root_dir,
+                split=split,
+                init_seed=self.init_seed,
+                is_prediction=self.is_prediction,
+                augment=augment,
+                **kwargs
+            )
         )
 
     def add_flying_things3d(
@@ -35,7 +51,15 @@ class DataloaderCreator:
     ):
 
         self.dataset_list.append(
-            FlyingThings3D(root_dir, split, dstype, augment=augment, **kwargs)
+            FlyingThings3D(
+                root_dir,
+                split=split,
+                dstype=dstype,
+                init_seed=self.init_seed,
+                is_prediction=self.is_prediction,
+                augment=augment,
+                **kwargs
+            )
         )
 
     def add_mpi_sintel(
@@ -43,7 +67,15 @@ class DataloaderCreator:
     ):
 
         self.dataset_list.append(
-            MpiSintel(root_dir, split, dstype, augment=augment, **kwargs)
+            MpiSintel(
+                root_dir,
+                split=split,
+                dstype=dstype,
+                init_seed=self.init_seed,
+                is_prediction=self.is_prediction,
+                augment=augment,
+                **kwargs
+            )
         )
 
     def add_kitti(self, root_dir, split="training", augment=True, **kwargs):

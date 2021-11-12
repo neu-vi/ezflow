@@ -17,7 +17,7 @@ class FlyingChairs(BaseDataset):
         self,
         root_dir,
         split="training",
-        is_test=False,
+        is_prediction=False,
         init_seed=False,
         augment=True,
         aug_params={
@@ -30,12 +30,14 @@ class FlyingChairs(BaseDataset):
         super(FlyingChairs, self).__init__(
             augment,
             aug_params,
-            is_test,
+            is_prediction,
             init_seed,
         )
         assert (
             split.lower() == "training" or split.lower() == "validation"
         ), "Incorrect split values. Accepted split values: training, validation"
+
+        self.is_prediction = is_prediction
 
         images = sorted(glob(osp.join(root_dir, "*.ppm")))
         flows = sorted(glob(osp.join(root_dir, "*.flo")))
