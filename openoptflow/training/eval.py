@@ -5,7 +5,7 @@ from torch.nn import DataParallel
 from torch.nn.parallel import DistributedDataParallel as DDP
 from torch.profiler import profile, record_function
 
-from ..utils import AverageMeter, Profiler
+from ..utils import AverageMeter
 from .metrics import endpointerror
 
 
@@ -114,7 +114,9 @@ def profile_inference(model, dataloader, device, metric_fn, profiler):
 
     print("=" * 100)
 
-    print(f"Average inference time: {sum(times)/len(times)}")
+    print(
+        f"Average inference time: {sum(times)/len(times)}, FPS: {1/(sum(times)/len(times))}"
+    )
     return metric_meter
 
 

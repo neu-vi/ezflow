@@ -1,7 +1,7 @@
 import torch
 
-from openoptflow import similarity
 from openoptflow.similarity import (
+    Butterfly4D,
     LearnableMatchingCost,
     MutliScalePairwise4DCorr,
     SeparableConv4D,
@@ -27,5 +27,13 @@ def test_SeparableConv4D():
 
     inp = torch.randn(2, 2, 2, 2, 2, 2)
     similarity_fn = SeparableConv4D(2, 4)
+    _ = similarity_fn(inp)
+    del similarity_fn, inp
+
+
+def test_Butterfly4D():
+
+    inp = torch.randn(2, 2, 2, 2, 2, 2)
+    similarity_fn = Butterfly4D(2, 4)
     _ = similarity_fn(inp)
     del similarity_fn, inp
