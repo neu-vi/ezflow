@@ -101,7 +101,7 @@ class BasicEncoder(nn.Module):
             "norm": cfg.NORM,
             "p_dropout": cfg.P_DROPOUT,
             "layer_config": cfg.LAYER_CONFIG,
-            "intermediate_features": cfg.intermediate_features,
+            "intermediate_features": cfg.INTERMEDIATE_FEATURES,
         }
 
     def forward(self, x):
@@ -227,7 +227,7 @@ class BottleneckEncoder(nn.Module):
             "norm": cfg.NORM,
             "p_dropout": cfg.P_DROPOUT,
             "layer_config": cfg.LAYER_CONFIG,
-            "intermediate_features": cfg.intermediate_features,
+            "intermediate_features": cfg.INTERMEDIATE_FEATURES,
         }
 
     def forward(self, x):
