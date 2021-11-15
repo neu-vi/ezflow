@@ -11,6 +11,15 @@ def test_BasicEncoder():
     output = encoder(img)
     assert output.shape[:2] == (2, 32)
 
+    encoder = ENCODER_REGISTRY.get("BasicEncoder")(
+        in_channels=3,
+        out_channels=32,
+        layer_config=(32, 64, 96),
+        intermediate_features=True,
+    )
+    output = encoder(img)
+    assert isinstance(output, list) and len(output) == 3
+
     del encoder, output
 
 
@@ -19,6 +28,15 @@ def test_BottleneckEncoder():
     encoder = ENCODER_REGISTRY.get("BottleneckEncoder")(in_channels=3, out_channels=32)
     output = encoder(img)
     assert output.shape[:2] == (2, 32)
+
+    encoder = ENCODER_REGISTRY.get("BottleneckEncoder")(
+        in_channels=3,
+        out_channels=32,
+        layer_config=(32, 64, 96),
+        intermediate_features=True,
+    )
+    output = encoder(img)
+    assert isinstance(output, list) and len(output) == 3
 
     del encoder, output
 
