@@ -57,7 +57,9 @@ def run_inference(model, dataloader, device, metric_fn):
     return metric_meter, avg_inference_time
 
 
-def profile_inference(model, dataloader, device, metric_fn, profiler):
+def profile_inference(
+    model, dataloader, device, metric_fn, profiler, count_params=False
+):
     metric_meter = AverageMeter()
     times = []
 
@@ -116,9 +118,14 @@ def profile_inference(model, dataloader, device, metric_fn, profiler):
     )
 
     avg_inference_time = sum(times) / len(times)
+    n_params = sum(p.numel() for p in model.parameters())
 
     print("=" * 100)
     print(f"Average inference time: {avg_inference_time}, FPS: {1/avg_inference_time}")
+
+    if count_params:
+        print(f"Number of model parameters: {n_params}")
+        return metric_meter, avg_inference_time, n_params
 
     return metric_meter, avg_inference_time
 
