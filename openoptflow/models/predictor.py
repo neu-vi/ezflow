@@ -15,7 +15,10 @@ class DefaultPredictor:
         default=False,
         data_transform=None,
         device="cpu",
+        flow_scale=1.0,
     ):
+
+        self.flow_scale = flow_scale
 
         if model_cfg_path is not None:
             self.model = build_model(
@@ -54,4 +57,7 @@ class DefaultPredictor:
             img1 = self.data_transform(img1)
             img2 = self.data_transform(img2)
 
-        return self.model(img1, img2)
+        pred = self.model(img1, img2)
+        pred = pred * self.flow_scale
+
+        return pred
