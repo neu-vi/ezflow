@@ -21,6 +21,9 @@ CRITERION:
   CUSTOM: True
   NAME: SequenceLoss
   PARAMS: null
+GRAD_CLIP: 
+  USE: False
+  VALUE: 1.0
 DEVICE: "0"
 DISTRIBUTED: True
 LOG_DIR: "./logs"
