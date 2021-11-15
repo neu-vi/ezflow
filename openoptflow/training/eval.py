@@ -5,7 +5,7 @@ from torch.nn import DataParallel
 from torch.nn.parallel import DistributedDataParallel as DDP
 from torch.profiler import profile, record_function
 
-from ..utils import AverageMeter, Profiler
+from ..utils import AverageMeter
 from .metrics import endpointerror
 
 
@@ -49,9 +49,12 @@ def run_inference(model, dataloader, device, metric_fn):
             metric = metric_fn(pred, target)
             metric_meter.update(metric.item())
 
+    avg_inference_time = sum(times) / len(times)
+
     print("=" * 100)
-    print(f"Average inference time: {sum(times)/len(times)}")
-    return metric_meter
+    print(f"Average inference time: {avg_inference_time}, FPS: {1/avg_inference_time}")
+
+    return metric_meter, avg_inference_time
 
 
 def profile_inference(model, dataloader, device, metric_fn, profiler):
@@ -112,10 +115,12 @@ def profile_inference(model, dataloader, device, metric_fn, profiler):
         )
     )
 
-    print("=" * 100)
+    avg_inference_time = sum(times) / len(times)
 
-    print(f"Average inference time: {sum(times)/len(times)}")
-    return metric_meter
+    print("=" * 100)
+    print(f"Average inference time: {avg_inference_time}, FPS: {1/avg_inference_time}")
+
+    return metric_meter, avg_inference_time
 
 
 def eval_model(
@@ -166,9 +171,11 @@ def eval_model(
         torch.cuda.synchronize()
 
     if profiler is None:
-        metric_meter = run_inference(model, dataloader, device, metric_fn)
+        metric_meter, _ = run_inference(model, dataloader, device, metric_fn)
     else:
-        metric_meter = profile_inference(model, dataloader, device, metric_fn, profiler)
+        metric_meter, _ = profile_inference(
+            model, dataloader, device, metric_fn, profiler
+        )
 
     print(f"Average evaluation metric = {metric_meter.avg}")
 
