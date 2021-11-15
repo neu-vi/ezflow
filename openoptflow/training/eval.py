@@ -22,7 +22,7 @@ def warmup(model, dataloader, device):
     model(img1, img2)
 
 
-def run_inference(model, dataloader, device, metric_fn):
+def run_inference(model, dataloader, device, metric_fn, flow_scale=1.0):
     metric_meter = AverageMeter()
     times = []
 
@@ -39,6 +39,7 @@ def run_inference(model, dataloader, device, metric_fn):
             )
 
             pred = model(img1, img2)
+            pred = pred * flow_scale
 
             if torch.cuda.is_available():
                 torch.cuda.synchronize()
@@ -58,7 +59,7 @@ def run_inference(model, dataloader, device, metric_fn):
 
 
 def profile_inference(
-    model, dataloader, device, metric_fn, profiler, count_params=False
+    model, dataloader, device, metric_fn, profiler, flow_scale=1.0, count_params=False
 ):
     metric_meter = AverageMeter()
     times = []
@@ -85,6 +86,7 @@ def profile_inference(
 
                 with record_function(profiler.model_name):
                     pred = model(img1, img2)
+                    pred = pred * flow_scale
 
                 if torch.cuda.is_available():
                     torch.cuda.synchronize()
@@ -131,7 +133,13 @@ def profile_inference(
 
 
 def eval_model(
-    model, dataloader, device, distributed=False, metric=None, profiler=None
+    model,
+    dataloader,
+    device,
+    distributed=False,
+    metric=None,
+    profiler=None,
+    flow_scale=1.0,
 ):
 
     if isinstance(device, list) or isinstance(device, tuple):
@@ -178,10 +186,12 @@ def eval_model(
         torch.cuda.synchronize()
 
     if profiler is None:
-        metric_meter, _ = run_inference(model, dataloader, device, metric_fn)
+        metric_meter, _ = run_inference(
+            model, dataloader, device, metric_fn, flow_scale=flow_scale
+        )
     else:
         metric_meter, _ = profile_inference(
-            model, dataloader, device, metric_fn, profiler
+            model, dataloader, device, metric_fn, profiler, flow_scale=flow_scale
         )
 
     print(f"Average evaluation metric = {metric_meter.avg}")
