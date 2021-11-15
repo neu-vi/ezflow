@@ -156,6 +156,12 @@ class Trainer:
 
                 optimizer.zero_grad()
                 loss.backward()
+
+                if self.cfg.GRAD_CLIP.USE is True:
+                    torch.nn.utils.clip_grad_norm_(
+                        model.parameters(), self.cfg.GRAD_CLIP.VALUE
+                    )
+
                 optimizer.step()
 
                 if scheduler is not None:
