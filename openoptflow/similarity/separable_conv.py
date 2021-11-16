@@ -278,19 +278,31 @@ class Butterfly4D(nn.Module):
         out2 = self.convb3(out2)
 
         t_out_1 = F.interpolate(
-            out2.view(B, C, U2, V2, -1), (U1, V1, H2 * W2), mode="trilinear"
+            out2.view(B, C, U2, V2, -1),
+            (U1, V1, H2 * W2),
+            mode="trilinear",
+            align_corners=True,
         ).view(B, C, U1, V1, H2, W2)
         t_out_1 = F.interpolate(
-            t_out_1.view(B, C, -1, H2, W2), (U1 * V1, H1, W1), mode="trilinear"
+            t_out_1.view(B, C, -1, H2, W2),
+            (U1 * V1, H1, W1),
+            mode="trilinear",
+            align_corners=True,
         ).view(B, C, U1, V1, H1, W1)
         out1 = t_out_1 + out1
         out1 = self.convb2(out1)
 
         t_out = F.interpolate(
-            out1.view(B, C, U1, V1, -1), (U, V, H1 * W1), mode="trilinear"
+            out1.view(B, C, U1, V1, -1),
+            (U, V, H1 * W1),
+            mode="trilinear",
+            align_corners=True,
         ).view(B, C, U, V, H1, W1)
         t_out = F.interpolate(
-            t_out.view(B, C, -1, H1, W1), (U * V, H, W), mode="trilinear"
+            t_out.view(B, C, -1, H1, W1),
+            (U * V, H, W),
+            mode="trilinear",
+            align_corners=True,
         ).view(B, C, U, V, H, W)
 
         out = t_out + out

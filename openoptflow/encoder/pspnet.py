@@ -115,7 +115,7 @@ class PyramidPooling(nn.Module):
 
             out = F.avg_pool2d(x, k_sizes[i], stride=strides[i], padding=0)
             out = module(out)
-            out = F.interpolate(out, size=(H, W), mode="bilinear")
+            out = F.interpolate(out, size=(H, W), mode="bilinear", align_corners=True)
             pp_sum = pp_sum + 1.0 / self.levels * out
 
         pp_sum = self.relu(pp_sum / 2.0)
@@ -256,25 +256,37 @@ class PSPNetBackbone(nn.Module):
         conv6 = self.pyramid_pooling(conv6)
 
         conv6x = F.interpolate(
-            conv6, [conv5.size()[2], conv5.size()[3]], mode="bilinear"
+            conv6,
+            [conv5.size()[2], conv5.size()[3]],
+            mode="bilinear",
+            align_corners=True,
         )
         concat5 = torch.cat((conv5, self.upconv6[1](conv6x)), dim=1)
         conv5 = self.iconv5(concat5)
 
         conv5x = F.interpolate(
-            conv5, [conv4.size()[2], conv4.size()[3]], mode="bilinear"
+            conv5,
+            [conv4.size()[2], conv4.size()[3]],
+            mode="bilinear",
+            align_corners=True,
         )
         concat4 = torch.cat((conv4, self.upconv5[1](conv5x)), dim=1)
         conv4 = self.iconv4(concat4)
 
         conv4x = F.interpolate(
-            conv4, [rconv3.size()[2], rconv3.size()[3]], mode="bilinear"
+            conv4,
+            [rconv3.size()[2], rconv3.size()[3]],
+            mode="bilinear",
+            align_corners=True,
         )
         concat3 = torch.cat((rconv3, self.upconv4[1](conv4x)), dim=1)
         conv3 = self.iconv3(concat3)
 
         conv3x = F.interpolate(
-            conv3, [pool1.size()[2], pool1.size()[3]], mode="bilinear"
+            conv3,
+            [pool1.size()[2], pool1.size()[3]],
+            mode="bilinear",
+            align_corners=True,
         )
         concat2 = torch.cat((pool1, self.upconv3[1](conv3x)), dim=1)
         conv2 = self.iconv2(concat2)
