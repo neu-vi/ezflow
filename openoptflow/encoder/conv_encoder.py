@@ -6,7 +6,7 @@ from .build import ENCODER_REGISTRY
 
 
 def conv(in_planes, out_planes, kernel_size=3, stride=1, norm=None):
-    if norm.lower() == "batch":
+    if norm == "batch":
         return nn.Sequential(
             nn.Conv2d(
                 in_planes,
@@ -54,11 +54,8 @@ class ConvEncoder(nn.Module):
         assert len(channels) == len(
             strides
         ), "number of strides and channels are not equal"
-        assert (
-            norm.lower() == "batch" or norm == None
-        ), f"{norm} not supported in conv encoder"
 
-        norm = "batch" if norm.lower() == "batch" else None
+        norm = norm if norm is None else norm.lower()
 
         if isinstance(channels, tuple):
             channels = list(channels)
@@ -67,15 +64,15 @@ class ConvEncoder(nn.Module):
         if isinstance(strides, tuple):
             strides = list(strides)
 
-        channels = [in_channels] + config
+        channels = [in_channels] + channels
 
         self.encoder = nn.ModuleList()
 
-        for i in range(len(config) - 1):
+        for i in range(len(channels) - 1):
             self.encoder.append(
                 conv(
-                    config[i],
-                    config[i + 1],
+                    channels[i],
+                    channels[i + 1],
                     kernel_size=kernels[i],
                     stride=strides[i],
                     norm=norm,
@@ -89,12 +86,23 @@ class ConvEncoder(nn.Module):
             "channels": cfg.LAYER_CONFIG.CHANNELS,
             "kernels": cfg.LAYER_CONFIG.KERNELS,
             "strides": cfg.LAYER_CONFIG.STRIDES,
-            "NORM": cfg.NORM,
+            "norm": cfg.NORM,
         }
 
     def forward(self, x):
 
+        outputs = []
+
         for i in range(len(self.encoder)):
             x = self.encoder[i](x)
 
-        return x
+            if len(outputs) > 0:
+                prev_output = outputs[-1]
+                if prev_output.shape[1:] == x.shape[1:]:
+                    outputs[-1] = x
+                else:
+                    outputs.append(x)
+            else:
+                outputs.append(x)
+
+        return outputs

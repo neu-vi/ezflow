@@ -2,8 +2,14 @@ NAME: FlowNetS
 ENCODER:
   NAME: ConvEncoder
   IN_CHANNELS: 6
+  NORM: batch
   LAYER_CONFIG: 
     CHANNELS: [64, 128, 256, 256, 512, 512, 512, 512, 1024, 1024]
-    KERNEL: [7, 5, 5, 3, 3, 3, 3, 3, 3, 3]
-    STRIDE: [2, 2, 2, 1, 2, 1, 2, 1, 2, 1]
-  NORM: "batch"
+    KERNELS: [7, 5, 5, 3, 3, 3, 3, 3, 3, 3]
+    STRIDES: [2, 2, 2, 1, 2, 1, 2, 1, 2, 1]
+DECODER:
+  NAME: ConvFlowDecoder
+  IN_CHANNELS: 1024
+  LAYER_CONFIG:
+    CHANNELS: [512, 256, 128, 64]
+INTERPOLATE_FLOW: True

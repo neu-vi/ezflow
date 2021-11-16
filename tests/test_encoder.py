@@ -46,7 +46,26 @@ def test_ConvEncoder():
     encoder = ENCODER_REGISTRY.get("ConvEncoder")(
         in_channels=3, channels=(16, 32, 64), kernels=(3, 3, 3), strides=(1, 1, 1)
     )
-    output = encoder(img)
-    assert output.shape[:2] == (2, 64)
+    outputs = encoder(img)
+
+    assert len(outputs) == 3, "Number of outputs do not match"
+    assert outputs[0].shape[:2] == (2, 16), "Number of output channels do not match"
+    assert outputs[1].shape[:2] == (2, 32), "Number of output channels do not match"
+    assert outputs[2].shape[:2] == (2, 64), "Number of output channels do not match"
+
+    del encoder
+
+    encoder = ENCODER_REGISTRY.get("ConvEncoder")(
+        in_channels=3,
+        channels=(16, 32, 32, 64, 64),
+        kernels=(3, 3, 3, 3, 3),
+        strides=(1, 1, 1, 1, 1),
+    )
+    outputs = encoder(img)
+
+    assert len(outputs) == 3, "Number of outputs do not match"
+    assert outputs[0].shape[:2] == (2, 16), "Number of output channels do not match"
+    assert outputs[1].shape[:2] == (2, 32), "Number of output channels do not match"
+    assert outputs[2].shape[:2] == (2, 64), "Number of output channels do not match"
 
     del encoder
