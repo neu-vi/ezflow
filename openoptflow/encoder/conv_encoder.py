@@ -5,8 +5,8 @@ from ..config import configurable
 from .build import ENCODER_REGISTRY
 
 
-def conv(in_planes, out_planes, kernel_size=3, stride=1, norm=None):
-    if norm == "batch":
+def conv(in_planes, out_planes, kernel_size=3, stride=1, batch_norm=False):
+    if batch_norm == "batch":
         return nn.Sequential(
             nn.Conv2d(
                 in_planes,
@@ -41,41 +41,39 @@ class ConvEncoder(nn.Module):
     def __init__(
         self,
         in_channels=3,
-        channels=[64, 128, 256],
-        kernels=[3, 3, 3],
-        strides=[1, 1, 1],
-        norm=None,
+        out_channels=[64, 128, 256, 512],
+        batch_norm=False,
     ):
         super(ConvEncoder, self).__init__()
 
-        assert len(channels) == len(
-            kernels
-        ), "number of kernels and channels are not equal"
-        assert len(channels) == len(
-            strides
-        ), "number of strides and channels are not equal"
+        assert len(out_channels) >= 3, "encoder expects at least 3 out channels."
 
-        norm = norm if norm is None else norm.lower()
+        if isinstance(out_channels, tuple):
+            out_channels = list(out_channels)
 
-        if isinstance(channels, tuple):
-            channels = list(channels)
-        if isinstance(kernels, tuple):
-            kernels = list(kernels)
-        if isinstance(strides, tuple):
-            strides = list(strides)
-
-        channels = [in_channels] + channels
+        channels = [in_channels] + out_channels
 
         self.encoder = nn.ModuleList()
 
+        self.encoder.append(conv(channels[0], channels[1], kernel_size=7, stride=2))
+
+        self.encoder.append(conv(channels[1], channels[2], kernel_size=5, stride=2))
+
+        self.encoder.append(conv(channels[2], channels[3], kernel_size=5, stride=2))
+
+        channels = channels[3:]
+
         for i in range(len(channels) - 1):
+
+            stride = 1 if i % 2 == 0 else 2
+
             self.encoder.append(
                 conv(
                     channels[i],
                     channels[i + 1],
-                    kernel_size=kernels[i],
-                    stride=strides[i],
-                    norm=norm,
+                    kernel_size=3,
+                    stride=stride,
+                    batch_norm=batch_norm,
                 )
             )
 
@@ -83,10 +81,8 @@ class ConvEncoder(nn.Module):
     def from_config(self, cfg):
         return {
             "in_channels": cfg.IN_CHANNELS,
-            "channels": cfg.LAYER_CONFIG.CHANNELS,
-            "kernels": cfg.LAYER_CONFIG.KERNELS,
-            "strides": cfg.LAYER_CONFIG.STRIDES,
-            "norm": cfg.NORM,
+            "out_channels": cfg.OUT_CHANNELS,
+            "batch_norm": cfg.BATCH_NORM,
         }
 
     def forward(self, x):

@@ -44,7 +44,7 @@ def test_PyramidEncoder():
 def test_ConvEncoder():
 
     encoder = ENCODER_REGISTRY.get("ConvEncoder")(
-        in_channels=3, channels=(16, 32, 64), kernels=(3, 3, 3), strides=(1, 1, 1)
+        in_channels=3, out_channels=(16, 32, 64)
     )
     outputs = encoder(img)
 
@@ -56,10 +56,7 @@ def test_ConvEncoder():
     del encoder
 
     encoder = ENCODER_REGISTRY.get("ConvEncoder")(
-        in_channels=3,
-        channels=(16, 32, 32, 64, 64),
-        kernels=(3, 3, 3, 3, 3),
-        strides=(1, 1, 1, 1, 1),
+        in_channels=3, out_channels=(16, 32, 64, 64)
     )
     outputs = encoder(img)
 

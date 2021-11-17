@@ -96,13 +96,13 @@ class ConvFlowDecoder(nn.Module):
     """Convolutional decoder to regress and upsample the optical flow"""
 
     @configurable
-    def __init__(self, in_channels=1024, channels=[512, 256, 128, 64]):
+    def __init__(self, in_channels=1024, out_channels=[512, 256, 128, 64]):
         super().__init__()
 
-        if isinstance(channels, tuple):
-            channels = list(channels)
+        if isinstance(out_channels, tuple):
+            out_channels = list(out_channels)
 
-        out_channels = [in_channels] + channels
+        out_channels = [in_channels] + out_channels
         in_channels = []
         prev_out_channels = 0
         for i in range(len(out_channels)):
@@ -119,7 +119,6 @@ class ConvFlowDecoder(nn.Module):
         self.upsample_flow = nn.ModuleList()
         self.deconv = nn.ModuleList()
 
-        print("in_channels:", in_channels)
         for i in range(len(in_channels) - 1):
             self.predict_flow.append(
                 nn.Conv2d(
@@ -139,7 +138,7 @@ class ConvFlowDecoder(nn.Module):
 
     @classmethod
     def from_config(self, cfg):
-        return {"in_channels": cfg.IN_CHANNELS, "channels": cfg.LAYER_CONFIG.CHANNELS}
+        return {"in_channels": cfg.IN_CHANNELS, "out_channels": cfg.OUT_CHANNELS}
 
     def forward(self, x):
         flow_preds = []
