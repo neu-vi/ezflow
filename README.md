@@ -9,30 +9,12 @@
 
 </div>
 
-<br>
-
-### To-do
-
-<b>Short-term</b>
-
-- [ ] Add more models
-- [ ] Add docstrings compatible with Sphinx for documentation
-- [ ] Add dataloaders for common datasets
-- [ ] Integrate Optuna/HyperOpt/Ray Tune for hyperparameter tuning
-- [ ] Create CLI using Click
-
-<b>Long-term</b>
-
-- [ ] Register repository on codecov.io and get token for generating code coverage reports
-- [ ] Create documentation website using ReadTheDocs
-- [ ] Create logo for the library
-- [ ] Add support for [AutoFlow](https://autoflow-google.github.io/#code)
-- [ ] Register library on Pip and Conda, and set up continuous deployment
-
-<br>
 
 ### References
 
+- [RAFT](https://github.com/princeton-vl/RAFT)
+- [DICL-Flow](https://github.com/jytime/DICL-Flow)
+- [PWC-Net](https://github.com/NVlabs/PWC-Net)
 - [detectron2](https://github.com/facebookresearch/detectron2)
 - [CorrelationLayer](https://github.com/oblime/CorrelationLayer)
 - [ptflow](https://github.com/hmorimitsu/ptlflow)
