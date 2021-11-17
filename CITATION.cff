@@ -7,7 +7,7 @@ authors:
   given-names: "Prajnan"
 - family-names: "Jiang"
   given-names: "Huaizu"
-title: "OpenOpticalFlow: A PyTorch library for optical flow estimation using neural networks"
+title: "OpenOpticalFlow: A modular PyTorch library for optical flow estimation using neural networks"
 date-released: 2021-11-17
 url: "https://github.com/neu-vig/openoptflow"
 license: MIT
