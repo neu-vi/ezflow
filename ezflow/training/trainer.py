@@ -8,8 +8,7 @@ from torch.utils.tensorboard import SummaryWriter
 
 from ..data import DeviceDataLoader
 from ..functional import FUNCTIONAL_REGISTRY
-from ..utils import AverageMeter
-from .metrics import endpointerror
+from ..utils import AverageMeter, endpointerror
 from .registry import loss_functions, optimizers, schedulers
 
 

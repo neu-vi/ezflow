@@ -1,7 +1,7 @@
 import torch
 from torchvision import transforms as T
 
-from openoptflow.models import DefaultPredictor, build_model
+from ezflow.models import DefaultPredictor, build_model
 
 img1 = torch.randn(2, 3, 256, 256)
 img2 = torch.randn(2, 3, 256, 256)

@@ -4,7 +4,7 @@
 # You can set these variables from the command line.
 SPHINXOPTS    =
 SPHINXBUILD   = python -msphinx
-SPHINXPROJ    = openoptflow
+SPHINXPROJ    = ezflow
 SOURCEDIR     = .
 BUILDDIR      = _build
 

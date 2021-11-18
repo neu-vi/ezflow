@@ -56,11 +56,8 @@ class FlownetConvEncoder(nn.Module):
         channels = [in_channels] + config
 
         self.encoder = nn.ModuleList()
-
         self.encoder.append(conv(channels[0], channels[1], kernel_size=7, stride=2))
-
         self.encoder.append(conv(channels[1], channels[2], kernel_size=5, stride=2))
-
         self.encoder.append(conv(channels[2], channels[3], kernel_size=5, stride=2))
 
         channels = channels[3:]

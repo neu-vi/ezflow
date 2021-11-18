@@ -6,14 +6,14 @@ import shutil
 from setuptools import find_packages, setup
 
 # Basic information
-NAME = "openoptflow"
+NAME = "ezflow"
 DESCRIPTION = "A PyTorch library for optical flow estimation using neural networks"
 VERSION = "0.1.0"
 AUTHOR = "Neelay Shah"
 EMAIL = "nstraum1@gmail.com"
 LICENSE = "MIT"
-REPOSITORY = "https://github.com/neu-vig/openoptflow"
-PACKAGE = "openoptflow"
+REPOSITORY = "https://github.com/neu-vig/ezflow"
+PACKAGE = "ezflow"
 
 with open("README.md", "r") as f:
     LONG_DESCRIPTION = f.read()
@@ -65,7 +65,7 @@ def get_requires(path=REQUIRE_PATH):
 def get_model_zoo_configs():
     """
     Return a list of configs to include in package for model zoo. Copy over these configs inside
-    openoptflow/model_zoo.
+    ezflow/model_zoo.
     """
 
     # Use absolute paths while symlinking.
@@ -74,7 +74,7 @@ def get_model_zoo_configs():
     )
     destination = os.path.join(
         os.path.dirname(os.path.realpath(__file__)),
-        "openoptflow",
+        "ezflow",
         "model_zoo",
         "configs",
     )
@@ -115,9 +115,9 @@ CONFIG = {
     "url": REPOSITORY,
     "project_urls": {"Source": REPOSITORY},
     "packages": find_packages(
-        where=PROJECT, include=["openoptflow", "openoptflow.*"], exclude=EXCLUDES
+        where=PROJECT, include=["ezflow", "ezflow.*"], exclude=EXCLUDES
     ),
-    "package_data": {"openoptflow.model_zoo": get_model_zoo_configs()},
+    "package_data": {"ezflow.model_zoo": get_model_zoo_configs()},
     "install_requires": list(get_requires()),
     "python_requires": ">=3.6",
     "test_suite": "tests",

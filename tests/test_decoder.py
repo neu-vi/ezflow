@@ -1,6 +1,6 @@
 import torch
 
-from openoptflow.decoder import DECODER_REGISTRY
+from ezflow.decoder import DECODER_REGISTRY
 
 cost = torch.randn(2, 81, 32, 32)
 

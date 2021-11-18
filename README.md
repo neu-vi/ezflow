@@ -4,18 +4,28 @@
     <br>
 </p>
 
-<h1 align="center">Open Optical Flow</h1>
+<h1 align="center">EzFlow</h1>
 <h3 align="center">A PyTorch library for optical flow estimation using neural networks</h3>
 
 <div align='center'>
 
-[![Tests](https://github.com/neu-vig/openoptflow/actions/workflows/package-test.yml/badge.svg)](https://github.com/neu-vig/openoptflow/actions/workflows/package-test.yml)
-<!-- [![Code style](https://github.com/neu-vig/openoptflow/actions/workflows/linting.yml/badge.svg)](https://github.com/neu-vig/openoptflow/actions/workflows/linting.yml) -->
-<!-- [![Code coverage](https://github.com/neu-vig/openoptflow/actions/workflows/codecov.yml/badge.svg)](https://github.com/neu-vig/openoptflow/actions/workflows/codecov.yml) -->
+[![Tests](https://github.com/neu-vig/ezflow/actions/workflows/package-test.yml/badge.svg)](https://github.com/neu-vig/ezflow/actions/workflows/package-test.yml)
+<!-- [![Code style](https://github.com/neu-vig/ezflow/actions/workflows/linting.yml/badge.svg)](https://github.com/neu-vig/ezflow/actions/workflows/linting.yml) -->
+<!-- [![Code coverage](https://github.com/neu-vig/ezflow/actions/workflows/codecov.yml/badge.svg)](https://github.com/neu-vig/ezflow/actions/workflows/codecov.yml) -->
 
 </div>
 
 <br>
+
+## Installation
+
+```shell
+
+git clone https://github.com/neu-vig/ezflow
+cd ezflow/
+python setup.py install
+
+```
 
 ### Models supported
 

@@ -15,7 +15,7 @@ Types of Contributions
 Report Bugs
 ~~~~~~~~~~~
 
-Report bugs at https://github.com/neu-vig/openoptflow/issues.
+Report bugs at https://github.com/neu-vig/ezflow/issues.
 
 If you are reporting a bug, please include:
 
@@ -38,14 +38,14 @@ and "help wanted" is open to whoever wants to implement it.
 Write Documentation
 ~~~~~~~~~~~~~~~~~~~
 
-Open Optical Flow could always use more documentation, whether as part of the
-official Open Optical Flow docs, in docstrings, or even on the web in blog posts,
+EzFlow could always use more documentation, whether as part of the
+official EzFlow docs, in docstrings, or even on the web in blog posts,
 articles, and such.
 
 Submit Feedback
 ~~~~~~~~~~~~~~~
 
-The best way to send feedback is to file an issue at https://github.com/neu-vig/openoptflow/issues.
+The best way to send feedback is to file an issue at https://github.com/neu-vig/ezflow/issues.
 
 If you are proposing a feature:
 
@@ -57,18 +57,18 @@ If you are proposing a feature:
 Get Started!
 ------------
 
-Ready to contribute? Here's how to set up `openoptflow` for local development.
+Ready to contribute? Here's how to set up `ezflow` for local development.
 
-1. Fork the `openoptflow` repo on GitHub.
+1. Fork the `ezflow` repo on GitHub.
 2. Clone your fork locally::
 
-    $ git clone git@github.com:your_name_here/openoptflow.git
+    $ git clone git@github.com:your_name_here/ezflow.git
 
 3. Create a Conda virtual environment using the `environment.yml` file. Install your local copy of the package into the environment::
 
     $ conda env create -f environment.yml
-    $ conda activate openoptflow
-    $ cd openoptflow/
+    $ conda activate ezflow
+    $ cd ezflow/
     $ python setup.py develop
 
 4. Set up pre-commit hooks::
@@ -109,7 +109,7 @@ Tips
 
 To run a subset of tests::
 
-$ pytest tests.test_openoptflow
+$ pytest tests.test_ezflow
 
 
 Deploying

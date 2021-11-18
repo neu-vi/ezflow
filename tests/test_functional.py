@@ -1,7 +1,7 @@
 import numpy as np
 import torch
 
-from openoptflow.functional import FlowAugmentor, MultiScaleLoss, SequenceLoss
+from ezflow.functional import FlowAugmentor, MultiScaleLoss, SequenceLoss
 
 img1 = np.random.rand(256, 256, 3).astype(np.uint8)
 img2 = np.random.rand(256, 256, 3).astype(np.uint8)

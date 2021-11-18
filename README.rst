@@ -1,14 +1,14 @@
 =================
-Open Optical Flow
+EzFlow
 =================
 
 
-.. image:: https://img.shields.io/pypi/v/openoptflow.svg
-        :target: https://pypi.python.org/pypi/openoptflow
+.. image:: https://img.shields.io/pypi/v/ezflow.svg
+        :target: https://pypi.python.org/pypi/ezflow
 
 
-.. image:: https://readthedocs.org/projects/openoptflow/badge/?version=latest
-        :target: https://openoptflow.readthedocs.io/en/latest/?version=latest
+.. image:: https://readthedocs.org/projects/ezflow/badge/?version=latest
+        :target: https://ezflow.readthedocs.io/en/latest/?version=latest
         :alt: Documentation Status
 
 
@@ -18,7 +18,7 @@ A PyTorch library for optical flow estimation
 
 
 * Free software: MIT license
-* Documentation: https://openoptflow.readthedocs.io.
+* Documentation: https://ezflow.readthedocs.io.
 
 
 Features

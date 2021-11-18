@@ -1,6 +1,6 @@
 import torch
 
-from openoptflow.similarity import SIMILARITY_REGISTRY
+from ezflow.similarity import SIMILARITY_REGISTRY
 
 features1 = features2 = torch.rand(2, 32, 16, 16)
 

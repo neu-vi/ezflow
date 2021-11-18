@@ -35,7 +35,7 @@ jobs:
       run: python -m build
 
     - name: Tests
-      run: pytest --cov-report xml --cov='./openoptflow/' --cov-config=.coveragerc
+      run: pytest --cov-report xml --cov='./ezflow/' --cov-config=.coveragerc
 
     - name: Code Coverage Report
       uses: codecov/codecov-action@v1
