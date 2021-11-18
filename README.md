@@ -1,3 +1,9 @@
+<p align="center">
+    <br>
+    <img src="./docs/assets/logo.png" height="60" width="60"/>
+    <br>
+</p>
+
 <h1 align="center">Open Optical Flow</h1>
 <h3 align="center">A PyTorch library for optical flow estimation using neural networks</h3>
 
@@ -15,7 +21,17 @@
 - [RAFT](https://github.com/princeton-vl/RAFT)
 - [DICL-Flow](https://github.com/jytime/DICL-Flow)
 - [PWC-Net](https://github.com/NVlabs/PWC-Net)
+- [FlowNetS](https://github.com/ClementPinard/FlowNetPytorch)
 - [detectron2](https://github.com/facebookresearch/detectron2)
 - [CorrelationLayer](https://github.com/oblime/CorrelationLayer)
 - [ptflow](https://github.com/hmorimitsu/ptlflow)
-- [FlowNetS](https://github.com/ClementPinard/FlowNetPytorch)
+
+
+<br>
+
+<footer>
+<a target="_blank" href="https://icons8.com/icon/3Nj3FNnz36Id/pixels">Pixels</a> icon by <a target="_blank" href="https://icons8.com">Icons8</a>
+</footer>
+
+
+
