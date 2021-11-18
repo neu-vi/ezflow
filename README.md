@@ -18,3 +18,4 @@
 - [detectron2](https://github.com/facebookresearch/detectron2)
 - [CorrelationLayer](https://github.com/oblime/CorrelationLayer)
 - [ptflow](https://github.com/hmorimitsu/ptlflow)
+- [FlowNetS](https://github.com/ClementPinard/FlowNetPytorch)
