@@ -26,7 +26,12 @@
 - [CorrelationLayer](https://github.com/oblime/CorrelationLayer)
 - [ptflow](https://github.com/hmorimitsu/ptlflow)
 
+
 <br>
 
+<footer>
 <a target="_blank" href="https://icons8.com/icon/3Nj3FNnz36Id/pixels">Pixels</a> icon by <a target="_blank" href="https://icons8.com">Icons8</a>
+</footer>
+
+
 
