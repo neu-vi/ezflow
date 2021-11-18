@@ -20,7 +20,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from ..registry import FUNCTIONAL_REGISTRY
+from ..build import SIMILARITY_REGISTRY
 
 
 def iter_spatial_correlation_sample(
@@ -123,7 +123,7 @@ def iter_spatial_correlation_sample(
     return corr
 
 
-@FUNCTIONAL_REGISTRY.register()
+@SIMILARITY_REGISTRY.register()
 class IterSpatialCorrelationSampler(nn.Module):
     """Apply spatial correlation sampling from two inputs using iteration in PyTorch."""
 

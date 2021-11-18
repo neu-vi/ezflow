@@ -35,18 +35,25 @@ class ConvDecoder(nn.Module):
 
     @configurable
     def __init__(
-        self, config=[128, 128, 96, 64, 32], concat_channels=None, to_flow=True
+        self,
+        config=[128, 128, 96, 64, 32],
+        concat_channels=None,
+        to_flow=True,
+        block=None,
     ):
         super().__init__()
 
         self.concat_channels = concat_channels
+
+        if block is None:
+            block = conv
 
         self.decoder = nn.ModuleList()
         config_cumsum = torch.cumsum(torch.tensor(config), dim=0)
 
         if concat_channels is not None:
             self.decoder.append(
-                conv(concat_channels, config[0], kernel_size=3, stride=1)
+                block(concat_channels, config[0], kernel_size=3, stride=1)
             )
 
         for i in range(len(config) - 1):
@@ -57,7 +64,7 @@ class ConvDecoder(nn.Module):
                 in_channels = config[i]
 
             self.decoder.append(
-                conv(in_channels, config[i + 1], kernel_size=3, stride=1)
+                block(in_channels, config[i + 1], kernel_size=3, stride=1)
             )
 
         self.to_flow = nn.Identity()

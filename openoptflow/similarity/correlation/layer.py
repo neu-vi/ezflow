@@ -4,10 +4,10 @@
 import torch
 import torch.nn as nn
 
-from ..registry import FUNCTIONAL_REGISTRY
+from ..build import SIMILARITY_REGISTRY
 
 
-@FUNCTIONAL_REGISTRY.register()
+@SIMILARITY_REGISTRY.register()
 class CorrelationLayer(nn.Module):
 
     """

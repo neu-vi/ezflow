@@ -1,9 +1,4 @@
-from torch.profiler import (
-    ProfilerActivity,
-    profile,
-    schedule,
-    tensorboard_trace_handler,
-)
+from torch.profiler import ProfilerActivity, schedule, tensorboard_trace_handler
 
 
 class Profiler:

@@ -54,7 +54,18 @@ def test_PyramidEncoder():
 
     encoder = ENCODER_REGISTRY.get("PyramidEncoder")(in_channels=3, config=(16, 32, 64))
     feature_pyramid = encoder(img)
+    assert isinstance(feature_pyramid, list) or isinstance(feature_pyramid, tuple)
     assert len(feature_pyramid) == 3
+
+    del encoder, feature_pyramid
+
+
+def test_PSPNetBackbone():
+
+    encoder = ENCODER_REGISTRY.get("PSPNetBackbone")()
+    feature_pyramid = encoder(img)
+    assert isinstance(feature_pyramid, list) or isinstance(feature_pyramid, tuple)
+    assert len(feature_pyramid) == 5  # PSPNetBackbone returns 5 feature maps
 
     del encoder, feature_pyramid
 
