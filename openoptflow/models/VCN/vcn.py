@@ -4,7 +4,7 @@ import torch.nn.functional as F
 
 from ...decoder import ConvDecoder
 from ...encoder import build_encoder
-from ...functional import CorrelationLayer
+from ...similarity import CorrelationLayer, IterSpatialCorrelationSampler
 from ...utils import warp
 from ..build import MODEL_REGISTRY
 
