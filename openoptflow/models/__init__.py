@@ -4,4 +4,3 @@ from .FlowNet import FlowNetS
 from .predictor import DefaultPredictor
 from .PWCNet import PWCNet
 from .RAFT import RAFT
-from .VCN import VCN
