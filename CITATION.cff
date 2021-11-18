@@ -1,0 +1,13 @@
+cff-version: 1.2.0
+message: "If you find this software useful, please cite it as below."
+authors:
+- family-names: "Shah"
+  given-names: "Neelay"
+- family-names: "Goswami"
+  given-names: "Prajnan"
+- family-names: "Jiang"
+  given-names: "Huaizu"
+title: "OpenOpticalFlow: A modular PyTorch library for optical flow estimation using neural networks"
+date-released: 2021-11-17
+url: "https://github.com/neu-vig/openoptflow"
+license: MIT
