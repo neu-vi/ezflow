@@ -16,12 +16,12 @@ def get_cfg_obj():
 def get_cfg_path(cfg_path, grp="models"):
 
     """
-    Returns the complete path to a config file present in openoptflow
+    Returns the complete path to a config file present in ezflow
 
     Parameters
     ----------
     cf_path : str
-        Config file path relative to openoptflow's "configs/{grp}" directory
+        Config file path relative to ezflow's "configs/{grp}" directory
 
     Returns
     -------
@@ -34,17 +34,17 @@ def get_cfg_path(cfg_path, grp="models"):
 
     if grp == "models":
         cfg_complete_path = pkg_resources.resource_filename(
-            "openoptflow.model_zoo", os.path.join("configs", grp, cfg_path)
+            "ezflow.model_zoo", os.path.join("configs", grp, cfg_path)
         )
 
     elif grp == "trainers":
         cfg_complete_path = pkg_resources.resource_filename(
-            "openoptflow.training", os.path.join("configs", grp, cfg_path)
+            "ezflow.training", os.path.join("configs", grp, cfg_path)
         )
 
     if not os.path.exists(cfg_complete_path):
         raise RuntimeError(
-            f"{grp}/{cfg_path} is not available in openoptflow's model zoo or trainer configs!"
+            f"{grp}/{cfg_path} is not available in ezflow's model zoo or trainer configs!"
         )
 
     return cfg_complete_path

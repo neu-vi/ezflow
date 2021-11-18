@@ -1,6 +1,6 @@
 import torch
 
-from openoptflow.encoder import ENCODER_REGISTRY
+from ezflow.encoder import ENCODER_REGISTRY
 
 img = torch.randn(2, 3, 256, 256)
 

@@ -1,4 +1,4 @@
-"""Top-level package for Open Optical Flow."""
+"""Top-level package for EzFlow"""
 
 __author__ = """Neelay Shah"""
 __email__ = "nstraum1@gmail.com"

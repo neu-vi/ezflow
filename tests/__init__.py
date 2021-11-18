@@ -1,1 +1,1 @@
-"""Unit test package for openoptflow."""
+"""Unit test package for ezflow"""

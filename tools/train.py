@@ -1,6 +1,6 @@
-from openoptflow.data import DataloaderCreator
-from openoptflow.models import build_model
-from openoptflow.training import Trainer, get_training_cfg
+from ezflow.data import DataloaderCreator
+from ezflow.models import build_model
+from ezflow.training import Trainer, get_training_cfg
 
 
 def main(args):
@@ -54,7 +54,9 @@ if __name__ == "__main__":
 
     import argparse
 
-    parser = argparse.ArgumentParser(description="Train an openoptflow model")
+    parser = argparse.ArgumentParser(
+        description="Train an optical flow model using EzFlow"
+    )
     parser.add_argument(
         "--train_cfg",
         type=str,

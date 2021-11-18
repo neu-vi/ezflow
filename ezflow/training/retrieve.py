@@ -39,7 +39,7 @@ def get_training_cfg(cfg_path=None, cfg_name=None, custom=True):
         Name of the config file.
     custom : bool
         If True, the config file is assumed to be a custom config file.
-        If False, the config file is assumed to be a standard config file present in openoptflow/configs/trainers.
+        If False, the config file is assumed to be a standard config file present in ezflow/configs/trainers.
 
     Returns
     -------

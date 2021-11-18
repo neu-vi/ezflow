@@ -1,4 +1,4 @@
-Welcome to Open Optical Flow's documentation!
+Welcome to EzFlow's documentation!
 ======================================
 
 .. toctree::
