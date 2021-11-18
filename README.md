@@ -15,6 +15,18 @@
 
 </div>
 
+### Models supported
+
+- [x] [FlowNetSimple](https://arxiv.org/abs/1504.06852)
+- [x] [PWCNet](https://arxiv.org/abs/1709.02371)
+- [x] [RAFT](https://arxiv.org/abs/2003.12039)
+- [x] [DICL](https://arxiv.org/abs/2010.14851)
+
+### Datasets supported
+
+- [x] [FlyingChairs](https://lmb.informatik.uni-freiburg.de/resources/datasets/FlyingChairs.en.html#flyingchairs)
+- [x] [FlyingThings3D](https://lmb.informatik.uni-freiburg.de/resources/datasets/SceneFlowDatasets.en.html)
+- [x] [MPI Sintel](http://sintel.is.tue.mpg.de/)
 
 ### References
 
