@@ -14,7 +14,7 @@ SIMILARITY:
     NAME: Conv2DMatching
     CONFIG: [64, 96, 128, 64, 32, 1]
 DECODER:
-  NAME: SoftArgFlowRegression
+  NAME: SoftArg2DFlowRegression
   MAX_U: 3
   MAX_V: 3
   OPERATION: argmax
