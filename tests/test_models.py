@@ -75,3 +75,5 @@ def test_FlowNetS():
     assert flow.shape == (2, 2, 256, 256)
 
     del model, flow
+
+    _ = build_model("FlowNetS", default=True)

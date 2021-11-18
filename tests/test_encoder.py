@@ -41,10 +41,10 @@ def test_PyramidEncoder():
     del encoder, feature_pyramid
 
 
-def test_ConvEncoder():
+def test_FlownetConvEncoder():
 
-    encoder = ENCODER_REGISTRY.get("ConvEncoder")(
-        in_channels=3, out_channels=(16, 32, 64)
+    encoder = ENCODER_REGISTRY.get("FlownetConvEncoder")(
+        in_channels=3, config=(16, 32, 64)
     )
     outputs = encoder(img)
 
@@ -55,8 +55,8 @@ def test_ConvEncoder():
 
     del encoder
 
-    encoder = ENCODER_REGISTRY.get("ConvEncoder")(
-        in_channels=3, out_channels=(16, 32, 64, 64)
+    encoder = ENCODER_REGISTRY.get("FlownetConvEncoder")(
+        in_channels=3, config=(16, 32, 64, 64)
     )
     outputs = encoder(img)
 

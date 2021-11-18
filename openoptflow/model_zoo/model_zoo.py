@@ -10,6 +10,7 @@ class _ModelZooConfigs:
         "RAFT_SMALL": "raft_small.yaml",
         "DICL": "dicl.yaml",
         "PWCNet": "pwcnet.yaml",
+        "FlowNetS": "flownet_s.yaml",
     }
 
     @staticmethod

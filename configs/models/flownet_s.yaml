@@ -1,11 +1,11 @@
 NAME: FlowNetS
 ENCODER:
-  NAME: ConvEncoder
+  NAME: FlownetConvEncoder
   IN_CHANNELS: 6
-  OUT_CHANNELS: [64, 128, 256, 256, 512, 512, 512, 512, 1024, 1024]
-  BATCH_NORM: True
+  CONFIG: [64, 128, 256, 256, 512, 512, 512, 512, 1024, 1024]
+  NORM: batch
 DECODER:
-  NAME: ConvFlowDecoder
+  NAME: FlownetConvDecoder
   IN_CHANNELS: 1024
-  OUT_CHANNELS: [512, 256, 128, 64]
+  CONFIG: [512, 256, 128, 64]
 INTERPOLATE_FLOW: True

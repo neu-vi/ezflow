@@ -5,53 +5,55 @@ from ..config import configurable
 from .build import ENCODER_REGISTRY
 
 
-def conv(in_planes, out_planes, kernel_size=3, stride=1, batch_norm=False):
-    if batch_norm == "batch":
-        return nn.Sequential(
-            nn.Conv2d(
-                in_planes,
-                out_planes,
-                kernel_size=kernel_size,
-                stride=stride,
-                padding=(kernel_size - 1) // 2,
-                bias=False,
-            ),
-            nn.BatchNorm2d(out_planes),
-            nn.LeakyReLU(0.1, inplace=True),
-        )
+def conv(in_planes, out_planes, kernel_size=3, stride=1, norm=None):
+
+    if norm == "group":
+        norm_fn = nn.GroupNorm(num_groups=8, num_channels=out_planes)
+
+    elif norm == "batch":
+        norm_fn = nn.BatchNorm2d(out_planes)
+
+    elif norm == "instance":
+        norm_fn = nn.InstanceNorm2d(out_planes)
+
     else:
-        return nn.Sequential(
-            nn.Conv2d(
-                in_planes,
-                out_planes,
-                kernel_size=kernel_size,
-                stride=stride,
-                padding=(kernel_size - 1) // 2,
-                bias=True,
-            ),
-            nn.LeakyReLU(0.1, inplace=True),
-        )
+        norm_fn = nn.Identity()
+
+    return nn.Sequential(
+        nn.Conv2d(
+            in_planes,
+            out_planes,
+            kernel_size=kernel_size,
+            stride=stride,
+            padding=(kernel_size - 1) // 2,
+            bias=False,
+        ),
+        norm_fn,
+        nn.LeakyReLU(0.1, inplace=True),
+    )
 
 
 @ENCODER_REGISTRY.register()
-class ConvEncoder(nn.Module):
-    """Convolution encoder"""
+class FlownetConvEncoder(nn.Module):
+    """Convolution encoder for FlowNet"""
 
     @configurable
     def __init__(
         self,
         in_channels=3,
-        out_channels=[64, 128, 256, 512],
-        batch_norm=False,
+        config=[64, 128, 256, 512],
+        norm=None,
     ):
-        super(ConvEncoder, self).__init__()
+        super(FlownetConvEncoder, self).__init__()
 
-        assert len(out_channels) >= 3, "encoder expects at least 3 out channels."
+        assert (
+            len(config) >= 3
+        ), "FlownetConvEncoder expects at least 3 output channels in config."
 
-        if isinstance(out_channels, tuple):
-            out_channels = list(out_channels)
+        if isinstance(config, tuple):
+            config = list(config)
 
-        channels = [in_channels] + out_channels
+        channels = [in_channels] + config
 
         self.encoder = nn.ModuleList()
 
@@ -73,7 +75,7 @@ class ConvEncoder(nn.Module):
                     channels[i + 1],
                     kernel_size=3,
                     stride=stride,
-                    batch_norm=batch_norm,
+                    norm=norm,
                 )
             )
 
@@ -81,8 +83,8 @@ class ConvEncoder(nn.Module):
     def from_config(self, cfg):
         return {
             "in_channels": cfg.IN_CHANNELS,
-            "out_channels": cfg.OUT_CHANNELS,
-            "batch_norm": cfg.BATCH_NORM,
+            "config": cfg.CONFIG,
+            "norm": cfg.NORM,
         }
 
     def forward(self, x):
