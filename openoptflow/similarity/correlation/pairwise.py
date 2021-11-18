@@ -1,9 +1,9 @@
 import torch
 import torch.nn.functional as F
 
-from ..config import configurable
-from ..utils import bilinear_sampler
-from .build import SIMILARITY_REGISTRY
+from ...config import configurable
+from ...utils import bilinear_sampler
+from ..build import SIMILARITY_REGISTRY
 
 
 @SIMILARITY_REGISTRY.register()

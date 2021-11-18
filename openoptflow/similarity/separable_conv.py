@@ -47,7 +47,7 @@ class SeparableConv4D(nn.Module):
         out_channels,
         stride=(1, 1, 1),
         norm=True,
-        ksize=3,
+        k_size=3,
         full=True,
         groups=1,
     ):
@@ -77,10 +77,10 @@ class SeparableConv4D(nn.Module):
                     nn.Conv3d(
                         in_channels * expand,
                         in_channels,
-                        (1, ksize, ksize),
+                        (1, k_size, k_size),
                         stride=(1, self.stride, self.stride),
                         bias=bias,
-                        padding=(0, ksize // 2, ksize // 2),
+                        padding=(0, k_size // 2, k_size // 2),
                         groups=groups,
                     ),
                     nn.BatchNorm3d(in_channels),
@@ -90,10 +90,10 @@ class SeparableConv4D(nn.Module):
                     nn.Conv3d(
                         in_channels * expand,
                         in_channels,
-                        (1, ksize, ksize),
+                        (1, k_size, k_size),
                         stride=1,
                         bias=bias,
-                        padding=(0, ksize // 2, ksize // 2),
+                        padding=(0, k_size // 2, k_size // 2),
                         groups=groups,
                     ),
                     nn.BatchNorm3d(in_channels),
@@ -102,10 +102,10 @@ class SeparableConv4D(nn.Module):
                 nn.Conv3d(
                     in_channels,
                     in_channels * expand,
-                    (ksize, ksize, 1),
+                    (k_size, k_size, 1),
                     stride=(self.stride, self.stride, 1),
                     bias=bias,
-                    padding=(ksize // 2, ksize // 2, 0),
+                    padding=(k_size // 2, k_size // 2, 0),
                     groups=groups,
                 ),
                 nn.BatchNorm3d(in_channels * expand),
@@ -120,29 +120,29 @@ class SeparableConv4D(nn.Module):
                 self.conv1 = nn.Conv3d(
                     in_channels * expand,
                     in_channels,
-                    (1, ksize, ksize),
+                    (1, k_size, k_size),
                     stride=(1, self.stride, self.stride),
                     bias=bias,
-                    padding=(0, ksize // 2, ksize // 2),
+                    padding=(0, k_size // 2, k_size // 2),
                     groups=groups,
                 )
             else:
                 self.conv1 = nn.Conv3d(
                     in_channels * expand,
                     in_channels,
-                    (1, ksize, ksize),
+                    (1, k_size, k_size),
                     stride=1,
                     bias=bias,
-                    padding=(0, ksize // 2, ksize // 2),
+                    padding=(0, k_size // 2, k_size // 2),
                     groups=groups,
                 )
             self.conv2 = nn.Conv3d(
                 in_channels,
                 in_channels * expand,
-                (ksize, ksize, 1),
+                (k_size, k_size, 1),
                 stride=(self.stride, self.stride, 1),
                 bias=bias,
-                padding=(ksize // 2, ksize // 2, 0),
+                padding=(k_size // 2, k_size // 2, 0),
                 groups=groups,
             )
         self.relu = nn.ReLU(inplace=True)
@@ -154,7 +154,7 @@ class SeparableConv4D(nn.Module):
             "out_channels": cfg.OUT_CHANNELS,
             "stride": cfg.STRIDE,
             "norm": cfg.NORM,
-            "ksize": cfg.KSIZE,
+            "k_size": cfg.k_size,
             "full": cfg.FULL,
             "groups": cfg.GROUPS,
         }
@@ -199,7 +199,7 @@ class SeparableConv4DBlock(nn.Module):
                     out_channels,
                     stride,
                     norm=norm,
-                    ksize=1,
+                    k_size=1,
                     full=full,
                     groups=groups,
                 )
