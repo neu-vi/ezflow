@@ -62,3 +62,18 @@ def test_PWCNet():
     del model, flow
 
     _ = build_model("PWCNet", default=True)
+
+
+def test_FlowNetS():
+
+    model = build_model("FlowNetS", "flownet_s.yaml")
+    flow_preds = model(img1, img2)
+    assert isinstance(flow_preds, tuple) or isinstance(flow_preds, list)
+
+    model.eval()
+    flow = model(img1, img2)
+    assert flow.shape == (2, 2, 256, 256)
+
+    del model, flow
+
+    _ = build_model("FlowNetS", default=True)

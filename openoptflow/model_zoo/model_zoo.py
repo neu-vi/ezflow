@@ -11,6 +11,7 @@ class _ModelZooConfigs:
         "DICL": "dicl.yaml",
         "PWCNet": "pwcnet.yaml",
         "VCN": "vcn.yaml",
+        "FlowNetS": "flownet_s.yaml",
     }
 
     @staticmethod
