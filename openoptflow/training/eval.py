@@ -5,8 +5,7 @@ from torch.nn import DataParallel
 from torch.nn.parallel import DistributedDataParallel as DDP
 from torch.profiler import profile, record_function
 
-from ..utils import AverageMeter
-from .metrics import endpointerror
+from ..utils import AverageMeter, endpointerror
 
 
 def warmup(model, dataloader, device):

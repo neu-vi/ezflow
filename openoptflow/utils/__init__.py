@@ -1,4 +1,5 @@
 from .input import *
+from .metrics import *
 from .other_utils import *
 from .profiler import *
 from .registry import *
