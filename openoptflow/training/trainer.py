@@ -148,6 +148,7 @@ class Trainer:
                     img2.to(self.device),
                     target.to(self.device),
                 )
+                target = target / self.cfg.TARGET_SCALE_FACTOR
 
                 pred = model(img1, img2)
 
@@ -155,6 +156,12 @@ class Trainer:
 
                 optimizer.zero_grad()
                 loss.backward()
+
+                if self.cfg.GRAD_CLIP.USE is True:
+                    nn.utils.clip_grad_norm_(
+                        model.parameters(), self.cfg.GRAD_CLIP.VALUE
+                    )
+
                 optimizer.step()
 
                 if scheduler is not None:
@@ -274,6 +281,7 @@ class Trainer:
                     img2.to(self.device),
                     target.to(self.device),
                 )
+                target = target / self.cfg.TARGET_SCALE_FACTOR
 
                 pred = model(img1, img2)
 

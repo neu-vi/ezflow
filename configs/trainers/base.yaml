@@ -3,7 +3,8 @@ DATA:
   BATCH_SIZE: 64
   AUGMENTATION:
     USE: True
-    PARAMS: null 
+    PARAMS: null
+  TARGET_SCALE_FACTOR: 1.0 
 OPTIMIZER:
   NAME: Adam
   PARAMS:
@@ -20,6 +21,9 @@ CRITERION:
   CUSTOM: True
   NAME: SequenceLoss
   PARAMS: null
+GRAD_CLIP: 
+  USE: False
+  VALUE: 1.0
 DEVICE: "0"
 DISTRIBUTED: True
 LOG_DIR: "./logs"

@@ -5,7 +5,7 @@ from torch.nn import DataParallel
 from torch.nn.parallel import DistributedDataParallel as DDP
 from torch.profiler import profile, record_function
 
-from ..utils import AverageMeter, Profiler
+from ..utils import AverageMeter
 from .metrics import endpointerror
 
 
@@ -22,7 +22,7 @@ def warmup(model, dataloader, device):
     model(img1, img2)
 
 
-def run_inference(model, dataloader, device, metric_fn):
+def run_inference(model, dataloader, device, metric_fn, flow_scale=1.0):
     metric_meter = AverageMeter()
     times = []
 
@@ -39,6 +39,7 @@ def run_inference(model, dataloader, device, metric_fn):
             )
 
             pred = model(img1, img2)
+            pred = pred * flow_scale
 
             if torch.cuda.is_available():
                 torch.cuda.synchronize()
@@ -49,12 +50,17 @@ def run_inference(model, dataloader, device, metric_fn):
             metric = metric_fn(pred, target)
             metric_meter.update(metric.item())
 
+    avg_inference_time = sum(times) / len(times)
+
     print("=" * 100)
-    print(f"Average inference time: {sum(times)/len(times)}")
-    return metric_meter
+    print(f"Average inference time: {avg_inference_time}, FPS: {1/avg_inference_time}")
+
+    return metric_meter, avg_inference_time
 
 
-def profile_inference(model, dataloader, device, metric_fn, profiler):
+def profile_inference(
+    model, dataloader, device, metric_fn, profiler, flow_scale=1.0, count_params=False
+):
     metric_meter = AverageMeter()
     times = []
 
@@ -80,6 +86,7 @@ def profile_inference(model, dataloader, device, metric_fn, profiler):
 
                 with record_function(profiler.model_name):
                     pred = model(img1, img2)
+                    pred = pred * flow_scale
 
                 if torch.cuda.is_available():
                     torch.cuda.synchronize()
@@ -112,14 +119,27 @@ def profile_inference(model, dataloader, device, metric_fn, profiler):
         )
     )
 
-    print("=" * 100)
+    avg_inference_time = sum(times) / len(times)
+    n_params = sum(p.numel() for p in model.parameters())
 
-    print(f"Average inference time: {sum(times)/len(times)}")
-    return metric_meter
+    print("=" * 100)
+    print(f"Average inference time: {avg_inference_time}, FPS: {1/avg_inference_time}")
+
+    if count_params:
+        print(f"Number of model parameters: {n_params}")
+        return metric_meter, avg_inference_time, n_params
+
+    return metric_meter, avg_inference_time
 
 
 def eval_model(
-    model, dataloader, device, distributed=False, metric=None, profiler=None
+    model,
+    dataloader,
+    device,
+    distributed=False,
+    metric=None,
+    profiler=None,
+    flow_scale=1.0,
 ):
 
     if isinstance(device, list) or isinstance(device, tuple):
@@ -166,9 +186,13 @@ def eval_model(
         torch.cuda.synchronize()
 
     if profiler is None:
-        metric_meter = run_inference(model, dataloader, device, metric_fn)
+        metric_meter, _ = run_inference(
+            model, dataloader, device, metric_fn, flow_scale=flow_scale
+        )
     else:
-        metric_meter = profile_inference(model, dataloader, device, metric_fn, profiler)
+        metric_meter, _ = profile_inference(
+            model, dataloader, device, metric_fn, profiler, flow_scale=flow_scale
+        )
 
     print(f"Average evaluation metric = {metric_meter.avg}")
 

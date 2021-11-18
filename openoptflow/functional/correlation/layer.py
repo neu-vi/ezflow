@@ -4,7 +4,7 @@
 import torch
 import torch.nn as nn
 
-from .registry import FUNCTIONAL_REGISTRY
+from ..registry import FUNCTIONAL_REGISTRY
 
 
 @FUNCTIONAL_REGISTRY.register()
