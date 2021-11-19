@@ -17,6 +17,8 @@
 
 <br>
 
+#### Documentation and tutorials coming soon!
+
 ## Installation
 
 ```shell
