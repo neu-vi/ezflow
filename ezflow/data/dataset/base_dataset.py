@@ -5,7 +5,7 @@ import torch
 import torch.utils.data as data
 
 from ...functional import FlowAugmentor
-from ...utils import frame_utils
+from ...utils import read_gen
 
 
 class BaseDataset(data.Dataset):
@@ -56,8 +56,8 @@ class BaseDataset(data.Dataset):
 
         """
         if self.is_prediction:
-            img1 = frame_utils.read_gen(self.image_list[index][0])
-            img2 = frame_utils.read_gen(self.image_list[index][1])
+            img1 = read_gen(self.image_list[index][0])
+            img2 = read_gen(self.image_list[index][1])
             img1 = np.array(img1).astype(np.uint8)[..., :3]
             img2 = np.array(img2).astype(np.uint8)[..., :3]
             img1 = torch.from_numpy(img1).permute(2, 0, 1).float()
@@ -75,9 +75,9 @@ class BaseDataset(data.Dataset):
 
         index = index % len(self.image_list)
 
-        img1 = frame_utils.read_gen(self.image_list[index][0])
-        img2 = frame_utils.read_gen(self.image_list[index][1])
-        flow = frame_utils.read_gen(self.flow_list[index])
+        img1 = read_gen(self.image_list[index][0])
+        img2 = read_gen(self.image_list[index][1])
+        flow = read_gen(self.flow_list[index])
 
         flow = np.array(flow).astype(np.float32)
         img1 = np.array(img1).astype(np.uint8)
