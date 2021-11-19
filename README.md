@@ -17,7 +17,7 @@
 
 <br>
 
-#### Documentation and tutorials coming soon!
+#### Documentation and tutorials coming soon! Stay tuned!
 
 ## Installation
 
