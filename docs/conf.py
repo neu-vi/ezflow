@@ -20,10 +20,9 @@
 import os
 import sys
 
-import ezflow
-
 sys.path.insert(0, os.path.abspath(".."))
 
+import ezflow
 
 # -- General configuration ---------------------------------------------
 
