@@ -54,7 +54,7 @@ master_doc = "index"
 
 # General information about the project.
 project = "EzFlow"
-copyright = "2021, Neelay Shah"
+copyright = "2021, Neelay Shah, Prajnan Goswami, Huaizu Jiang"
 author = "Neelay Shah"
 
 # The version info for the project you're documenting, acts as replacement
