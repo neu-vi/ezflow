@@ -18,6 +18,8 @@ class VCN(nn.Module):
         self.encoder = build_encoder(cfg.ENCODER)
 
         self.butterfly_filters = nn.ModuleList()
+        for _ in range(3):
+            pass
 
     def forward(self, img1, img2):
 
