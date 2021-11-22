@@ -29,7 +29,7 @@ def test_RAFT():
     flow = model(img1, img2)
     assert flow.shape == (2, 2, 256, 256)
 
-    del model, flow
+    del model, flow, flow_preds
 
     _ = build_model("RAFT", default=True)
 
@@ -44,7 +44,7 @@ def test_DICL():
     flow = model(img1, img2)
     assert flow.shape == (2, 2, 256, 256)
 
-    del model, flow
+    del model, flow, flow_preds
 
     _ = build_model("DICL", default=True)
 
@@ -59,7 +59,7 @@ def test_PWCNet():
     flow = model(img1, img2)
     assert flow.shape == (2, 2, 256, 256)
 
-    del model, flow
+    del model, flow, flow_preds
 
     _ = build_model("PWCNet", default=True)
 
@@ -74,6 +74,21 @@ def test_FlowNetS():
     flow = model(img1, img2)
     assert flow.shape == (2, 2, 256, 256)
 
-    del model, flow
+    del model, flow, flow_preds
 
     _ = build_model("FlowNetS", default=True)
+
+
+def test_VCN():
+
+    model = build_model("VCN", "vcn.yaml")
+    flow_preds = model(img1, img2)
+    # assert isinstance(flow_preds, tuple) or isinstance(flow_preds, list)
+
+    model.eval()
+    flow = model(img1, img2)
+    # assert flow.shape == (2, 2, 256, 256)
+
+    del model, flow
+
+    _ = build_model("VCN", default=True)
