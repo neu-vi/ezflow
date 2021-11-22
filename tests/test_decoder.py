@@ -22,14 +22,15 @@ def test_ConvDecoder():
     del decoder, flow
 
 
-# def test_SoftArg2DFlowRegression():
+def test_SoftArg2DFlowRegression():
 
-#     decoder = DECODER_REGISTRY.get("SoftArg2DFlowRegression")()
-#     cost = torch.randn(2, 3, 3, 3, 3)
-#     flow = decoder(cost)
-#     assert flow.shape[1] == 2
+    decoder = DECODER_REGISTRY.get("SoftArg2DFlowRegression")()
+    cost = torch.randn([2, 1, 7, 7, 4, 4])
+    flow = decoder(cost)
+    assert flow.shape[1] == 2
 
-#     del decoder, flow
+    del decoder, flow
+
 
 # def test_Soft4DFlowRegression():
 
