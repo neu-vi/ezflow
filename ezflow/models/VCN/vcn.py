@@ -15,7 +15,7 @@ class VCN(nn.Module):
         super(VCN, self).__init__()
 
         self.cfg = cfg
-        self.encoder = build_encoder(cfg)
+        self.encoder = build_encoder(cfg.ENCODER)
 
         self.butterfly_filters = nn.ModuleList()
 
