@@ -37,6 +37,7 @@ python setup.py install
 - [x] [PWCNet](https://arxiv.org/abs/1709.02371)
 - [x] [RAFT](https://arxiv.org/abs/2003.12039)
 - [x] [DICL](https://arxiv.org/abs/2010.14851)
+- [x] [VCN](https://papers.nips.cc/paper/2019/hash/bbf94b34eb32268ada57a3be5062fe7d-Abstract.html)
 
 ### Datasets supported
 
@@ -50,6 +51,7 @@ python setup.py install
 - [DICL-Flow](https://github.com/jytime/DICL-Flow)
 - [PWC-Net](https://github.com/NVlabs/PWC-Net)
 - [FlowNetS](https://github.com/ClementPinard/FlowNetPytorch)
+- [VCN](https://github.com/gengshan-y/VCN)
 - [detectron2](https://github.com/facebookresearch/detectron2)
 - [CorrelationLayer](https://github.com/oblime/CorrelationLayer)
 - [ptflow](https://github.com/hmorimitsu/ptlflow)
