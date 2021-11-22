@@ -10,6 +10,8 @@
 <div align='center'>
 
 [![Tests](https://github.com/neu-vig/ezflow/actions/workflows/package-test.yml/badge.svg)](https://github.com/neu-vig/ezflow/actions/workflows/package-test.yml)
+[![Docs](https://readthedocs.org/projects/ezflow/badge/?version=latest)](https://ezflow.readthedocs.io/en/latest/?badge=latest)
+
 <!-- [![Code style](https://github.com/neu-vig/ezflow/actions/workflows/linting.yml/badge.svg)](https://github.com/neu-vig/ezflow/actions/workflows/linting.yml) -->
 <!-- [![Code coverage](https://github.com/neu-vig/ezflow/actions/workflows/codecov.yml/badge.svg)](https://github.com/neu-vig/ezflow/actions/workflows/codecov.yml) -->
 
