@@ -20,6 +20,7 @@ chardet==4.0.0
 charset-normalizer==2.0.1
 click==8.0.1
 colorama==0.4.4
+cookiecutter==1.7.3
 coverage==5.5
 cryptography==3.4.8
 cycler==0.10.0
@@ -33,6 +34,8 @@ fett==0.3.2
 filelock==3.0.12
 flake8==3.9.2
 fvcore==0.1.5.post20210915
+google-auth==1.35.0
+google-auth-oauthlib==0.4.5
 grpcio==1.39.0
 identify==2.2.13
 idna==3.2
@@ -96,6 +99,15 @@ scipy==1.7.0
 six 
 snooty-lextudio==1.11.1.dev0
 snowballstemmer==2.1.0
+Sphinx==4.1.2
+sphinx-rtd-theme==1.0.0
+sphinxcontrib-applehelp==1.0.2
+sphinxcontrib-devhelp==1.0.2
+sphinxcontrib-htmlhelp==2.0.0
+sphinxcontrib-jsmath==1.0.1
+sphinxcontrib-qthelp==1.0.3
+sphinxcontrib-serializinghtml==1.1.5
+sphinxcontrib-websupport==1.2.4
 tabulate==0.8.9
 tensorboard==2.6.0
 tensorboard-data-server==0.6.1
