@@ -4,6 +4,15 @@ Adapted from Detectron2 (https://github.com/facebookresearch/detectron2)
 
 
 class Registry:
+    """
+    Class to register objects and then retrieve them by name.
+
+    Parameters
+    ----------
+    name : str
+        Name of the registry
+    """
+
     def __init__(self, name):
 
         self._name = name
@@ -18,6 +27,16 @@ class Registry:
         self._obj_map[name] = obj
 
     def register(self, obj=None, name=None):
+        """
+        Method to register an object in the registry
+
+        Parameters
+        ----------
+        obj : object, optional
+            Object to register, defaults to None (which will return the decorator)
+        name : str, optional
+            Name of the object to register, defaults to None (which will use the name of the object)
+        """
 
         if obj is None:
 
@@ -35,6 +54,19 @@ class Registry:
         self._do_register(name, obj)
 
     def get(self, name):
+        """
+        Method to retrieve an object from the registry
+
+        Parameters
+        ----------
+        name : str
+            Name of the object to retrieve
+
+        Returns
+        -------
+        object
+            Object registered under the given name
+        """
 
         ret = self._obj_map.get(name)
         if ret is None:
@@ -45,6 +77,15 @@ class Registry:
         return ret
 
     def get_list(self):
+        """
+        Method to retrieve all objects from the registry
+
+        Returns
+        -------
+        list
+            List of all objects registered in the registry
+        """
+
         return list(self._obj_map.keys())
 
     def __contains__(self, name):

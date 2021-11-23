@@ -3,7 +3,19 @@ import torch
 
 def endpointerror(pred, target):
     """
-    Endpoint error.
+    Endpoint error
+
+    Parameters
+    ----------
+    pred : torch.Tensor
+        Predicted flow
+    target : torch.Tensor
+        Target flow
+
+    Returns
+    -------
+    torch.Tensor
+        Endpoint error
     """
     if isinstance(pred, tuple) or isinstance(pred, list):
         pred = pred[-1]

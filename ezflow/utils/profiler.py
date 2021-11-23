@@ -2,6 +2,35 @@ from torch.profiler import ProfilerActivity, schedule, tensorboard_trace_handler
 
 
 class Profiler:
+    """
+    Wrapper class for PyTorch profiler
+
+    Parameters
+    ----------
+    model_name : str
+        Name of the model
+    log_dir : str
+        Path to save the profiling logs
+    profile_cpu : bool, optional
+        Enable CPU profiling, by default False
+    profile_cuda : bool, optional
+        Enable CUDA profiling, by default False
+    profile_memory : bool, optional
+        Enable memory profiling, by default False
+    record_shapes : bool, optional
+        Enable shape recording for tensors, by default False
+    skip_first : int, optional
+        Number of warmup iterations to skip, by default 0
+    wait : int, optional
+        Number of seconds to wait before starting the profiler, by default 0
+    warmup : int, optional
+        Number of iterations to warmup the profiler, by default 1
+    active : int, optional
+        Number of iterations to profile, by default 1
+    repeat : int, optional
+        Number of times to repeat the profiling, by default 10
+    """
+
     def __init__(
         self,
         model_name,
