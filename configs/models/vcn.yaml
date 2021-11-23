@@ -5,9 +5,9 @@ ENCODER:
   GROUPS: 1
   IN_CHANNELS: 3
   NORM: True
-FILTER:
-    F_DIM_A_1: 128
-    F_DIM_A_2: 64
-    F_DIM_B_1: 16
-    F_DIM_B_2: 12 
+DECODER:
+    F_DIM_A1: 128
+    F_DIM_A2: 64
+    F_DIM_B1: 16
+    F_DIM_B2: 12 
     NORM: True

@@ -22,6 +22,24 @@ def test_ConvDecoder():
     del decoder, flow
 
 
+def test_SeparableConv4D():
+
+    inp = torch.randn(2, 2, 2, 2, 2, 2)
+    DECODER_fn = DECODER_REGISTRY.get("SeparableConv4D")(2, 4)
+    _ = DECODER_fn(inp)
+
+    del DECODER_fn, inp
+
+
+def test_Butterfly4D():
+
+    inp = torch.randn(2, 2, 2, 2, 2, 2)
+    DECODER_fn = DECODER_REGISTRY.get("Butterfly4D")(2, 4)
+    _ = DECODER_fn(inp)
+
+    del DECODER_fn, inp
+
+
 def test_SoftArg2DFlowRegression():
 
     decoder = DECODER_REGISTRY.get("SoftArg2DFlowRegression")()

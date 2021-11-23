@@ -2,9 +2,9 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from ...decoder import ConvDecoder
+from ...decoder import Butterfly4D, ConvDecoder, SeparableConv4D
 from ...encoder import build_encoder
-from ...similarity import CorrelationLayer, IterSpatialCorrelationSampler
+from ...similarity import IterSpatialCorrelationSampler
 from ...utils import warp
 from ..build import MODEL_REGISTRY
 
@@ -18,8 +18,51 @@ class VCN(nn.Module):
         self.encoder = build_encoder(cfg.ENCODER)
 
         self.butterfly_filters = nn.ModuleList()
+        self.sep_conv_4d_filters = nn.ModuleList()
+
         for _ in range(3):
-            pass
+
+            self.butterfly_filters.append(
+                Butterfly4D(
+                    cfg.DECODER.F_DIM_A1,
+                    cfg.DECODER.F_DIM_B1,
+                    norm=cfg.DECODER.NORM,
+                    full=False,
+                )
+            )
+            self.sep_conv_4d_filters.append(
+                SeparableConv4D(
+                    cfg.DECODER.F_DIM_B1, cfg.DECODER.F_DIM_B1, norm=False, full=False
+                )
+            )
+
+        self.butterfly_filters.append(
+            Butterfly4D(
+                cfg.DECODER.F_DIM_A2,
+                cfg.DECODER.F_DIM_B1,
+                norm=cfg.DECODER.NORM,
+                full=False,
+            )
+        )
+        self.sep_conv_4d_filters.append(
+            SeparableConv4D(
+                cfg.DECODER.F_DIM_B1, cfg.DECODER.F_DIM_B1, norm=False, full=False
+            )
+        )
+
+        self.butterfly_filters.append(
+            Butterfly4D(
+                cfg.DECODER.F_DIM_A2,
+                cfg.DECODER.F_DIM_B2,
+                norm=cfg.DECODER.NORM,
+                full=True,
+            )
+        )
+        self.sep_conv_4d_filters.append(
+            SeparableConv4D(
+                cfg.DECODER.F_DIM_B2, cfg.DECODER.F_DIM_B2, norm=False, full=True
+            )
+        )
 
     def forward(self, img1, img2):
 
