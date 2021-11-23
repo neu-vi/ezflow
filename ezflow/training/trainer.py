@@ -13,6 +13,21 @@ from .registry import loss_functions, optimizers, schedulers
 
 
 class Trainer:
+    """Trainer class for training and evaluating models
+
+    Parameters
+    ----------
+
+    cfg : Config
+        Configuration object for training
+    model : torch.nn.Module
+        Model to be trained
+    train_loader : torch.utils.data.DataLoader
+        DataLoader for training
+    val_loader : torch.utils.data.DataLoader
+        DataLoader for validation
+    """
+
     def __init__(self, cfg, model, train_loader, val_loader):
 
         self.cfg = cfg
@@ -302,6 +317,23 @@ class Trainer:
         n_epochs=None,
         start_epoch=None,
     ):
+        """
+        Method to train the model
+
+        Parameters
+        ----------
+        loss_fn : torch.nn.modules.loss, optional
+            The loss function to be used. Defaults to None (which uses the loss function specified in the config file).
+        optimizer : torch.optim.Optimizer, optional
+            The optimizer to be used. Defaults to None (which uses the optimizer specified in the config file).
+        scheduler : torch.optim.lr_scheduler, optional
+            The learning rate scheduler to be used. Defaults to None (which uses the scheduler specified in the config file).
+        n_epochs : int, optional
+            The number of epochs to train for. Defaults to None (which uses the number of epochs specified in the config file).
+        start_epoch : int, optional
+            The epoch to start training from. Defaults to None (which starts from 0).
+
+        """
 
         loss_fn, optimizer, scheduler = self._setup_training(
             loss_fn, optimizer, scheduler
@@ -342,6 +374,28 @@ class Trainer:
         scheduler_ckpt=None,
         use_cfg=False,
     ):
+
+        """
+        Method to resume training of a model
+
+        Parameters
+        ----------
+        consolidated_ckpt : str, optional
+            The path to the consolidated checkpoint file. Defaults to None (which uses the consolidated checkpoint file specified in the config file).
+        model_ckpt : str, optional
+            The path to the model checkpoint file. Defaults to None (which uses the model checkpoint file specified in the config file).
+        optimizer_ckpt : str, optional
+            The path to the optimizer checkpoint file. Defaults to None (which uses the optimizer checkpoint file specified in the config file).
+        n_epochs : int, optional
+            The number of epochs to train for. Defaults to None (which uses the number of epochs specified in the config file).
+        start_epoch : int, optional
+            The epoch to start training from. Defaults to None (which infers the last epoch from the ckpt).
+        scheduler_ckpt : str, optional
+            The path to the scheduler checkpoint file. Defaults to None (which uses the scheduler checkpoint file specified in the config file).
+        use_cfg : bool, optional
+            Whether to use the config file or not. Defaults to False.
+
+        """
 
         consolidated_ckpt = (
             self.cfg.RESUME_TRAINING.CONSOLIDATED_CKPT
@@ -392,6 +446,15 @@ class Trainer:
         self.train(loss_fn, optimizer, scheduler, n_epochs, start_epoch)
 
     def validate(self, model=None):
+
+        """
+        Method to validate the model
+
+        Parameters
+        ----------
+        model : torch.nn.Module, optional
+            The model to be used for validation. Defaults to None (which uses the model which was trained).
+        """
 
         if model is None:
             model = self.model
