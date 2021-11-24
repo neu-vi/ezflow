@@ -37,21 +37,3 @@ def test_LearnableMatchingCost():
 def test_MultiScalePairwise4DCorr():
 
     _ = SIMILARITY_REGISTRY.get("MutliScalePairwise4DCorr")(features1, features2)
-
-
-def test_SeparableConv4D():
-
-    inp = torch.randn(2, 2, 2, 2, 2, 2)
-    similarity_fn = SIMILARITY_REGISTRY.get("SeparableConv4D")(2, 4)
-    _ = similarity_fn(inp)
-
-    del similarity_fn, inp
-
-
-def test_Butterfly4D():
-
-    inp = torch.randn(2, 2, 2, 2, 2, 2)
-    similarity_fn = SIMILARITY_REGISTRY.get("Butterfly4D")(2, 4)
-    _ = similarity_fn(inp)
-
-    del similarity_fn, inp
