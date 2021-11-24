@@ -7,9 +7,21 @@ from .build import MODULE_REGISTRY
 
 @MODULE_REGISTRY.register()
 class BasicBlock(nn.Module):
-
     """
     Basic residual block for ResNet-style architectures
+
+    Parameters
+    ----------
+    in_channels : int
+        Number of input channels
+    out_channels : int
+        Number of output channels
+    stride : int, optional
+        Stride of the convolution
+    norm : str, optional
+        Normalization method
+    activation : str, optional
+        Activation function
     """
 
     @configurable
@@ -91,9 +103,21 @@ class BasicBlock(nn.Module):
 
 @MODULE_REGISTRY.register()
 class BottleneckBlock(nn.Module):
-
     """
     Bottleneck residual block for ResNet-style architectures
+
+    Parameters
+    ----------
+    in_channels : int
+        Number of input channels
+    out_channels : int
+        Number of output channels
+    stride : int, optional
+        Stride of the convolution
+    norm : str, optional
+        Normalization method
+    activation : str, optional
+        Activation function
     """
 
     @configurable

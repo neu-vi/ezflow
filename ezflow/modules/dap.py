@@ -7,7 +7,18 @@ from .units import ConvNormRelu
 
 @MODULE_REGISTRY.register()
 class DisplacementAwareProjection(nn.Module):
-    """Displacement-aware projection layer"""
+    """
+    Displacement-aware projection layer
+
+    Parameters
+    ----------
+    max_displacement : int, optional
+        Maximum displacement
+    temperature : bool, optional
+        If True, use temperature scaling
+    temp_factor : float, optional
+        Temperature scaling factor
+    """
 
     @configurable
     def __init__(self, max_displacement=3, temperature=False, temp_factor=1e-6):
