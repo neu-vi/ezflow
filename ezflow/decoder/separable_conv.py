@@ -2,7 +2,7 @@ import torch.nn.functional as F
 from torch import nn
 
 from ..config import configurable
-from .build import SIMILARITY_REGISTRY
+from .build import DECODER_REGISTRY
 
 
 class FeatureProjection4D(nn.Module):
@@ -38,7 +38,7 @@ class FeatureProjection4D(nn.Module):
         return x
 
 
-@SIMILARITY_REGISTRY.register()
+@DECODER_REGISTRY.register()
 class SeparableConv4D(nn.Module):
     @configurable
     def __init__(
@@ -228,7 +228,7 @@ class SeparableConv4DBlock(nn.Module):
         return out
 
 
-@SIMILARITY_REGISTRY.register()
+@DECODER_REGISTRY.register()
 class Butterfly4D(nn.Module):
     @configurable
     def __init__(self, f_dim_1, f_dim_2, norm=True, full=True, groups=1):

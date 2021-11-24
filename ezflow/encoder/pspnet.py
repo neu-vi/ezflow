@@ -299,6 +299,6 @@ class PSPNetBackbone(nn.Module):
             proj3 = self.proj3(conv3)
             proj2 = self.proj2(conv2)
 
-            return (proj6, proj5, proj4, proj3, proj2)
+            return [proj6, proj5, proj4, proj3, proj2]
 
-        return (conv6, conv5, conv4, conv3, conv2)
+        return [conv6, conv5, conv4, conv3, conv2]

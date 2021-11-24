@@ -22,14 +22,33 @@ def test_ConvDecoder():
     del decoder, flow
 
 
-# def test_SoftArg2DFlowRegression():
+def test_SeparableConv4D():
 
-#     decoder = DECODER_REGISTRY.get("SoftArg2DFlowRegression")()
-#     cost = torch.randn(2, 3, 3, 3, 3)
-#     flow = decoder(cost)
-#     assert flow.shape[1] == 2
+    inp = torch.randn(2, 2, 2, 2, 2, 2)
+    decoder = DECODER_REGISTRY.get("SeparableConv4D")(2, 4)
+    _ = decoder(inp)
 
-#     del decoder, flow
+    del decoder, inp
+
+
+def test_Butterfly4D():
+
+    inp = torch.randn(2, 2, 2, 2, 2, 2)
+    decoder = DECODER_REGISTRY.get("Butterfly4D")(2, 4)
+    _ = decoder(inp)
+
+    del decoder, inp
+
+
+def test_SoftArg2DFlowRegression():
+
+    decoder = DECODER_REGISTRY.get("SoftArg2DFlowRegression")()
+    cost = torch.randn([2, 1, 7, 7, 4, 4])
+    flow = decoder(cost)
+    assert flow.shape[1] == 2
+
+    del decoder, flow
+
 
 # def test_Soft4DFlowRegression():
 
