@@ -183,4 +183,4 @@ class GANetBackbone(nn.Module):
         x = self.deconv2b(x, rem1)
         x2 = self.outconv_2(x)
 
-        return x, x2, x3, x4, x5, x6
+        return [x, x2, x3, x4, x5, x6]
