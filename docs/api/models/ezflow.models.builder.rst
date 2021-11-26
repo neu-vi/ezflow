@@ -1,7 +1,7 @@
-Predictor
+Builder
 ==========
 
-.. automodule:: ezflow.models.build.predictor
+.. automodule:: ezflow.models.build
    :members:
    :undoc-members:
    :show-inheritance:

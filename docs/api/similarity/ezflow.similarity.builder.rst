@@ -1,4 +1,4 @@
-Build
+Builder
 =========================================================
 
 .. automodule:: ezflow.similarity.build
