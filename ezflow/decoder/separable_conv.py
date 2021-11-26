@@ -16,7 +16,7 @@ class FeatureProjection4D(nn.Module):
     out_channels : int
         Number of output channels
     stride : int
-        Number of strides for 3D convolution
+        Stride of the convolution
     norm : bool, default : True
         If True, applies Batch Norm 3D
     groups : int, default : 1
@@ -68,11 +68,11 @@ class SeparableConv4D(nn.Module):
     out_channels : int
         Number of output channels
     stride : tuple, default : (1, 1, 1)
-        Number of strides for convolution
+        Stride of the convolution
     norm : bool, default : True
         If True, applies Batch Normalization
     k_size : int, default : 3
-        Number of kernels
+        Size of the kernel
     full : bool, default : True
         If True, applies a stride of (1, 1, 1)
     groups : int, default : 1
@@ -228,11 +228,11 @@ class SeparableConv4DBlock(nn.Module):
     out_channels : int
         Number of output channels
     stride : tuple, default : (1, 1, 1)
-        Number of strides for convolution
+        Stride of the convolution
     norm : bool, default : True
         If True, applies Batch Normalization
     k_size : int, default : 3
-        Number of kernels
+        Size of the kernel
     full : bool, default : True
         If True, applies SeparableConv4D otherwise FeatureProjection4D
     groups : int, default : 1
@@ -301,7 +301,7 @@ class Butterfly4D(nn.Module):
     f_dim_2 : int
         Number of output channels
     stride : tuple, default : (1, 1, 1)
-        Number of strides for convolution
+        Stride of the convolution
     norm : bool, default : True
         If True, applies Batch Normalization
     full : bool, default : True
