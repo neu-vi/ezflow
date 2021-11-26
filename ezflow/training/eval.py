@@ -9,6 +9,18 @@ from ..utils import AverageMeter, endpointerror
 
 
 def warmup(model, dataloader, device):
+    """Performs an iteration of dataloading and model prediction to warm up CUDA device
+
+    Parameters
+    ----------
+    model : torch.nn.Module
+        Model to be used for prediction / inference
+    dataloader : torch.utils.data.DataLoader
+        Dataloader to be used for prediction / inference
+    device : torch.device
+        Device (CUDA / CPU) to be used for prediction / inference
+    """
+
     inp, target = iter(dataloader).next()
 
     img1, img2 = inp
@@ -18,10 +30,35 @@ def warmup(model, dataloader, device):
         target.to(device),
     )
 
-    model(img1, img2)
+    _ = model(img1, img2)
 
 
 def run_inference(model, dataloader, device, metric_fn, flow_scale=1.0):
+    """
+    Uses a model to perform inference on a dataloader and captures inference time and evaluation metric
+
+    Parameters
+    ----------
+    model : torch.nn.Module
+        Model to be used for prediction / inference
+    dataloader : torch.utils.data.DataLoader
+        Dataloader to be used for prediction / inference
+    device : torch.device
+        Device (CUDA / CPU) to be used for prediction / inference
+    metric_fn : function
+        Function to be used to calculate the evaluation metric
+    flow_scale : float, optional
+        Scale factor to be applied to the predicted flow
+
+    Returns
+    -------
+    metric_meter : AverageMeter
+        AverageMeter object containing the evaluation metric information
+    avg_inference_time : float
+        Average inference time
+
+    """
+
     metric_meter = AverageMeter()
     times = []
 
@@ -60,6 +97,34 @@ def run_inference(model, dataloader, device, metric_fn, flow_scale=1.0):
 def profile_inference(
     model, dataloader, device, metric_fn, profiler, flow_scale=1.0, count_params=False
 ):
+    """
+    Uses a model to perform inference on a dataloader and profiles model characteristics such as memory usage, inference time, and evaluation metric
+
+    Parameters
+    ----------
+    model : torch.nn.Module
+        Model to be used for prediction / inference
+    dataloader : torch.utils.data.DataLoader
+        Dataloader to be used for prediction / inference
+    device : torch.device
+        Device (CUDA / CPU) to be used for prediction / inference
+    metric_fn : function
+        Function to be used to calculate the evaluation metric
+    profiler : torch.profiler.profile
+        Profiler to be used for profiling model characteristics
+    flow_scale : float, optional
+        Scale factor to be applied to the predicted flow
+    count_params : bool, optional
+        Flag to indicate whether to count model parameters
+
+    Returns
+    -------
+    metric_meter : AverageMeter
+        AverageMeter object containing the evaluation metric information
+    avg_inference_time : float
+        Average inference time
+    """
+
     metric_meter = AverageMeter()
     times = []
 
@@ -140,6 +205,31 @@ def eval_model(
     profiler=None,
     flow_scale=1.0,
 ):
+    """
+    Evaluates a model on a dataloader and optionally profiles model characteristics such as memory usage, inference time, and evaluation metric
+
+    Parameters
+    ----------
+    model : torch.nn.Module
+        Model to be used for prediction / inference
+    dataloader : torch.utils.data.DataLoader
+        Dataloader to be used for prediction / inference
+    device : torch.device
+        Device (CUDA / CPU) to be used for prediction / inference
+    distributed : bool, optional
+        Flag to indicate whether to perform distributed inference on multiple GPUs
+    metric : function, optional
+        Function to be used to calculate the evaluation metric
+    profiler : torch.profiler.profile, optional
+        Profiler to be used for profiling model characteristics
+    flow_scale : float, optional
+        Scale factor to be applied to the predicted flow
+
+    Returns
+    -------
+    float
+        Average evaluation metric
+    """
 
     if isinstance(device, list) or isinstance(device, tuple):
         device = ",".join(map(str, device))

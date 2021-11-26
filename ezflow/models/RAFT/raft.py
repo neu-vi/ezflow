@@ -25,6 +25,16 @@ except:
 
 @MODEL_REGISTRY.register()
 class RAFT(nn.Module):
+    """
+    Implementation of the paper
+    "RAFT: Recurrent All-Pairs Field Transforms for Optical Flow" (https://arxiv.org/abs/2003.12039)
+
+    Parameters
+    ----------
+    cfg : Config
+        Configuration for the model
+    """
+
     def __init__(self, cfg):
         super(RAFT, self).__init__()
 
@@ -76,7 +86,21 @@ class RAFT(nn.Module):
         flow_init=None,
         only_flow=True,
     ):
+        """
+        Performs forward pass of the network
 
+        Parameters
+        ----------
+        img1 : torch.Tensor
+            Image to predict flow from
+        img2 : torch.Tensor
+            Image to predict flow to
+
+        Returns
+        -------
+        torch.Tensor
+            Flow from img1 to img2
+        """
         img1 = 2 * (img1 / 255.0) - 1.0
         img2 = 2 * (img2 / 255.0) - 1.0
 
