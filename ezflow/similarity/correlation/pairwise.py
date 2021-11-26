@@ -8,6 +8,21 @@ from ..build import SIMILARITY_REGISTRY
 
 @SIMILARITY_REGISTRY.register()
 class MutliScalePairwise4DCorr:
+    """
+    Pairwise 4D correlation at multiple scales. Used in RAFT (https://arxiv.org/abs/2003.12039)
+
+    Parameters
+    ----------
+    fmap1 : torch.Tensor
+        First feature map
+    fmap2 : torch.Tensor
+        Second feature map
+    num_levels : int
+        Number of levels in the feature pyramid
+    corr_radius : int
+        Radius of the correlation window
+    """
+
     @configurable
     def __init__(self, fmap1, fmap2, num_levels=4, corr_radius=4):
 

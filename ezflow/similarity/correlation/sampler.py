@@ -20,6 +20,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+from ...config import configurable
 from ..build import SIMILARITY_REGISTRY
 
 
@@ -33,10 +34,12 @@ def iter_spatial_correlation_sample(
     dilation: Union[int, Tuple[int, int]] = 1,
     dilation_patch: Union[int, Tuple[int, int]] = 1,
 ) -> torch.Tensor:
+
     """Apply spatial correlation sampling from input1 to input2 using iteration in PyTorch.
     This docstring is taken and adapted from the original package.
     Every parameter except input1 and input2 can be either single int or a pair of int. For more information about
     Spatial Correlation Sampling, see this page. https://lmb.informatik.uni-freiburg.de/Publications/2015/DFIB15/
+
     Parameters
     ----------
     input1 : torch.Tensor
@@ -55,6 +58,7 @@ def iter_spatial_correlation_sample(
         Similar to dilation in convolution.
     dilation_patch : Union[int, Tuple[int, int]], default 1
         Step for every shift in patch.
+
     Returns
     -------
     torch.Tensor
@@ -66,7 +70,7 @@ def iter_spatial_correlation_sample(
     NotImplementedError
         If dilation != 1.
     """
-    # Make inputs be tuples
+
     kernel_size = (
         (kernel_size, kernel_size) if isinstance(kernel_size, int) else kernel_size
     )
@@ -125,7 +129,24 @@ def iter_spatial_correlation_sample(
 
 @SIMILARITY_REGISTRY.register()
 class IterSpatialCorrelationSampler(nn.Module):
-    """Apply spatial correlation sampling from two inputs using iteration in PyTorch."""
+    """
+    Spatial correlation sampling from two inputs using iteration in PyTorch
+
+    Parameters
+    ----------
+    kernel_size : Union[int, Tuple[int, int]], default 1
+        Total size of your correlation kernel, in pixels
+    patch_size : Union[int, Tuple[int, int]], default 1
+        Total size of your patch, determining how many different shifts will be applied.
+    stride : Union[int, Tuple[int, int]], default 1
+        Stride of the spatial sampler, will modify output height and width.
+    padding : Union[int, Tuple[int, int]], default 0
+        Padding applied to input1 and input2 before applying the correlation sampling, will modify output height and width.
+    dilation : Union[int, Tuple[int, int]], default 1
+        Similar to dilation in convolution.
+    dilation_patch : Union[int, Tuple[int, int]], default 1
+        Step for every shift in patch.
+    """
 
     def __init__(
         self,
@@ -136,22 +157,7 @@ class IterSpatialCorrelationSampler(nn.Module):
         dilation: Union[int, Tuple[int, int]] = 1,
         dilation_patch: Union[int, Tuple[int, int]] = 1,
     ) -> None:
-        """Initialize IterSpatialCorrelationSampler.
-        Parameters
-        ----------
-        kernel_size : Union[int, Tuple[int, int]], default 1
-            Total size of your correlation kernel, in pixels
-        patch_size : Union[int, Tuple[int, int]], default 1
-            Total size of your patch, determining how many different shifts will be applied.
-        stride : Union[int, Tuple[int, int]], default 1
-            Stride of the spatial sampler, will modify output height and width.
-        padding : Union[int, Tuple[int, int]], default 0
-            Padding applied to input1 and input2 before applying the correlation sampling, will modify output height and width.
-        dilation : Union[int, Tuple[int, int]], default 1
-            Similar to dilation in convolution.
-        dilation_patch : Union[int, Tuple[int, int]], default 1
-            Step for every shift in patch.
-        """
+
         super(IterSpatialCorrelationSampler, self).__init__()
         self.kernel_size = kernel_size
         self.patch_size = patch_size
