@@ -10,7 +10,7 @@ IO
    :show-inheritance:
 
 Metrics
----
+--------
 
 .. automodule:: ezflow.utils.metrics
    :members:
@@ -18,7 +18,7 @@ Metrics
    :show-inheritance:
 
 Other Utilities
----
+----------------
 
 .. automodule:: ezflow.utils.other_utils
    :members:
@@ -26,7 +26,7 @@ Other Utilities
    :show-inheritance:
 
 Profiler
----
+------------
 
 .. automodule:: ezflow.utils.profiler
    :members:
@@ -34,7 +34,7 @@ Profiler
    :show-inheritance:
 
 Registry
----
+------------
 
 .. automodule:: ezflow.utils.registry
    :members:
@@ -42,7 +42,7 @@ Registry
    :show-inheritance:
 
 Resampling
----
+---------------
 
 .. automodule:: ezflow.utils.resampling
    :members:
@@ -50,7 +50,7 @@ Resampling
    :show-inheritance:
 
 Visualization
----
+---------------
 
 .. automodule:: ezflow.utils.viz
    :members:
@@ -58,7 +58,7 @@ Visualization
    :show-inheritance:
 
 Warping
----
+---------------
 
 .. automodule:: ezflow.utils.warp
    :members:
