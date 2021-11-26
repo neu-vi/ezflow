@@ -5,7 +5,7 @@ Correlation
 Correlation Layer
 --------------------
 
-.. automodule:: ezflow.similarity.corelation.layer
+.. automodule:: ezflow.similarity.correlation.layer
    :members:
    :undoc-members:
    :show-inheritance:
@@ -14,7 +14,7 @@ Correlation Layer
 Pairwise Correlation
 ----------------------
 
-.. automodule:: ezflow.similarity.corelation.pairwise
+.. automodule:: ezflow.similarity.correlation.pairwise
    :members:
    :undoc-members:
    :show-inheritance:
@@ -23,7 +23,7 @@ Pairwise Correlation
 Correlation Sampler
 ----------------------
 
-.. automodule:: ezflow.similarity.corelation.sampler
+.. automodule:: ezflow.similarity.correlation.sampler
    :members:
    :undoc-members:
    :show-inheritance:
