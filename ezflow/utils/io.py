@@ -13,7 +13,19 @@ TAG_CHAR = np.array([202021.25], np.float32)
 
 
 def read_flow(fn):
-    """Read .flo file in Middlebury format"""
+    """
+    Read .flo file in Middlebury format
+
+    Parameters
+    -----------
+    fn : str
+        Absolute path to flow file
+
+    Returns
+    --------
+    flow : np.ndarray
+        Optical flow map
+    """
     # Code adapted from:
     # http://stackoverflow.com/questions/28013200/reading-middlebury-flow-files-with-python-bytes-array-numpy
 
@@ -34,6 +46,20 @@ def read_flow(fn):
 
 
 def read_pfm(file):
+    """
+    Read a pfm file from disk
+
+    Parameters
+    -----------
+    file : str
+        Path to flow file
+
+    Returns
+    --------
+    flow : np.ndarray
+        Optical flow map
+    """
+
     file = open(file, "rb")
 
     color = None
@@ -68,6 +94,7 @@ def read_pfm(file):
 
     data = np.reshape(data, shape)
     data = np.flipud(data)
+
     return data
 
 
@@ -76,8 +103,19 @@ def write_flow(filename, uv, v=None):
 
     If v is None, uv is assumed to contain both u and v channels,
     stacked in depth.
-    Original code by Deqing Sun, adapted from Daniel Scharstein.
+
+    Parameters
+    ----------
+    filename : str
+        Path to file
+    uv : np.ndarray
+        Optical flow
+    v : np.ndarray, optional
+        Optional second channel
     """
+
+    # Original code by Deqing Sun, adapted from Daniel Scharstein.
+
     n_bands = 2
 
     if v is None:
@@ -104,6 +142,19 @@ def write_flow(filename, uv, v=None):
 
 
 def read_gen(file_name):
+    """
+    Read optical flow from a variety of file formats
+
+    Parameters
+    -----------
+    file_name : str
+        Path to flow file
+
+    Returns
+    --------
+    flow : np.ndarray
+        Optical flow map
+    """
 
     ext = splitext(file_name)[-1]
 
@@ -129,6 +180,19 @@ def read_gen(file_name):
 
 
 class InputPadder:
+    """
+    Class to pad / unpad the input to a network with a given padding
+
+    Parameters
+    -----------
+    dims : tuple
+        Dimensions of the input
+    scale : int
+        Scale of the padding
+    mode : str
+        Padding mode
+    """
+
     def __init__(self, dims, scale=8, mode="sintel"):
 
         self.ht, self.wd = dims[-2:]
@@ -145,10 +209,38 @@ class InputPadder:
             self._pad = [pad_wd // 2, pad_wd - pad_wd // 2, 0, pad_ht]
 
     def pad(self, *inputs):
+        """
+        Pad the input
+
+        Parameters
+        -----------
+        inputs : list
+            List of inputs to pad
+
+        Returns
+        --------
+        list
+            Padded inputs
+        """
+
         return [F.pad(x, self._pad, mode="replicate") for x in inputs]
 
     def unpad(self, x):
+        """
+        Unpad the input
+
+        Parameters
+        -----------
+        x : torch.Tensor
+            Input to unpad
+
+        Returns
+        --------
+        torch.Tensor
+            Unpadded input
+        """
 
         ht, wd = x.shape[-2:]
         c = [self._pad[2], ht - self._pad[3], self._pad[0], wd - self._pad[1]]
+
         return x[..., c[0] : c[1], c[2] : c[3]]

@@ -4,25 +4,41 @@
 import torch
 import torch.nn as nn
 
+from ...config import configurable
 from ..build import SIMILARITY_REGISTRY
 
 
 @SIMILARITY_REGISTRY.register()
 class CorrelationLayer(nn.Module):
-
     """
-    This PyTorch implementation of the official Correlation layer only supports specific values of the following parameters:
+    Correlation layer in pure PyTorch
+    Only supports specific values of the following parameters:
     - kernel_size: 1
     - stride_1: 1
     - stride_2: 1
     - corr_multiply: 1
+
+    Parameters
+    ----------
+    pad_size : int
+        Padding size for the correlation layer
+    max_displacement : int
+        Maximum displacement for the correlation computation
     """
 
+    @configurable
     def __init__(self, pad_size=4, max_displacement=4):
         super().__init__()
 
         self.max_h_disp = max_displacement
         self.padlayer = nn.ConstantPad2d(pad_size, 0)
+
+    @classmethod
+    def from_config(cls, cfg):
+        return {
+            "pad_size": cfg.PAD_SIZE,
+            "max_displacement": cfg.MAX_DISPLACEMENT,
+        }
 
     def forward(self, features1, features2):
 

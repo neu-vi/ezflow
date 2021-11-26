@@ -17,9 +17,31 @@ def get_default_model_cfg(model_name):
 def build_model(
     name, cfg_path=None, custom_cfg=False, cfg=None, default=False, weights_path=None
 ):
-
     """
-    Builds a model from a model name and config.
+    Builds a model from a model name and config. Also supports loading weights
+
+    Parameters
+    ----------
+    name : str
+        Name of the model to build
+    cfg_path : str, optional
+        Path to a config file. If not provided, will use the default config
+        for the model
+    custom_cfg : bool, optional
+        Whether to use a custom config file. If False, will use the default
+        config for the model
+    cfg : CfgNode object, optional
+        Custom config object. If provided, will use this config instead of
+        the default config for the model
+    default : bool, optional
+        Whether to use the default config for the model
+    weights_path : str, optional
+        Path to a weights file
+
+    Returns
+    -------
+    torch.nn.Module
+        The model
     """
 
     if name not in MODEL_REGISTRY:

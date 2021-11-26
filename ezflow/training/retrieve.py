@@ -6,6 +6,9 @@ from ..config import get_cfg
 
 
 class _TrainerConfigs:
+    """
+    Container class for training configurations.
+    """
 
     NAME_TO_TRAINER_CONFIG = {
         "BASE": "base.yaml",

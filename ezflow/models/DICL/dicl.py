@@ -12,6 +12,16 @@ from ..build import MODEL_REGISTRY
 
 @MODEL_REGISTRY.register()
 class DICL(nn.Module):
+    """
+    Implementation of the paper
+    "Displacement-Invariant Matching Cost Learning for Accurate Optical Flow Estimation" (https://arxiv.org/abs/2010.14851)
+
+    Parameters
+    ----------
+    cfg : Config
+        Configuration for the model
+    """
+
     def __init__(self, cfg):
         super(DICL, self).__init__()
 
@@ -228,6 +238,21 @@ class DICL(nn.Module):
         return upflow, flow, raw_flow
 
     def forward(self, img1, img2):
+        """
+        Performs forward pass of the network
+
+        Parameters
+        ----------
+        img1 : torch.Tensor
+            Image to predict flow from
+        img2 : torch.Tensor
+            Image to predict flow to
+
+        Returns
+        -------
+        torch.Tensor
+            Flow from img1 to img2
+        """
 
         _, x2, x3, x4, x5, x6 = self.feature_net(img1)
         _, y2, y3, y4, y5, y6 = self.feature_net(img2)

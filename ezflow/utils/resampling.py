@@ -5,6 +5,20 @@ from scipy import interpolate
 
 
 def forward_interpolate(flow):
+    """
+    Forward interpolation of flow field
+
+    Parameters
+    ----------
+    flow : torch.Tensor
+        Flow field to be interpolated
+
+    Returns
+    -------
+    torch.Tensor
+        Forward interpolated flow field
+
+    """
 
     flow = flow.detach().cpu().numpy()
     dx, dy = flow[0], flow[1]
@@ -39,7 +53,22 @@ def forward_interpolate(flow):
     return torch.from_numpy(flow).float()
 
 
-def bilinear_sampler(img, coords, mode="bilinear", mask=False):
+def bilinear_sampler(img, coords, mask=False):
+    """
+    Biliear sampler for images
+
+    Parameters
+    ----------
+    img : torch.Tensor
+        Image to be sampled
+    coords : torch.Tensor
+        Coordinates to be sampled
+
+    Returns
+    -------
+    torch.Tensor
+        Sampled image
+    """
 
     H, W = img.shape[-2:]
     xgrid, ygrid = coords.split([1, 1], dim=-1)
@@ -57,13 +86,47 @@ def bilinear_sampler(img, coords, mode="bilinear", mask=False):
 
 
 def upflow(flow, scale=8, mode="bilinear"):
+    """
+    Interpolate flow field
+
+    Parameters
+    ----------
+    flow : torch.Tensor
+        Flow field to be interpolated
+    scale : int
+        Scale of the interpolated flow field
+    mode : str
+        Interpolation mode
+
+    Returns
+    -------
+    torch.Tensor
+        Interpolated flow field
+    """
+
     new_size = (scale * flow.shape[2], scale * flow.shape[3])
 
     return scale * F.interpolate(flow, size=new_size, mode=mode, align_corners=True)
 
 
 def convex_upsample_flow(flow, mask_logits, out_stride):  # adapted from RAFT
-    """Upsample flow field [H/8, W/8, 2] -> [H, W, 2] using convex combination"""
+    """
+    Upsample flow field [H/8, W/8, 2] -> [H, W, 2] using convex combination
+
+    Parameters
+    ----------
+    flow : torch.Tensor
+        Flow field to be upsampled
+    mask_logits : torch.Tensor
+        Mask logits
+    out_stride : int
+        Output stride
+
+    Returns
+    -------
+    torch.Tensor
+        Upsampled flow field
+    """
 
     N, C, H, W = flow.shape
     mask_logits = mask_logits.view(N, 1, 9, out_stride, out_stride, H, W)

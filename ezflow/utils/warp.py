@@ -3,6 +3,21 @@ import torch.nn as nn
 
 
 def warp(x, flow):
+    """
+    Warps an image x according to the optical flow field specified
+
+    Parameters
+    ----------
+    x : torch.Tensor
+        Image to be warped
+    flow : torch.Tensor
+        Optical flow field
+
+    Returns
+    -------
+    torch.Tensor
+        Warped image
+    """
 
     B, _, H, W = x.size()
 

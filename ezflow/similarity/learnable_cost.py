@@ -1,11 +1,10 @@
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 
 try:
     from spatial_correlation_sampler import SpatialCorrelationSampler
 except:
-    pass
+    from .correlation import IterSpatialCorrelationSampler as SpatialCorrelationSampler
 
 from ..config import configurable
 from ..modules import ConvNormRelu
@@ -14,6 +13,15 @@ from .build import SIMILARITY_REGISTRY
 
 @SIMILARITY_REGISTRY.register()
 class Conv2DMatching(nn.Module):
+    """
+    Convolutional matching/filtering network for cost volume learning
+
+    Parameters
+    ----------
+    config : tuple of int or list of int
+        Configuration of the convolutional layers in the network
+    """
+
     @configurable
     def __init__(self, config=(64, 96, 128, 64, 32, 1)):
         super(Conv2DMatching, self).__init__()
@@ -47,6 +55,19 @@ class Conv2DMatching(nn.Module):
 
 @SIMILARITY_REGISTRY.register()
 class Custom2DConvMatching(nn.Module):
+    """
+    Convolutional matching/filtering network for cost volume learning with custom convolutions
+
+    Parameters
+    ----------
+    config : tuple of int or list of int
+        Configuration of the convolutional layers in the network
+    kernel_size : int
+        Kernel size of the convolutional layers
+    **kwargs
+        Additional keyword arguments for the convolutional layers
+    """
+
     @configurable
     def __init__(self, config=(16, 32, 16, 1), kernel_size=3, **kwargs):
         super(Custom2DConvMatching, self).__init__()
@@ -80,6 +101,25 @@ class Custom2DConvMatching(nn.Module):
 
 @SIMILARITY_REGISTRY.register()
 class LearnableMatchingCost(nn.Module):
+    """
+    Learnable matching cost network for cost volume learning. Used in DICL (https://arxiv.org/abs/2010.14851)
+
+    Parameters
+    ----------
+    max_u : int, optional
+        Maximum displacement in the horizontal direction
+    max_v : int, optional
+        Maximum displacement in the vertical direction
+    config : tuple of int or list of int, optional
+        Configuration of the convolutional layers (matching net) in the network
+    remove_warp_hole : bool, optional
+        Whether to remove the warp holes in the cost volume
+    cuda_cost_compute : bool, optional
+        Whether to compute the cost volume on the GPU
+    matching_net : Optional[nn.Module], optional
+        Custom matching network, by default None, which uses a Conv2DMatching network
+    """
+
     @configurable
     def __init__(
         self,

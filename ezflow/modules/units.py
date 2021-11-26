@@ -2,6 +2,23 @@ import torch.nn as nn
 
 
 class ConvNormRelu(nn.Module):
+    """
+    Block for a convolutional layer with normalization and activation
+
+    Parameters
+    ----------
+    in_channels : int
+        Number of input channels
+    out_channels : int
+        Number of output channels
+    deconv : bool, optional
+        If True, use a transposed convolution
+    norm : str, optional
+        Normalization method
+    activation : str, optional
+        Activation function
+    """
+
     def __init__(
         self,
         in_channels,
