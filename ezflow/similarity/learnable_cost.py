@@ -11,6 +11,7 @@ from ..modules import ConvNormRelu
 from .build import SIMILARITY_REGISTRY
 
 
+@SIMILARITY_REGISTRY.register()
 class Conv2DMatching(nn.Module):
     """
     Convolutional matching/filtering network for cost volume learning
@@ -52,6 +53,7 @@ class Conv2DMatching(nn.Module):
         return x
 
 
+@SIMILARITY_REGISTRY.register()
 class Custom2DConvMatching(nn.Module):
     """
     Convolutional matching/filtering network for cost volume learning with custom convolutions
