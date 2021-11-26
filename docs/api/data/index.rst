@@ -3,13 +3,9 @@ Data
 
 
 .. toctree::
-    :maxdepth: 1
-    :caption: Dataloader
+    :maxdepth: 2
 
     ezflow.data.dataloader
-
-.. toctree::
-   :maxdepth: 1
-   :caption: Dataset
-
     ezflow.data.dataset
+
+    
