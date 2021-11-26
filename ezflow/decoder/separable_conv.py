@@ -6,6 +6,23 @@ from .build import DECODER_REGISTRY
 
 
 class FeatureProjection4D(nn.Module):
+    """
+    Applies a 3D convolution to the input feature map.
+
+    Parameters
+    ----------
+    in_channels : int
+        Number of input channels
+    out_channels : int
+        Number of output channels
+    stride : int
+        Number of strides for 3D convolution
+    norm : bool, default : True
+        If True, applies Batch Norm 3D
+    groups : int, default : 1
+        Number of groupds for 3D convolution, in_channels and out_channels must be divisible by groups
+    """
+
     def __init__(self, in_channels, out_channels, stride, norm=True, groups=1):
         super(FeatureProjection4D, self).__init__()
 
@@ -40,6 +57,28 @@ class FeatureProjection4D(nn.Module):
 
 @DECODER_REGISTRY.register()
 class SeparableConv4D(nn.Module):
+    """
+    Applies two 3D convolution followed by an
+    optional 2D convolution to the input feature map.
+
+    Parameters
+    ----------
+    in_channels : int
+        Number of input channels
+    out_channels : int
+        Number of output channels
+    stride : tuple, default : (1, 1, 1)
+        Number of strides for convolution
+    norm : bool, default : True
+        If True, applies Batch Normalization
+    k_size : int, default : 3
+        Number of kernels
+    full : bool, default : True
+        If True, applies a stride of (1, 1, 1)
+    groups : int, default : 1
+        Number of groups for 3D convolution, in_channels and out_channels must both be divisible by groups
+    """
+
     @configurable
     def __init__(
         self,
@@ -179,6 +218,27 @@ class SeparableConv4D(nn.Module):
 
 
 class SeparableConv4DBlock(nn.Module):
+    """
+    Applies separate SeperableConv4d convolutions to the input feature map.
+
+    Parameters
+    ----------
+    in_channels : int
+        Number of input channels
+    out_channels : int
+        Number of output channels
+    stride : tuple, default : (1, 1, 1)
+        Number of strides for convolution
+    norm : bool, default : True
+        If True, applies Batch Normalization
+    k_size : int, default : 3
+        Number of kernels
+    full : bool, default : True
+        If True, applies SeparableConv4D otherwise FeatureProjection4D
+    groups : int, default : 1
+        Number of groups for 3D convolution, in_channels and out_channels must both be divisible by groups
+    """
+
     def __init__(
         self,
         in_channels,
@@ -230,6 +290,26 @@ class SeparableConv4DBlock(nn.Module):
 
 @DECODER_REGISTRY.register()
 class Butterfly4D(nn.Module):
+    """
+    Applies a FeatureProjection4D followed by
+    five SeperableConv4d convolutions to the input feature map.
+
+    Parameters
+    ----------
+    f_dim_1 : int
+        Number of input channels
+    f_dim_2 : int
+        Number of output channels
+    stride : tuple, default : (1, 1, 1)
+        Number of strides for convolution
+    norm : bool, default : True
+        If True, applies Batch Normalization
+    full : bool, default : True
+        If True, applies SeparableConv4D otherwise FeatureProjection4D
+    groups : int, default : 1
+        Number of groups for 3D convolution, in_channels and out_channels must both be divisible by groups
+    """
+
     @configurable
     def __init__(self, f_dim_1, f_dim_2, norm=True, full=True, groups=1):
         super(Butterfly4D, self).__init__()

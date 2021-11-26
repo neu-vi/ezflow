@@ -36,7 +36,7 @@ class FlowHead(nn.Module):
 
         Returns
         -------
-        output : tensor
+        tensor
             a tensor of shape N x 2 x H x W
         """
         return self.conv2(self.relu(self.conv1(x)))
@@ -90,7 +90,7 @@ class SepConvGRU(nn.Module):
 
         Returns
         -------
-        output : tensor
+        tensor
             a tensor of shape N x hidden_dim x H x W
         """
         hx = torch.cat([h, x], dim=1)
@@ -144,7 +144,7 @@ class SmallMotionEncoder(nn.Module):
 
         Returns
         -------
-        output : tensor
+        tensor
             a tensor of shape N x 82 x H x W
         """
         cor = F.relu(self.convc1(corr))
@@ -193,7 +193,7 @@ class MotionEncoder(nn.Module):
 
         Returns
         -------
-        output : tensor
+        tensor
             a tensor of shape N x 128 x H x W
         """
 
