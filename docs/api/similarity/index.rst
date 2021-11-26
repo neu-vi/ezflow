@@ -1,17 +1,16 @@
-Models
+Similarity
 =================
 
 
 .. toctree::
-    :maxdepth: 1
-    :caption: Correlation
+    :maxdepth: 2
 
-    ezflow.similarity.corelation.layer
-    ezflow.similarity.corelation.pairwise
-    ezflow.similarity.corelation.sampler
+    ezflow.similarity.correlation.layer
+    ezflow.similarity.correlation.pairwise
+    ezflow.similarity.correlation.sampler
 
 .. toctree::
     :maxdepth: 1
 
     ezflow.similarity.learnable_cost
-    ezflow.similarity.build
+    ezflow.similarity.builder

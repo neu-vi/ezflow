@@ -4,7 +4,6 @@ Models
 
 .. toctree::
     :maxdepth: 1
-    :caption: Models
 
     ezflow.models.dicl
     ezflow.models.flownet
@@ -15,4 +14,4 @@ Models
     :maxdepth: 1
 
     ezflow.models.predictor
-    ezflow.models.build
+    ezflow.models.builder
