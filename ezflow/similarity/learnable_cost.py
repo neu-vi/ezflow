@@ -1,10 +1,14 @@
 import torch
 import torch.nn as nn
 
+try:
+    from spatial_correlation_sampler import SpatialCorrelationSampler
+except:
+    from .correlation import IterSpatialCorrelationSampler as SpatialCorrelationSampler
+
 from ..config import configurable
 from ..modules import ConvNormRelu
 from .build import SIMILARITY_REGISTRY
-from .correlation import IterSpatialCorrelationSampler
 
 
 class Conv2DMatching(nn.Module):
@@ -168,7 +172,7 @@ class LearnableMatchingCost(nn.Module):
             )
 
         if self.cuda_cost_compute:
-            corr = IterSpatialCorrelationSampler(
+            corr = SpatialCorrelationSampler(
                 kernel_size=1,
                 patch_size=(int(1 + 2 * 3), int(1 + 2 * 3)),
                 stride=1,

@@ -1,3 +1,5 @@
+# Adapted from https://github.com/hmorimitsu/ptlflow/blob/main/ptlflow/utils/correlation.py
+
 # =============================================================================
 # Copyright 2021 Henrique Morimitsu
 #
@@ -148,6 +150,7 @@ class IterSpatialCorrelationSampler(nn.Module):
         Step for every shift in patch.
     """
 
+    @configurable
     def __init__(
         self,
         kernel_size: Union[int, Tuple[int, int]] = 1,
@@ -166,18 +169,33 @@ class IterSpatialCorrelationSampler(nn.Module):
         self.dilation = dilation
         self.dilation_patch = dilation_patch
 
+    @classmethod
+    def from_config(cls, cfg):
+        return {
+            "kernel_size": cfg.KERNEL_SIZE,
+            "patch_size": cfg.PATCH_SIZE,
+            "stride": cfg.STRIDE,
+            "padding": cfg.PADDING,
+            "dilation": cfg.DILATION,
+            "dilation_patch": cfg.DILATION_PATCH,
+        }
+
     def forward(self, input1: torch.Tensor, input2: torch.Tensor) -> torch.Tensor:
-        """Compute the correlation sampling from input1 to input2.
+        """
+        Compute the correlation sampling from input1 to input2
+
         Parameters
         ----------
         input1 : torch.Tensor
             The origin feature map.
         input2 : torch.Tensor
             The target feature map.
+
         Returns
         -------
         torch.Tensor
-            Result of correlation sampling.
+            Result of correlation sampling
+
         """
         return iter_spatial_correlation_sample(
             input1=input1,
