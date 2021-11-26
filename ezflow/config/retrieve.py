@@ -10,6 +10,7 @@ from .config import CfgNode
 
 
 def get_cfg_obj():
+    """Returns a :class:`CfgNode` object"""
     return CfgNode(new_allowed=True)
 
 
@@ -20,7 +21,7 @@ def get_cfg_path(cfg_path, grp="models"):
 
     Parameters
     ----------
-    cf_path : str
+    cfg_path : str
         Config file path relative to ezflow's "configs/{grp}" directory
 
     Returns

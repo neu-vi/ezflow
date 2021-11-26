@@ -3,7 +3,7 @@ Welcome to EzFlow's documentation!
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
+   :caption: Contents
 
    readme
    installation
@@ -14,7 +14,7 @@ Welcome to EzFlow's documentation!
 
 .. toctree::
    :maxdepth: 2
-   :caption: API:
+   :caption: API Reference
 
    api/config/index
    api/data/index
