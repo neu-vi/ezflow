@@ -9,7 +9,7 @@ from ..build import SIMILARITY_REGISTRY
 @SIMILARITY_REGISTRY.register()
 class MutliScalePairwise4DCorr:
     """
-    Pairwise 4D correlation at multiple scales. Used in RAFT (https://arxiv.org/abs/2003.12039)
+    Pairwise 4D correlation at multiple scales. Used in **RAFT** (https://arxiv.org/abs/2003.12039)
 
     Parameters
     ----------

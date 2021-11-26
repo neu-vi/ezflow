@@ -102,7 +102,7 @@ class Custom2DConvMatching(nn.Module):
 @SIMILARITY_REGISTRY.register()
 class LearnableMatchingCost(nn.Module):
     """
-    Learnable matching cost network for cost volume learning. Used in DICL (https://arxiv.org/abs/2010.14851)
+    Learnable matching cost network for cost volume learning. Used in **DICL** (https://arxiv.org/abs/2010.14851)
 
     Parameters
     ----------
