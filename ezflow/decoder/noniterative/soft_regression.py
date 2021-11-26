@@ -9,11 +9,26 @@ from ..build import DECODER_REGISTRY
 
 @DECODER_REGISTRY.register()
 class SoftArg2DFlowRegression(nn.Module):
-    """2D soft argmin/argmax"""
+    """
+    Applies 2D soft argmin/argmax operation to regress flow.
+
+    Parameters
+    ----------
+    max_u : int, default : 3
+        Maximum displacement in the horizontal direction
+    max_v : int, default : 3
+        Maximum displacement in the vertical direction
+    operation : str, default : argmax
+        The argmax/argmin operation for flow regression
+    """
 
     @configurable
     def __init__(self, max_u=3, max_v=3, operation="argmax"):
         super(SoftArg2DFlowRegression, self).__init__()
+
+        assert (
+            operation.lower() == "argmax" or operation.lower() == "argmin"
+        ), "Invalid operation. Supported operations: argmax and argmin"
 
         self.max_u = max_u
         self.max_v = max_v
@@ -74,6 +89,21 @@ class SoftArg2DFlowRegression(nn.Module):
 
 @DECODER_REGISTRY.register()
 class Soft4DFlowRegression(nn.Module):
+    """
+    Applies 4D soft argmax operation to regress flow.
+
+    Parameters
+    ----------
+    size : int
+        size of B, W, H
+    max_disp : int, default : 4
+        Maximum displacement
+    entropy : bool, default : False
+        If True, computes local and global entropy from matching cost
+    factorization : int, default : 1
+        Max displacement factorization value
+    """
+
     @configurable
     def __init__(self, size, max_disp=4, entropy=False, factorization=1):
         super(Soft4DFlowRegression, self).__init__()
