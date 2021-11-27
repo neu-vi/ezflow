@@ -23,7 +23,7 @@ class FlowEntropy(nn.Module):
             A tensor of shape B x U x V x H x W representing the cost
 
         Returns
-        ----------
+        -------
         torch.Tensor
             A tensor of shape B x 1 x H x W
         """

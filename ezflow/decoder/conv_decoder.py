@@ -23,7 +23,7 @@ def conv(in_planes, out_planes, kernel_size=3, stride=1, padding=1, dilation=1):
         Spacing between kernel elements
 
     Returns
-    ----------
+    -------
     torch.nn.Sequential
         block containing nn.Conv2d layer and leaky relu
     """
@@ -53,7 +53,7 @@ def deconv(in_planes, out_planes):
         Number of output channels
 
     Returns
-    ----------
+    -------
     torch.nn.Sequential
         block containing nn.ConvTranspose2d layer and leaky relu
     """
@@ -223,6 +223,8 @@ class FlownetConvDecoder(nn.Module):
 
     def forward(self, x):
         """
+        Performs forward pass.
+
         Parameters
         ----------
         x : List[torch.Tensor]

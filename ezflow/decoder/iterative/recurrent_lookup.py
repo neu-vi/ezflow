@@ -264,12 +264,10 @@ class SmallRecurrentLookupUpdateBlock(nn.Module):
 
 
         Returns
-        ----------
+        -------
         net : torch.Tensor
             A tensor of shape N x hidden_dim x H x W representing the output of the GRU cell
-
         mask : NoneType
-
         delta_flow : torch.Tensor
             A tensor of shape N x 2 x H x W representing the delta flow
         """
@@ -340,7 +338,7 @@ class RecurrentLookupUpdateBlock(nn.Module):
 
 
         Returns
-        ----------
+        -------
         net : torch.Tensor
             A tensor of shape N x hidden_dim x H x W representing the output of the SepConvGRU cell.
         mask : torch.Tensor

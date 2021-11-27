@@ -51,8 +51,8 @@ class SoftArg2DFlowRegression(nn.Module):
         x : torch.Tensor
             Input feature map
 
-        Returns:
-        ----------
+        Returns
+        -------
         torch.Tensor
             A tensor of shape N x 2 x H x W representing the flow
         """
@@ -187,8 +187,8 @@ class Soft4DFlowRegression(nn.Module):
         x : torch.Tensor
             Input feature map
 
-        Returns:
-        ----------
+        Returns
+        -------
         torch.Tensor
             A tensor of shape N x 2 x H x W representing the flow
 
