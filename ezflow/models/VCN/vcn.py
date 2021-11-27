@@ -11,6 +11,16 @@ from ..build import MODEL_REGISTRY
 
 @MODEL_REGISTRY.register()
 class VCN(nn.Module):
+    """
+    Implementation of the paper
+    **Volumetric Correspondence Networks for Optical Flow** (https://papers.nips.cc/paper/2019/hash/bbf94b34eb32268ada57a3be5062fe7d-Abstract.html)
+
+    Parameters
+    ----------
+    cfg : CfgNode
+        Configuration for the model
+    """
+
     def __init__(self, cfg):
         super(VCN, self).__init__()
 

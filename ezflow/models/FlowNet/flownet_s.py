@@ -12,11 +12,11 @@ from ..build import MODEL_REGISTRY
 class FlowNetS(nn.Module):
     """
     Implementation of FlowNetSimple from the paper
-    "FlowNet: Learning Optical Flow with Convolutional Networks" (https://arxiv.org/abs/1504.06852)
+    **FlowNet: Learning Optical Flow with Convolutional Networks** (https://arxiv.org/abs/1504.06852)
 
     Parameters
     ----------
-    cfg : Config
+    cfg : CfgNode
         Configuration for the model
     """
 

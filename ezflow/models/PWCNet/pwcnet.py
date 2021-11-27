@@ -34,11 +34,11 @@ def deconv(in_planes, out_planes, kernel_size=4, stride=2, padding=1):
 class PWCNet(nn.Module):
     """
     Implementation of the paper
-    "PWC-Net: CNNs for Optical Flow Using Pyramid, Warping, and Cost Volume" (https://arxiv.org/abs/1709.02371)
+    **PWC-Net: CNNs for Optical Flow Using Pyramid, Warping, and Cost Volume** (https://arxiv.org/abs/1709.02371)
 
     Parameters
     ----------
-    cfg : Config
+    cfg : CfgNode
         Configuration for the model
     """
 

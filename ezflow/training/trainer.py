@@ -18,7 +18,7 @@ class Trainer:
     Parameters
     ----------
 
-    cfg : Config
+    cfg : CfgNode
         Configuration object for training
     model : torch.nn.Module
         Model to be trained

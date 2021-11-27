@@ -46,8 +46,8 @@ def get_training_cfg(cfg_path=None, cfg_name=None, custom=True):
 
     Returns
     -------
-    cfg : Config
-        The config object.
+    cfg : CfgNode
+        The config object
     """
 
     assert (
