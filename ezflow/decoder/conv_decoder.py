@@ -21,6 +21,11 @@ def conv(in_planes, out_planes, kernel_size=3, stride=1, padding=1, dilation=1):
         Stride of the convolution
     dilation : int, default : 1
         Spacing between kernel elements
+
+    Returns:
+    ----------
+    torch.nn.Sequential
+        block containing nn.Conv2d layer and leaky relu
     """
     return nn.Sequential(
         nn.Conv2d(
@@ -46,6 +51,11 @@ def deconv(in_planes, out_planes):
         Number of input channels
     out_planes : int
         Number of output channels
+
+    Returns:
+    ----------
+    torch.nn.Sequential
+        block containing nn.ConvTranspose2d layer and leaky relu
     """
     return nn.Sequential(
         nn.ConvTranspose2d(
@@ -124,7 +134,22 @@ class ConvDecoder(nn.Module):
         return {"config": cfg.CONFIG}
 
     def forward(self, x):
+        """
+        Performs forward pass.
 
+        Parameters
+        ----------
+        x : torch.Tensor
+            Input feature map
+
+        Returns:
+        ----------
+        torch.Tensor
+            A tensor of shape N x 2 x H x W representing the flow
+
+        torch.Tensor
+            Tensor of shape N x output_channel x H x W
+        """
         for i in range(len(self.decoder)):
 
             y = self.decoder[i](x)
@@ -200,12 +225,12 @@ class FlownetConvDecoder(nn.Module):
         """
         Parameters
         ----------
-        x : List[tensor]
+        x : List[torch.Tensor]
             List of all the outputs from each convolution layer of the encoder
 
         Returns
         ----------
-        List[tensor],
+        List[torch.Tensor],
             List of all the flow predictions from each decoder layer
         """
         flow_preds = []

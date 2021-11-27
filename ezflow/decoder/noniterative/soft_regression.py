@@ -43,6 +43,19 @@ class SoftArg2DFlowRegression(nn.Module):
         }
 
     def forward(self, x):
+        """
+        Performs forward pass.
+
+        Parameters
+        ----------
+        x : torch.Tensor
+            Input feature map
+
+        Returns:
+        ----------
+        torch.Tensor
+            A tensor of shape N x 2 x H x W representing the flow
+        """
 
         sizeU = 2 * self.max_u + 1
         sizeV = 2 * self.max_v + 1
@@ -166,7 +179,22 @@ class Soft4DFlowRegression(nn.Module):
         }
 
     def forward(self, x):
+        """
+        Performs forward pass.
 
+        Parameters
+        ----------
+        x : torch.Tensor
+            Input feature map
+
+        Returns:
+        ----------
+        torch.Tensor
+            A tensor of shape N x 2 x H x W representing the flow
+
+        torch.Tensor
+            A tensor representing the local and global entropy cost
+        """
         B, U, V, H, W = x.shape
         orig_x = x
 
