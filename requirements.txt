@@ -37,7 +37,6 @@ grpcio==1.39.0
 identify==2.2.13
 idna==3.2
 imagesize==1.2.0
-importlib-metadata==0.23
 iniconfig==1.1.1
 iopath==0.1.9
 Jinja2==3.0.1
