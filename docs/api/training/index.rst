@@ -4,7 +4,7 @@ Training
 Trainer
 ---------------
 
-.. automodule:: ezflow.training.training
+.. automodule:: ezflow.training.trainer
    :members:
    :undoc-members:
    :show-inheritance:

@@ -69,6 +69,7 @@ def deconv(in_planes, out_planes):
 class ConvDecoder(nn.Module):
     """
     Applies a 2D Convolutional decoder to the input feature map.
+    Used in **PWCNet** (https://arxiv.org/abs/1709.02371)
 
     Parameters
     ----------
@@ -167,6 +168,7 @@ class FlownetConvDecoder(nn.Module):
     """
     Applies a 2D Convolutional decoder to regress the optical flow
     from the intermediate outputs convolutions of the encoder.
+    Used in **FlowNetSimple** (https://arxiv.org/abs/1504.06852)
 
     Parameters
     ----------

@@ -217,6 +217,7 @@ class SmallRecurrentLookupUpdateBlock(nn.Module):
     """
     Applies an iterative lookup update on all levels of the correlation
     pyramid to estimate flow with a sequence of GRU cells.
+    Used in **RAFT** (https://arxiv.org/abs/2003.12039)
 
     Parameters
     ----------
@@ -285,6 +286,7 @@ class RecurrentLookupUpdateBlock(nn.Module):
     """
     Applies an iterative lookup update on all levels of the correlation
     pyramid to estimate flow with a sequence of GRU cells.
+    Used in **RAFT** (https://arxiv.org/abs/2003.12039)
 
     Parameters
     ----------

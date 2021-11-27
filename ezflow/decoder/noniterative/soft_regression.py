@@ -11,6 +11,7 @@ from ..build import DECODER_REGISTRY
 class SoftArg2DFlowRegression(nn.Module):
     """
     Applies 2D soft argmin/argmax operation to regress flow.
+    Used in **DICL** (https://arxiv.org/abs/2010.14851)
 
     Parameters
     ----------
