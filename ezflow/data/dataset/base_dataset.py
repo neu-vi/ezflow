@@ -14,12 +14,12 @@ class BaseDataset(data.Dataset):
 
     Parameters
     ----------
-    is_prediction : bool
-        Whether to the dataset is a test set
-    init_seed : bool
-        Whether to initialize the random seed
-    augment : bool
-        Whether to perform data augmentation
+    is_prediction : bool, default : False
+        If True,   If True, only image data are loaded for prediction otherwise both images and flow data are loaded
+    init_seed : bool, default : False
+        If True, sets random seed to the worker
+    augment : bool, default : False
+        If True, applies data augmentation
     crop_size : :obj:`tuple` of :obj:`int`
         The size of the image crop
     aug_params : :obj:`dict`
@@ -54,6 +54,15 @@ class BaseDataset(data.Dataset):
         """
         Returns the corresponding images and the flow between them.
 
+        Parameters
+        ----------
+        index : int
+            specify the index location for access to Dataset item
+
+        Returns
+        -------
+        tuple
+            A tuple consisting of ((img1, img2), flow)
         """
         if self.is_prediction:
             img1 = read_gen(self.image_list[index][0])

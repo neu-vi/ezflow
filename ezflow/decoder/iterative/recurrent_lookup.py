@@ -29,15 +29,17 @@ class FlowHead(nn.Module):
 
     def forward(self, x):
         """
+        Performs forward pass.
+
         Parameters
         ----------
-        x : tensor
-            input tensor of shape N x input_dim x H x W
+        x : torch.Tensor
+            Input tensor of shape N x input_dim x H x W
 
         Returns
         -------
-        tensor
-            a tensor of shape N x 2 x H x W
+        torch.Tensor
+            A tensor of shape N x 2 x H x W
         """
         return self.conv2(self.relu(self.conv1(x)))
 
@@ -79,18 +81,20 @@ class SepConvGRU(nn.Module):
 
     def forward(self, h, x):
         """
+        Performs forward pass.
+
         Parameters
         ----------
-        h : tensor
-            a tensor of shape N x hidden_dim x H x W representating the hidden state
+        h : torch.Tensor
+            A tensor of shape N x hidden_dim x H x W representating the hidden state
 
-        x : tensor
-            a tensor of shape N x input_dim + hidden_dim x H x W representating the input
+        x : torch.Tensor
+            A tensor of shape N x input_dim + hidden_dim x H x W representating the input
 
 
         Returns
         -------
-        tensor
+        torch.Tensor
             a tensor of shape N x hidden_dim x H x W
         """
         hx = torch.cat([h, x], dim=1)
@@ -117,9 +121,9 @@ class SmallMotionEncoder(nn.Module):
     Parameters
     ----------
     corr_radius : int
-        correlation radius of the correlation pyramid
+        Correlation radius of the correlation pyramid
     corr_levels : int
-        correlation levels of the correlation pyramid
+        Correlation levels of the correlation pyramid
 
     """
 
@@ -136,16 +140,16 @@ class SmallMotionEncoder(nn.Module):
         """
         Parameters
         ----------
-        flow : tensor
-            tensor of shape N x 2 x H x W
+        flow : torch.Tensor
+            A tensor of shape N x 2 x H x W
 
-        corr : tensor
-            tensor of shape N x (corr_levels * (2 * corr_radius + 1) ** 2) x H x W
+        corr : torch.Tensor
+            A tensor of shape N x (corr_levels * (2 * corr_radius + 1) ** 2) x H x W
 
         Returns
         -------
-        tensor
-            a tensor of shape N x 82 x H x W
+        torch.Tensor
+            A tensor of shape N x 82 x H x W
         """
         cor = F.relu(self.convc1(corr))
         flo = F.relu(self.convf1(flow))
@@ -165,9 +169,9 @@ class MotionEncoder(nn.Module):
     Parameters
     ----------
     corr_radius : int
-        correlation radius of the correlation pyramid
+        Correlation radius of the correlation pyramid
     corr_levels : int
-        correlation levels of the correlation pyramid
+        Correlation levels of the correlation pyramid
 
     """
 
@@ -185,16 +189,16 @@ class MotionEncoder(nn.Module):
         """
         Parameters
         ----------
-        flow : tensor
-            tensor of shape N x 2 x H x W
+        flow : torch.Tensor
+            A tensor of shape N x 2 x H x W
 
-        corr : tensor
-            tensor of shape N x (corr_levels * (2 * corr_radius + 1) ** 2) x H x W
+        corr : torch.Tensor
+            A tensor of shape N x (corr_levels * (2 * corr_radius + 1) ** 2) x H x W
 
         Returns
         -------
-        tensor
-            a tensor of shape N x 128 x H x W
+        torch.Tensor
+            A tensor of shape N x 128 x H x W
         """
 
         cor = F.relu(self.convc1(corr))
@@ -245,27 +249,27 @@ class SmallRecurrentLookupUpdateBlock(nn.Module):
 
     def forward(self, net, inp, corr, flow):
         """
+        Performs forward pass.
+
         Parameters
         ----------
-        net : tensor
-            a tensor of shape N x hidden_dim x H x W
-        inp : tensor
-            a tensor of shape N x input_dim x H x W
-        corr : tensor
-            a tensor of shape N x (corr_levels * (2 * corr_radius + 1) ** 2) x H x W
-        flow : tensor
-            a tensor of shape N x 2 x H x W
+        net : torch.Tensor
+            A tensor of shape N x hidden_dim x H x W
+        inp : torch.Tensor
+            A tensor of shape N x input_dim x H x W
+        corr : torch.Tensor
+            A tensor of shape N x (corr_levels * (2 * corr_radius + 1) ** 2) x H x W
+        flow : torch.Tensor
+            A tensor of shape N x 2 x H x W
 
 
-        Returns:
-        ----------
-        net : tensor
-            a tensor of shape N x hidden_dim x H x W
-
+        Returns
+        -------
+        net : torch.Tensor
+            A tensor of shape N x hidden_dim x H x W representing the output of the GRU cell
         mask : NoneType
-
-        delta_flow : tensor
-            a tensor of shape N x 2 x H x W
+        delta_flow : torch.Tensor
+            A tensor of shape N x 2 x H x W representing the delta flow
         """
 
         motion_features = self.encoder(flow, corr)
@@ -319,26 +323,28 @@ class RecurrentLookupUpdateBlock(nn.Module):
 
     def forward(self, net, inp, corr, flow):
         """
+        Performs forward pass.
+
         Parameters
         ----------
-        net : tensor
-            a tensor of shape N x hidden_dim x H x W
-        inp : tensor
-            a tensor of shape N x input_dim x H x W
-        corr : tensor
-            a tensor of shape N x (corr_levels * (2 * corr_radius + 1) ** 2) x H x W
-        flow : tensor
-            a tensor of shape N x 2 x H x W
+        net : torch.Tensor
+            A tensor of shape N x hidden_dim x H x W
+        inp : torch.Tensor
+            A tensor of shape N x input_dim x H x W
+        corr : torch.Tensor
+            A tensor of shape N x (corr_levels * (2 * corr_radius + 1) ** 2) x H x W
+        flow : torch.Tensor
+            A tensor of shape N x 2 x H x W
 
 
-        Returns:
-        ----------
-        net : tensor
-            a tensor of shape N x hidden_dim x H x W
-        mask : tensor
-            a tensor of shape N x 576 x H x W
-        delta_flow : tensor
-            a tensor of shape N x 2 x H x W
+        Returns
+        -------
+        net : torch.Tensor
+            A tensor of shape N x hidden_dim x H x W representing the output of the SepConvGRU cell.
+        mask : torch.Tensor
+            A tensor of shape N x 576 x H x W
+        delta_flow : torch.Tensor
+            A tensor of shape N x 2 x H x W representing the delta flow
         """
 
         motion_features = self.encoder(flow, corr)

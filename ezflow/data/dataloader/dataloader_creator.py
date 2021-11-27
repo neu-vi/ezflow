@@ -6,7 +6,25 @@ from ..dataset import *
 class DataloaderCreator:
     """
     A class to configure a data loader for optical flow datasets.
+    Multiple datasets can be added to configure a data loader for
+    training and validation.
 
+    Parameters
+    ----------
+    batch_size : int
+        Number of samples per batch to load
+    pin_memory : bool, default : False
+        If True, the data loader will copy Tensors into CUDA pinned memory before returning them
+    shuffle : bool, default : True
+        If True, data is reshuffled at every epoch
+    num_workers : int, default : 4
+        Number of subprocesses to use for data loading
+    drop_last : bool, default : True
+        If True, the last incomplete batch is dropped
+    init_seed : bool, default : False
+        If True, sets random seed to worker
+    is_prediction : bool, default : False
+        If True, only image data are loaded for prediction otherwise both images and flow data are loaded
     """
 
     def __init__(
@@ -29,6 +47,18 @@ class DataloaderCreator:
         self.is_prediction = is_prediction
 
     def add_flying_chairs(self, root_dir, split="training", augment=True, **kwargs):
+        """
+        Adds the Flying Chairs dataset to the DataloaderCreator object.
+
+        Parameters
+        ----------
+        root_dir : str
+            path of the root directory for the flying chairs dataset
+        split : str, default : "training"
+            specify the training or validation split
+        augment : bool, default : True
+            If True, applies data augmentation
+        """
 
         self.dataset_list.append(
             FlyingChairs(
@@ -49,6 +79,20 @@ class DataloaderCreator:
         augment=True,
         **kwargs
     ):
+        """
+        Adds the Flying Things 3D dataset to the DataloaderCreator object.
+
+        Parameters
+        ----------
+        root_dir : str
+            path of the root directory for the flying things 3D dataset
+        split : str, default : "training"
+            specify the training or validation split
+        dstype : str, default : "frames_cleanpass"
+            specify dataset type
+        augment : bool, default : True
+            If True, applies data augmentation
+        """
 
         self.dataset_list.append(
             FlyingThings3D(
@@ -65,7 +109,20 @@ class DataloaderCreator:
     def add_mpi_sintel(
         self, root_dir, split="training", dstype="clean", augment=True, **kwargs
     ):
+        """
+        Adds the MPI Sintel dataset to the DataloaderCreator object.
 
+        Parameters
+        ----------
+        root_dir : str
+            path of the root directory for the MPI Sintel dataset
+        split : str, default : "training"
+            specify the training or validation split
+        dstype : str, default : "clean"
+            specify dataset type
+        augment : bool, default : True
+            If True, applies data augmentation
+        """
         self.dataset_list.append(
             MpiSintel(
                 root_dir,
@@ -90,6 +147,14 @@ class DataloaderCreator:
         raise NotImplementedError
 
     def get_dataloader(self):
+        """
+        Gets the Dataloader for the added datasets.
+
+        Returns
+        -------
+        torch.utils.data.DataLoader
+            PyTorch DataLoader object
+        """
         assert len(self.dataset_list) != 0, "No datasets were added"
 
         dataset = self.dataset_list[0]

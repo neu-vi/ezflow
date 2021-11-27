@@ -56,13 +56,13 @@ def get_cfg(cfg_path, custom=False, grp="models"):
     """
     Returns a config object for a model in model zoo.
 
-    Args
+    Parameters
     ----
     config_path : str
         Complete config file path
 
 
-    Returns:
+    Returns
         CfgNode or omegaconf.DictConfig: a config object
     """
 
