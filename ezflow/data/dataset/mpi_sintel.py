@@ -11,7 +11,22 @@ class MpiSintel(BaseDataset):
     """
     Dataset Class for preparing the MPI Sintel Synthetic dataset for training and validation.
 
-
+    Parameters
+    ----------
+    root_dir : str
+        path of the root directory for the MPI Sintel datasets
+    split : str, default : "training"
+        specify the training or validation split
+    dstype : str, default : "frames_cleanpass"
+        specify dataset type
+    is_prediction : bool, default : False
+        If True, only image data are loaded for prediction otherwise both images and flow data are loaded
+    init_seed : bool, default : False
+        If True, sets random seed to worker
+    augment : bool, default : True
+        If True, applies data augmentation
+    aug_param : :obj:`dict`, optional
+        The parameters for data augmentation
     """
 
     def __init__(

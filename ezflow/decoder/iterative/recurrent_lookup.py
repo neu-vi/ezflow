@@ -263,7 +263,7 @@ class SmallRecurrentLookupUpdateBlock(nn.Module):
             A tensor of shape N x 2 x H x W
 
 
-        Returns:
+        Returns
         ----------
         net : torch.Tensor
             A tensor of shape N x hidden_dim x H x W representing the output of the GRU cell
@@ -339,7 +339,7 @@ class RecurrentLookupUpdateBlock(nn.Module):
             A tensor of shape N x 2 x H x W
 
 
-        Returns:
+        Returns
         ----------
         net : torch.Tensor
             A tensor of shape N x hidden_dim x H x W representing the output of the SepConvGRU cell.
