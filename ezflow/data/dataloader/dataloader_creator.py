@@ -124,7 +124,7 @@ class DataloaderCreator:
             If True, applies data augmentation
         """
         self.dataset_list.append(
-            MpiSintel(
+            MPISintel(
                 root_dir,
                 split=split,
                 dstype=dstype,

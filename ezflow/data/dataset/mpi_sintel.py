@@ -7,7 +7,7 @@ import numpy as np
 from .base_dataset import BaseDataset
 
 
-class MpiSintel(BaseDataset):
+class MPISintel(BaseDataset):
     """
     Dataset Class for preparing the MPI Sintel Synthetic dataset for training and validation.
 

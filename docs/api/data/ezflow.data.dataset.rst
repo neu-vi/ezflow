@@ -17,10 +17,10 @@ Flying Chairs
    :undoc-members:
    :show-inheritance:
 
-Flying Chairs 3D
+Flying Things 3D
 ----------------------
 
-.. automodule:: ezflow.data.dataset.flying_chairs3d
+.. automodule:: ezflow.data.dataset.flying_things3d
    :members:
    :undoc-members:
    :show-inheritance:
@@ -33,7 +33,7 @@ HD1K
    :undoc-members:
    :show-inheritance:
 
-Kitti
+KITTI
 ----------------------
 
 .. automodule:: ezflow.data.dataset.kitti
