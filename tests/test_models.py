@@ -81,14 +81,4 @@ def test_FlowNetS():
 
 def test_VCN():
 
-    model = build_model("VCN", "vcn.yaml")
-    flow_preds = model(img1, img2)
-    assert isinstance(flow_preds, tuple) or isinstance(flow_preds, list)
-
-    model.eval()
-    flow = model(img1, img2)
-    assert flow.shape == (2, 2, 256, 256)
-
-    del model, flow
-
     _ = build_model("VCN", default=True)

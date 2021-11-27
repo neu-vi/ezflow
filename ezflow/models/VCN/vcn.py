@@ -13,7 +13,7 @@ from ..build import MODEL_REGISTRY
 def gen_hypotheses_fusion_block(in_channels, out_channels):
 
     return nn.Sequential(
-        [
+        *[
             conv(in_channels, 128, kernel_size=3, stride=1, padding=1, dilation=1),
             conv(128, 128, kernel_size=3, stride=1, padding=2, dilation=2),
             conv(128, 128, kernel_size=3, stride=1, padding=4, dilation=4),
@@ -99,7 +99,7 @@ class VCN(nn.Module):
             Soft4DFlowRegression(
                 [f_dim_b1 * size[0], size[1] // 64, size[2] // 64],
                 max_disp=self.max_disps[0],
-                entropy=cfg.ENTROPY,
+                entropy=cfg.DECODER.ENTROPY,
                 factorization=self.factorization,
             )
         )
@@ -114,16 +114,16 @@ class VCN(nn.Module):
                         size[2] // scale,
                     ],
                     max_disp=self.max_disps[i],
-                    entropy=cfg.ENTROPY,
+                    entropy=cfg.DECODER.ENTROPY,
                 )
             )
-            scale /= 2
+            scale = scale // 2
 
         self.flow_regressors.append(
             Soft4DFlowRegression(
                 [f_dim_b2 * size[0], size[1] // 4, size[2] // 4],
                 max_disp=self.max_disps[0],
-                entropy=cfg.ENTROPY,
+                entropy=cfg.DECODER.ENTROPY,
                 factorization=self.factorization,
             )
         )
@@ -136,13 +136,15 @@ class VCN(nn.Module):
             else:
                 in_channels = 128 + (4 * i * f_dim_b1)
 
-            self.hypotheses_fusion_modules.append(
-                gen_hypotheses_fusion_block(in_channels, (2 * i * f_dim_b1))
+            out_channels = 2 * i * f_dim_b1
+
+            self.hypotheses_fusion_blocks.append(
+                gen_hypotheses_fusion_block(in_channels, out_channels)
             )
 
-        self.hypotheses_fusion_modules.append(
+        self.hypotheses_fusion_blocks.append(
             gen_hypotheses_fusion_block(
-                64 + (16 * f_dim_b1) + (4(f_dim_b2)),
+                64 + (16 * f_dim_b1) + (4 * f_dim_b2),
                 (8 * f_dim_b1) + (2 * f_dim_b2),
             )
         )
@@ -207,6 +209,14 @@ class VCN(nn.Module):
 
         batch_size = img1.shape[0]
 
+        # feature_pyramid = self.encoder(torch.cat([img1, img2], dim=0))
+
+        # feature_pyramid1 = []
+        # feature_pyramid2 = []
+        # for feature in feature_pyramid:
+        #     feature_pyramid1.append(feature[:batch_size])
+        #     feature_pyramid2.append(feature[batch_size :])
+
         feature_pyramid1 = self.encoder(img1)
         feature_pyramid2 = self.encoder(img2)
 
@@ -235,7 +245,7 @@ class VCN(nn.Module):
                     )
                     * 2
                 )
-                scale /= 2
+                scale = scale // 2
                 features2 = warp(feature_pyramid2[i], up_flow)
 
             else:
@@ -271,9 +281,9 @@ class VCN(nn.Module):
                     ),
                     dim=1,
                 )
-                ent5h = torch.cat(
+                ent = torch.cat(
                     (
-                        ent5h,
+                        ent,
                         F.upsample(
                             ent_intermediates[-1],
                             [flow.shape[2], flow.shape[3]],
@@ -284,7 +294,7 @@ class VCN(nn.Module):
                 )
 
             x = torch.cat([ent.detach(), flow.detach(), feature_pyramid1[i]], dim=1)
-            x = self.hypotheses_fusion_modules[i](x)
+            x = self.hypotheses_fusion_blocks[i](x)
             x = x.view(B, -1, 2, H, W)
 
             flow = (flow.view(B, -1, 2, H, W) * F.softmax(x, dim=1)).sum(dim=1)

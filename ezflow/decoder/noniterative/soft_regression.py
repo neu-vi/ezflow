@@ -122,7 +122,7 @@ class Soft4DFlowRegression(nn.Module):
     def __init__(self, size, max_disp=4, entropy=False, factorization=1):
         super(Soft4DFlowRegression, self).__init__()
 
-        B, W, H = size
+        B, H, W = size
         self.entropy = entropy
         self.md = max_disp
         self.factorization = factorization
