@@ -6,7 +6,7 @@ import numpy as np
 from .base_dataset import BaseDataset
 
 
-class Kitti(BaseDataset):
+class KITTI(BaseDataset):
     """
     Dataset Class for preparing the Kitti dataset for training and validation.
 

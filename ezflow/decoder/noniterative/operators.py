@@ -5,12 +5,28 @@ import torch.nn.functional as F
 
 
 class FlowEntropy(nn.Module):
-    """Computes entropy from matching cost"""
+    """
+    Computes entropy from matching cost
+
+    """
 
     def __init__(self):
         super(FlowEntropy, self).__init__()
 
     def forward(self, x):
+        """
+        Performs forward pass.
+
+        Parameters
+        ----------
+        x : torch.Tensor
+            A tensor of shape B x U x V x H x W representing the cost
+
+        Returns
+        -------
+        torch.Tensor
+            A tensor of shape B x 1 x H x W
+        """
 
         x = torch.squeeze(x, 1)
         B, U, V, H, W = x.shape

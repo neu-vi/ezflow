@@ -6,6 +6,27 @@ from .build import DECODER_REGISTRY
 
 
 def conv(in_planes, out_planes, kernel_size=3, stride=1, padding=1, dilation=1):
+    """
+    Block for a 2D Convolutional layer with Leaky ReLU activation
+
+    Parameters
+    ----------
+    in_planes : int
+        Number of input channels
+    out_planes : int
+        Number of output channels
+    kernel_size : int, default : 3
+        Size of the kernel
+    stride : int, default : 1
+        Stride of the convolution
+    dilation : int, default : 1
+        Spacing between kernel elements
+
+    Returns
+    -------
+    torch.nn.Sequential
+        block containing nn.Conv2d layer and leaky relu
+    """
     return nn.Sequential(
         nn.Conv2d(
             in_planes,
@@ -21,6 +42,21 @@ def conv(in_planes, out_planes, kernel_size=3, stride=1, padding=1, dilation=1):
 
 
 def deconv(in_planes, out_planes):
+    """
+    Block for a 2D Transpose Convolutional layer with Leaky ReLU activation
+
+    Parameters
+    ----------
+    in_planes : int
+        Number of input channels
+    out_planes : int
+        Number of output channels
+
+    Returns
+    -------
+    torch.nn.Sequential
+        block containing nn.ConvTranspose2d layer and leaky relu
+    """
     return nn.Sequential(
         nn.ConvTranspose2d(
             in_planes, out_planes, kernel_size=4, stride=2, padding=1, bias=False
@@ -31,7 +67,21 @@ def deconv(in_planes, out_planes):
 
 @DECODER_REGISTRY.register()
 class ConvDecoder(nn.Module):
-    """Convolutional decoder"""
+    """
+    Applies a 2D Convolutional decoder to the input feature map.
+    Used in **PWCNet** (https://arxiv.org/abs/1709.02371)
+
+    Parameters
+    ----------
+    config : List[int], default : [128, 128, 96, 64, 32]
+        List containing all output channels of the decoder
+    concat_channels : int, optional
+        Additional input channels to be concatenated for convolution layers
+    to_flow : bool, default : True
+        If True, convoloves decoder output to optical flow of shape N x 2 x H x W
+    block : object, default : None
+        the conv block to be used to build the decoder layers.
+    """
 
     @configurable
     def __init__(
@@ -85,7 +135,22 @@ class ConvDecoder(nn.Module):
         return {"config": cfg.CONFIG}
 
     def forward(self, x):
+        """
+        Performs forward pass.
 
+        Parameters
+        ----------
+        x : torch.Tensor
+            Input feature map
+
+        Returns
+        -------
+        torch.Tensor
+            A tensor of shape N x 2 x H x W representing the flow
+
+        torch.Tensor
+            Tensor of shape N x output_channel x H x W
+        """
         for i in range(len(self.decoder)):
 
             y = self.decoder[i](x)
@@ -100,7 +165,18 @@ class ConvDecoder(nn.Module):
 
 @DECODER_REGISTRY.register()
 class FlownetConvDecoder(nn.Module):
-    """Convolutional decoder to regress and upsample the optical flow"""
+    """
+    Applies a 2D Convolutional decoder to regress the optical flow
+    from the intermediate outputs convolutions of the encoder.
+    Used in **FlowNetSimple** (https://arxiv.org/abs/1504.06852)
+
+    Parameters
+    ----------
+    in_channels : int, default: 1024
+        Number of input channels of the decoder. This value should be equal to the final output channels of the encoder
+    config : List[int], default : [512, 256, 128, 64]
+        List containing all output channels of the decoder
+    """
 
     @configurable
     def __init__(self, in_channels=1024, config=[512, 256, 128, 64]):
@@ -148,6 +224,19 @@ class FlownetConvDecoder(nn.Module):
         return {"in_channels": cfg.IN_CHANNELS, "config": cfg.CONFIG}
 
     def forward(self, x):
+        """
+        Performs forward pass.
+
+        Parameters
+        ----------
+        x : List[torch.Tensor]
+            List of all the outputs from each convolution layer of the encoder
+
+        Returns
+        -------
+        List[torch.Tensor],
+            List of all the flow predictions from each decoder layer
+        """
         flow_preds = []
 
         conv_out = x[-1]

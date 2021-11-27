@@ -8,6 +8,18 @@ from ..build import DECODER_REGISTRY
 
 
 class FlowHead(nn.Module):
+    """
+    Applies two 2D convolutions over an input feature map
+    to generate a flow tensor of shape N x 2 x H x W.
+
+    Parameters
+    ----------
+    input_dim : int, default: 128
+        Number of input dimensions.
+    hidden_dim : int, default: 256
+        Number of hidden dimensions.
+    """
+
     def __init__(self, input_dim=128, hidden_dim=256):
         super(FlowHead, self).__init__()
 
@@ -16,11 +28,35 @@ class FlowHead(nn.Module):
         self.relu = nn.ReLU(inplace=True)
 
     def forward(self, x):
+        """
+        Performs forward pass.
 
+        Parameters
+        ----------
+        x : torch.Tensor
+            Input tensor of shape N x input_dim x H x W
+
+        Returns
+        -------
+        torch.Tensor
+            A tensor of shape N x 2 x H x W
+        """
         return self.conv2(self.relu(self.conv1(x)))
 
 
 class SepConvGRU(nn.Module):
+    """
+    Applies two Convolution GRU cells to the input signal.
+    Each GRU cell uses separate convolution layers.
+
+    Parameters
+    ----------
+    hidden_dim : int, default: 128
+        Number of hidden dimensions.
+    input_dim : int, default: 192 + 128
+        Number of hidden dimensions.
+    """
+
     def __init__(self, hidden_dim=128, input_dim=192 + 128):
         super(SepConvGRU, self).__init__()
         self.convz1 = nn.Conv2d(
@@ -44,7 +80,23 @@ class SepConvGRU(nn.Module):
         )
 
     def forward(self, h, x):
+        """
+        Performs forward pass.
 
+        Parameters
+        ----------
+        h : torch.Tensor
+            A tensor of shape N x hidden_dim x H x W representating the hidden state
+
+        x : torch.Tensor
+            A tensor of shape N x input_dim + hidden_dim x H x W representating the input
+
+
+        Returns
+        -------
+        torch.Tensor
+            a tensor of shape N x hidden_dim x H x W
+        """
         hx = torch.cat([h, x], dim=1)
         z = torch.sigmoid(self.convz1(hx))
         r = torch.sigmoid(self.convr1(hx))
@@ -61,6 +113,20 @@ class SepConvGRU(nn.Module):
 
 
 class SmallMotionEncoder(nn.Module):
+    """
+    Encodes motion features from the correlation levels of the pyramid
+    and the input flow estimate using convolution layers.
+
+
+    Parameters
+    ----------
+    corr_radius : int
+        Correlation radius of the correlation pyramid
+    corr_levels : int
+        Correlation levels of the correlation pyramid
+
+    """
+
     def __init__(self, corr_radius, corr_levels):
         super(SmallMotionEncoder, self).__init__()
 
@@ -71,6 +137,20 @@ class SmallMotionEncoder(nn.Module):
         self.conv = nn.Conv2d(128, 80, 3, padding=1)
 
     def forward(self, flow, corr):
+        """
+        Parameters
+        ----------
+        flow : torch.Tensor
+            A tensor of shape N x 2 x H x W
+
+        corr : torch.Tensor
+            A tensor of shape N x (corr_levels * (2 * corr_radius + 1) ** 2) x H x W
+
+        Returns
+        -------
+        torch.Tensor
+            A tensor of shape N x 82 x H x W
+        """
         cor = F.relu(self.convc1(corr))
         flo = F.relu(self.convf1(flow))
         flo = F.relu(self.convf2(flo))
@@ -81,6 +161,20 @@ class SmallMotionEncoder(nn.Module):
 
 
 class MotionEncoder(nn.Module):
+    """
+    Encodes motion features from the correlation levels of the pyramid
+    and the input flow estimate using convolution layers.
+
+
+    Parameters
+    ----------
+    corr_radius : int
+        Correlation radius of the correlation pyramid
+    corr_levels : int
+        Correlation levels of the correlation pyramid
+
+    """
+
     def __init__(self, corr_radius, corr_levels):
         super(MotionEncoder, self).__init__()
 
@@ -92,6 +186,21 @@ class MotionEncoder(nn.Module):
         self.conv = nn.Conv2d(64 + 192, 128 - 2, 3, padding=1)
 
     def forward(self, flow, corr):
+        """
+        Parameters
+        ----------
+        flow : torch.Tensor
+            A tensor of shape N x 2 x H x W
+
+        corr : torch.Tensor
+            A tensor of shape N x (corr_levels * (2 * corr_radius + 1) ** 2) x H x W
+
+        Returns
+        -------
+        torch.Tensor
+            A tensor of shape N x 128 x H x W
+        """
+
         cor = F.relu(self.convc1(corr))
         cor = F.relu(self.convc2(cor))
         flo = F.relu(self.convf1(flow))
@@ -105,6 +214,23 @@ class MotionEncoder(nn.Module):
 
 @DECODER_REGISTRY.register()
 class SmallRecurrentLookupUpdateBlock(nn.Module):
+    """
+    Applies an iterative lookup update on all levels of the correlation
+    pyramid to estimate flow with a sequence of GRU cells.
+    Used in **RAFT** (https://arxiv.org/abs/2003.12039)
+
+    Parameters
+    ----------
+    corr_radius : int
+        Correlation radius of the correlation pyramid
+    corr_levels : int
+        Correlation levels of the correlation pyramid
+    hidden_dim  : int, default: 96
+        Number of hidden dimensions.
+    input_dim   : int, default: 64
+        Number of input dimensions.
+    """
+
     @configurable
     def __init__(self, corr_radius, corr_levels, hidden_dim=96, input_dim=64):
         super(SmallRecurrentLookupUpdateBlock, self).__init__()
@@ -123,6 +249,30 @@ class SmallRecurrentLookupUpdateBlock(nn.Module):
         }
 
     def forward(self, net, inp, corr, flow):
+        """
+        Performs forward pass.
+
+        Parameters
+        ----------
+        net : torch.Tensor
+            A tensor of shape N x hidden_dim x H x W
+        inp : torch.Tensor
+            A tensor of shape N x input_dim x H x W
+        corr : torch.Tensor
+            A tensor of shape N x (corr_levels * (2 * corr_radius + 1) ** 2) x H x W
+        flow : torch.Tensor
+            A tensor of shape N x 2 x H x W
+
+
+        Returns
+        -------
+        net : torch.Tensor
+            A tensor of shape N x hidden_dim x H x W representing the output of the GRU cell
+        mask : NoneType
+        delta_flow : torch.Tensor
+            A tensor of shape N x 2 x H x W representing the delta flow
+        """
+
         motion_features = self.encoder(flow, corr)
         inp = torch.cat([inp, motion_features], dim=1)
         net = self.gru(net, inp)
@@ -133,6 +283,23 @@ class SmallRecurrentLookupUpdateBlock(nn.Module):
 
 @DECODER_REGISTRY.register()
 class RecurrentLookupUpdateBlock(nn.Module):
+    """
+    Applies an iterative lookup update on all levels of the correlation
+    pyramid to estimate flow with a sequence of GRU cells.
+    Used in **RAFT** (https://arxiv.org/abs/2003.12039)
+
+    Parameters
+    ----------
+    corr_radius : int
+        Correlation radius of the correlation pyramid
+    corr_levels : int
+        Correlation levels of the correlation pyramid
+    hidden_dim  : int, default: 128
+        Number of hidden dimensions.
+    input_dim   : int, default: 128
+        Number of input dimensions.
+    """
+
     @configurable
     def __init__(self, corr_radius, corr_levels, hidden_dim=128, input_dim=128):
         super(RecurrentLookupUpdateBlock, self).__init__()
@@ -157,6 +324,31 @@ class RecurrentLookupUpdateBlock(nn.Module):
         }
 
     def forward(self, net, inp, corr, flow):
+        """
+        Performs forward pass.
+
+        Parameters
+        ----------
+        net : torch.Tensor
+            A tensor of shape N x hidden_dim x H x W
+        inp : torch.Tensor
+            A tensor of shape N x input_dim x H x W
+        corr : torch.Tensor
+            A tensor of shape N x (corr_levels * (2 * corr_radius + 1) ** 2) x H x W
+        flow : torch.Tensor
+            A tensor of shape N x 2 x H x W
+
+
+        Returns
+        -------
+        net : torch.Tensor
+            A tensor of shape N x hidden_dim x H x W representing the output of the SepConvGRU cell.
+        mask : torch.Tensor
+            A tensor of shape N x 576 x H x W
+        delta_flow : torch.Tensor
+            A tensor of shape N x 2 x H x W representing the delta flow
+        """
+
         motion_features = self.encoder(flow, corr)
         inp = torch.cat([inp, motion_features], dim=1)
 
