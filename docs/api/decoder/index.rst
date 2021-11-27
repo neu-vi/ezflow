@@ -7,7 +7,7 @@ Decoder
 
     ezflow.decoder.iterative
     ezflow.decoder.noniterative
-    ezflow.similarity.conv_decoder
-    ezflow.similarity.learnable_cost
-    ezflow.similarity.separable_conv
-    ezflow.similarity.builder
+    ezflow.decoder.conv_decoder
+    ezflow.decoder.learnable_cost
+    ezflow.decoder.separable_conv
+    ezflow.decoder.builder
