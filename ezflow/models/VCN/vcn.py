@@ -209,16 +209,16 @@ class VCN(nn.Module):
 
         batch_size = img1.shape[0]
 
-        # feature_pyramid = self.encoder(torch.cat([img1, img2], dim=0))
+        feature_pyramid = self.encoder(torch.cat([img1, img2], dim=0))
 
-        # feature_pyramid1 = []
-        # feature_pyramid2 = []
-        # for feature in feature_pyramid:
-        #     feature_pyramid1.append(feature[:batch_size])
-        #     feature_pyramid2.append(feature[batch_size :])
+        feature_pyramid1 = []
+        feature_pyramid2 = []
+        for feature in feature_pyramid:
+            feature_pyramid1.append(feature[:batch_size])
+            feature_pyramid2.append(feature[batch_size:])
 
-        feature_pyramid1 = self.encoder(img1)
-        feature_pyramid2 = self.encoder(img2)
+        # feature_pyramid1 = self.encoder(img1)
+        # feature_pyramid2 = self.encoder(img2)
 
         for i in range(len(feature_pyramid1)):
 
@@ -251,7 +251,12 @@ class VCN(nn.Module):
             else:
                 features2 = feature_pyramid2[i]
 
-            cost = self._corr_fn(feature_pyramid1[i], features2, self.max_disps[i])
+            cost = self._corr_fn(
+                feature_pyramid1[i],
+                features2,
+                self.max_disps[i],
+                factorization=self.cfg.FACTORIZATION,
+            )
             cost = self.butterfly_filters[i](cost)
             cost = self.sep_conv_4d_filters[i](cost)
 
