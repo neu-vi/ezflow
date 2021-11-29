@@ -155,7 +155,7 @@ class VCN(nn.Module):
 
         for m in self.modules():
             if isinstance(m, nn.Conv2d) or isinstance(m, nn.ConvTranspose2d):
-                nn.init.kaiming_normal(m.weight.data, mode="fan_in")
+                nn.init.kaiming_normal_(m.weight.data, mode="fan_in")
                 if m.bias is not None:
                     m.bias.data.zero_()
 
@@ -242,6 +242,7 @@ class VCN(nn.Module):
                         flow_preds[-1],
                         [img1.shape[2] // scale, img1.shape[3] // scale],
                         mode="bilinear",
+                        align_corners=True,
                     )
                     * 2
                 )
@@ -282,6 +283,7 @@ class VCN(nn.Module):
                             flow_intermediates[-1].detach() * 2,
                             [flow.shape[2], flow.shape[3]],
                             mode="bilinear",
+                            align_corners=True,
                         ),
                     ),
                     dim=1,
@@ -310,7 +312,10 @@ class VCN(nn.Module):
         scale = 4
         for i in range(len(flow_preds)):
             flow_preds[i] = F.interpolate(
-                flow_preds[i], [img1.shape[2], img1.shape[3]], mode="bilinear"
+                flow_preds[i],
+                [img1.shape[2], img1.shape[3]],
+                mode="bilinear",
+                align_corners=True,
             )
             flow_preds[i] = flow_preds[i] * scale
             scale *= 2
