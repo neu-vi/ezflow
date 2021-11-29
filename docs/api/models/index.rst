@@ -9,6 +9,7 @@ Models
     ezflow.models.flownet
     ezflow.models.pwcnet
     ezflow.models.raft
+    ezflow.models.vcn
 
 .. toctree::
     :maxdepth: 1

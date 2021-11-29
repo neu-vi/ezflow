@@ -4,41 +4,21 @@ import torch.nn.functional as F
 
 from ...decoder import ConvDecoder
 from ...encoder import build_encoder
+from ...modules import conv, deconv
 from ...similarity import CorrelationLayer
 from ...utils import warp
 from ..build import MODEL_REGISTRY
-
-
-def conv(in_planes, out_planes, kernel_size=3, stride=1, padding=1, dilation=1):
-    return nn.Sequential(
-        nn.Conv2d(
-            in_planes,
-            out_planes,
-            kernel_size=kernel_size,
-            stride=stride,
-            padding=padding,
-            dilation=dilation,
-            bias=True,
-        ),
-        nn.LeakyReLU(0.1),
-    )
-
-
-def deconv(in_planes, out_planes, kernel_size=4, stride=2, padding=1):
-    return nn.ConvTranspose2d(
-        in_planes, out_planes, kernel_size, stride, padding, bias=True
-    )
 
 
 @MODEL_REGISTRY.register()
 class PWCNet(nn.Module):
     """
     Implementation of the paper
-    "PWC-Net: CNNs for Optical Flow Using Pyramid, Warping, and Cost Volume" (https://arxiv.org/abs/1709.02371)
+    **PWC-Net: CNNs for Optical Flow Using Pyramid, Warping, and Cost Volume** (https://arxiv.org/abs/1709.02371)
 
     Parameters
     ----------
-    cfg : Config
+    cfg : :class:`CfgNode`
         Configuration for the model
     """
 
