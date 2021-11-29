@@ -9,6 +9,10 @@ from fvcore.common.config import CfgNode as _CfgNode
 
 
 class CfgNode(_CfgNode):
+    """
+    Container class for configs
+    """
+
     def to_dict(self, cfg_node=None, key_list=[]):
 
         """Convert a config node to dictionary"""
