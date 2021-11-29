@@ -77,8 +77,3 @@ def test_FlowNetS():
     del model, flow, flow_preds
 
     _ = build_model("FlowNetS", default=True)
-
-
-def test_VCN():
-
-    _ = build_model("VCN", default=True)
