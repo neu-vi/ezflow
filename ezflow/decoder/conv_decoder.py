@@ -5,15 +5,15 @@ from ..config import configurable
 from .build import DECODER_REGISTRY
 
 
-def conv(in_planes, out_planes, kernel_size=3, stride=1, padding=1, dilation=1):
+def conv(in_channels, out_channels, kernel_size=3, stride=1, padding=1, dilation=1):
     """
     Block for a 2D Convolutional layer with Leaky ReLU activation
 
     Parameters
     ----------
-    in_planes : int
+    in_channels : int
         Number of input channels
-    out_planes : int
+    out_channels : int
         Number of output channels
     kernel_size : int, default : 3
         Size of the kernel
@@ -29,8 +29,8 @@ def conv(in_planes, out_planes, kernel_size=3, stride=1, padding=1, dilation=1):
     """
     return nn.Sequential(
         nn.Conv2d(
-            in_planes,
-            out_planes,
+            in_channels,
+            out_channels,
             kernel_size=kernel_size,
             stride=stride,
             padding=padding,
@@ -41,15 +41,15 @@ def conv(in_planes, out_planes, kernel_size=3, stride=1, padding=1, dilation=1):
     )
 
 
-def deconv(in_planes, out_planes):
+def deconv(in_channels, out_channels):
     """
     Block for a 2D Transpose Convolutional layer with Leaky ReLU activation
 
     Parameters
     ----------
-    in_planes : int
+    in_channels : int
         Number of input channels
-    out_planes : int
+    out_channels : int
         Number of output channels
 
     Returns
@@ -59,7 +59,7 @@ def deconv(in_planes, out_planes):
     """
     return nn.Sequential(
         nn.ConvTranspose2d(
-            in_planes, out_planes, kernel_size=4, stride=2, padding=1, bias=False
+            in_channels, out_channels, kernel_size=4, stride=2, padding=1, bias=False
         ),
         nn.LeakyReLU(0.1, inplace=True),
     )

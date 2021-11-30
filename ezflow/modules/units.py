@@ -1,4 +1,91 @@
+import torch
 import torch.nn as nn
+
+
+class Conv2x(nn.Module):
+    """
+    Double convolutional layer with the option to perform deconvolution and concatenation
+
+    Parameters
+    ----------
+    in_channels : int
+        Number of input channels
+    out_channels : int
+        Number of output channels
+    deconv : bool
+        Whether to perform deconvolution instead of convolution
+    concat : bool
+        Whether to concatenate the input and the output of the first convolution layer
+    norm : str
+        Type of normalization to use. Can be "batch", "instance", "group", or "none"
+    activation : str
+        Type of activation to use. Can be "relu" or "leakyrelu"
+    """
+
+    def __init__(
+        self,
+        in_channels,
+        out_channels,
+        deconv=False,
+        concat=True,
+        norm="batch",
+        activation="relu",
+    ):
+        super(Conv2x, self).__init__()
+
+        self.concat = concat
+        self.deconv = deconv
+
+        if deconv:
+            kernel = 4
+        else:
+            kernel = 3
+
+        self.conv1 = ConvNormRelu(
+            in_channels,
+            out_channels,
+            deconv,
+            kernel_size=kernel,
+            stride=2,
+            padding=1,
+        )
+
+        if self.concat:
+            self.conv2 = ConvNormRelu(
+                out_channels * 2,
+                out_channels,
+                deconv=False,
+                norm=norm,
+                activation=activation,
+                kernel_size=3,
+                stride=1,
+                padding=1,
+            )
+
+        else:
+            self.conv2 = ConvNormRelu(
+                out_channels,
+                out_channels,
+                deconv=False,
+                norm=norm,
+                activation=activation,
+                kernel_size=3,
+                stride=1,
+                padding=1,
+            )
+
+    def forward(self, x, rem):
+
+        x = self.conv1(x)
+
+        if self.concat:
+            x = torch.cat((x, rem), 1)
+        else:
+            x = x + rem
+
+        x = self.conv2(x)
+
+        return x
 
 
 class ConvNormRelu(nn.Module):
@@ -74,11 +161,11 @@ class ConvNormRelu(nn.Module):
         return x
 
 
-def conv(in_planes, out_planes, kernel_size=3, stride=1, padding=1, dilation=1):
+def conv(in_channels, out_channels, kernel_size=3, stride=1, padding=1, dilation=1):
     return nn.Sequential(
         nn.Conv2d(
-            in_planes,
-            out_planes,
+            in_channels,
+            out_channels,
             kernel_size=kernel_size,
             stride=stride,
             padding=padding,
@@ -89,7 +176,7 @@ def conv(in_planes, out_planes, kernel_size=3, stride=1, padding=1, dilation=1):
     )
 
 
-def deconv(in_planes, out_planes, kernel_size=4, stride=2, padding=1):
+def deconv(in_channels, out_channels, kernel_size=4, stride=2, padding=1):
     return nn.ConvTranspose2d(
-        in_planes, out_planes, kernel_size, stride, padding, bias=True
+        in_channels, out_channels, kernel_size, stride, padding, bias=True
     )

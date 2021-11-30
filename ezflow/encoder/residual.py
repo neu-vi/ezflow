@@ -8,9 +8,23 @@ from .build import ENCODER_REGISTRY
 
 @ENCODER_REGISTRY.register()
 class BasicEncoder(nn.Module):
-
     """
-    ResNet style encoder using basic residual blocls
+    ResNet-style encoder with basic residual blocks
+
+    Parameters
+    ----------
+    in_channels : int
+        Number of input channels
+    out_channels : int
+        Number of output channels
+    norm : str
+        Normalization layer to use. One of "batch", "instance", "group", or None
+    p_dropout : float
+        Dropout probability
+    layer_config : list of int or tuple of int
+        Configuration of encoder's layers
+    intermediate_features : bool
+        Whether to return intermediate features to get a feature hierarchy
     """
 
     @configurable
@@ -134,9 +148,23 @@ class BasicEncoder(nn.Module):
 
 @ENCODER_REGISTRY.register()
 class BottleneckEncoder(nn.Module):
-
     """
-    ResNet style encoder using bottleneck residual blocls
+    ResNet-style encoder with bottleneck residual blocks
+
+    Parameters
+    ----------
+    in_channels : int
+        Number of input channels
+    out_channels : int
+        Number of output channels
+    norm : str
+        Normalization layer to use. One of "batch", "instance", "group", or None
+    p_dropout : float
+        Dropout probability
+    layer_config : list of int or tuple of int
+        Configuration of encoder's layers
+    intermediate_features : bool
+        Whether to return intermediate features to get a feature hierarchy
     """
 
     @configurable
