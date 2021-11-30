@@ -44,7 +44,7 @@ class MPISintel(BaseDataset):
             "spatial_aug_params": {"aug_prob": 0.8},
         },
     ):
-        super(MpiSintel, self).__init__(
+        super(MPISintel, self).__init__(
             augment,
             aug_params,
             is_prediction,
