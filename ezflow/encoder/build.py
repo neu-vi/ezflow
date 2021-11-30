@@ -6,21 +6,23 @@ ENCODER_REGISTRY = Registry("ENCODER")
 def build_encoder(cfg_grp=None, name=None, instantiate=True, **kwargs):
 
     """
-    Build an encoder from a registered encoder name.
+    Build an encoder from a registered encoder name
 
     Parameters
     ----------
-    cfg : CfgNode
-        Config to pass to the encoder.
+    cfg : :class:`CfgNode`
+        Config to pass to the encoder
     name : str
-        Name of the registered encoder.
+        Name of the registered encoder
     instantiate : bool
-        Whether to instantiate the encoder.
+        Whether to instantiate the encoder
+    kwargs : dict
+        Additional keyword arguments to pass to the encoder
 
     Returns
     -------
-    encoder : object
-        The encoder object.
+    torch.nn.Module
+        The encoder object
     """
 
     if cfg_grp is None:

@@ -69,6 +69,19 @@ class ResidualBlock(nn.Module):
 
 
 class PyramidPooling(nn.Module):
+    """
+    Pyramid pooling module for the **PSPNet** feature extractor
+
+    Parameters
+    ----------
+    in_channels : int
+        Number of input channels
+    levels : int
+        Number of levels in the pyramid
+    norm : bool
+        Whether to use batch normalization
+    """
+
     def __init__(self, in_channels, levels=4, norm=True):
         super(PyramidPooling, self).__init__()
 
@@ -125,12 +138,30 @@ class PyramidPooling(nn.Module):
 
 @ENCODER_REGISTRY.register()
 class PSPNetBackbone(nn.Module):
+    """
+    PSPNet feature extractor backbone (https://arxiv.org/abs/1612.01105)
+    Used in **Volumetric Correspondence Networks for Optical Flow** (https://papers.nips.cc/paper/2019/hash/bbf94b34eb32268ada57a3be5062fe7d-Abstract.html)
+
+    Parameters
+    ----------
+    is_proj : bool
+        Whether to use projection pooling or not
+    groups : int
+        Number of groups in the convolutional
+    in_channels : int
+        Number of input channels
+    norm : bool
+        Whether to use batch normalization
+
+    """
+
     @configurable
     def __init__(self, is_proj=True, groups=1, in_channels=3, norm=True):
         super(PSPNetBackbone, self).__init__()
 
         self.is_proj = is_proj
         self.inplanes = 32
+
         if norm:
             norm = "batch"
         else:

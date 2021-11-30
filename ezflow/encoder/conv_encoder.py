@@ -5,24 +5,40 @@ from ..config import configurable
 from .build import ENCODER_REGISTRY
 
 
-def conv(in_planes, out_planes, kernel_size=3, stride=1, norm=None):
+def conv(in_channels, out_channels, kernel_size=3, stride=1, norm=None):
+    """
+    Generic convolutional layer with optional batch normalization
+
+    Parameters
+    ----------
+    in_channels : int
+        Number of input channels
+    out_channels : int
+        Number of output channels
+    kernel_size : int
+        Size of the convolutional kernel
+    stride : int
+        Stride of the convolutional kernel
+    norm : str
+        Type of normalization to use. Can be None, 'batch', 'layer', 'instance'
+    """
 
     if norm == "group":
-        norm_fn = nn.GroupNorm(num_groups=8, num_channels=out_planes)
+        norm_fn = nn.GroupNorm(num_groups=8, num_channels=out_channels)
 
     elif norm == "batch":
-        norm_fn = nn.BatchNorm2d(out_planes)
+        norm_fn = nn.BatchNorm2d(out_channels)
 
     elif norm == "instance":
-        norm_fn = nn.InstanceNorm2d(out_planes)
+        norm_fn = nn.InstanceNorm2d(out_channels)
 
     else:
         norm_fn = nn.Identity()
 
     return nn.Sequential(
         nn.Conv2d(
-            in_planes,
-            out_planes,
+            in_channels,
+            out_channels,
             kernel_size=kernel_size,
             stride=stride,
             padding=(kernel_size - 1) // 2,
@@ -35,7 +51,19 @@ def conv(in_planes, out_planes, kernel_size=3, stride=1, norm=None):
 
 @ENCODER_REGISTRY.register()
 class FlownetConvEncoder(nn.Module):
-    """Convolution encoder for FlowNet"""
+    """
+    Convolutional encoder based on the FlowNet architecture
+    Used in **FlowNet: Learning Optical Flow with Convolutional Networks** (https://arxiv.org/abs/1504.06852)
+
+    Parameters
+    ----------
+    in_channels : int
+        Number of input channels
+    config : list of int
+        Configuration for the layers in the encoder
+    norm : str
+        Type of normalization to use. Can be None, 'batch', 'layer', 'instance'
+    """
 
     @configurable
     def __init__(
