@@ -1,28 +1,23 @@
 import torch.nn as nn
 
 from ..config import configurable
+from ..modules import conv
 from .build import ENCODER_REGISTRY
-
-
-def conv(in_planes, out_planes, kernel_size=3, stride=1, padding=1, dilation=1):
-    return nn.Sequential(
-        nn.Conv2d(
-            in_planes,
-            out_planes,
-            kernel_size=kernel_size,
-            stride=stride,
-            padding=padding,
-            dilation=dilation,
-            bias=True,
-        ),
-        nn.LeakyReLU(0.1),
-    )
 
 
 @ENCODER_REGISTRY.register()
 class PyramidEncoder(nn.Module):
+    """
+    Pyramid encoder which returns a hierarchy of features
+    Used in **PWC-Net: CNNs for Optical Flow Using Pyramid, Warping, and Cost Volume** (https://arxiv.org/abs/1709.02371)
 
-    """Pyramid encoder with hierarchy of features"""
+    Parameters
+    ----------
+    in_channels : int
+        Number of input channels
+    config : list of int
+        Configuration of the pyramid encoder's layers
+    """
 
     @configurable
     def __init__(self, in_channels=3, config=[16, 32, 64, 96, 128, 196]):

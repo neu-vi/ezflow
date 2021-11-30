@@ -7,7 +7,7 @@ from .build import DECODER_REGISTRY
 
 class FeatureProjection4D(nn.Module):
     """
-    Applies a 3D convolution to the input feature map.
+    Applies a 3D convolution to the input feature map
 
     Parameters
     ----------

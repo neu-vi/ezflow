@@ -2,81 +2,22 @@ import torch
 import torch.nn as nn
 
 from ..config import configurable
-from ..modules import ConvNormRelu
+from ..modules import Conv2x, ConvNormRelu
 from .build import ENCODER_REGISTRY
-
-
-class Conv2x(nn.Module):
-    def __init__(
-        self,
-        in_channels,
-        out_channels,
-        deconv=False,
-        concat=True,
-        norm="batch",
-        activation="relu",
-    ):
-        super(Conv2x, self).__init__()
-
-        self.concat = concat
-        self.deconv = deconv
-
-        if deconv:
-            kernel = 4
-        else:
-            kernel = 3
-
-        self.conv1 = ConvNormRelu(
-            in_channels,
-            out_channels,
-            deconv,
-            kernel_size=kernel,
-            stride=2,
-            padding=1,
-        )
-
-        if self.concat:
-            self.conv2 = ConvNormRelu(
-                out_channels * 2,
-                out_channels,
-                deconv=False,
-                norm=norm,
-                activation=activation,
-                kernel_size=3,
-                stride=1,
-                padding=1,
-            )
-
-        else:
-            self.conv2 = ConvNormRelu(
-                out_channels,
-                out_channels,
-                deconv=False,
-                norm=norm,
-                activation=activation,
-                kernel_size=3,
-                stride=1,
-                padding=1,
-            )
-
-    def forward(self, x, rem):
-
-        x = self.conv1(x)
-
-        if self.concat:
-            x = torch.cat((x, rem), 1)
-        else:
-            x = x + rem
-
-        x = self.conv2(x)
-
-        return x
 
 
 @ENCODER_REGISTRY.register()
 class GANetBackbone(nn.Module):
+    """
+    Feature extractor backbone used in **GA-Net: Guided Aggregation Net for End-to-end Stereo Matching** (https://arxiv.org/abs/1904.06587)
 
-    """GANet Feature Backbone"""
+    Parameters
+    ----------
+    in_channels : int
+        Number of input channels
+    out_channels : int
+        Number of output channels
+    """
 
     @configurable
     def __init__(self, in_channels=3, out_channels=32):
