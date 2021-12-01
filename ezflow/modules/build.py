@@ -9,7 +9,7 @@ def build_module(cfg_grp=None, name=None, instantiate=True, **kwargs):
 
     Parameters
     ----------
-    cfg_grp : "class: `CfgNode`
+    cfg_grp : :class:`CfgNode`
         Config to pass to the module
     name : str
         Name of the registered module
