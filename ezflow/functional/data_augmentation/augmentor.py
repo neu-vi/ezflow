@@ -4,9 +4,8 @@ from .operations import *
 
 @FUNCTIONAL_REGISTRY.register()
 class FlowAugmentor:
-
     """
-    Class for appyling a series of augmentations to a pair of images and a flow field.
+    Class for appyling a series of augmentations to a pair of images and a flow field
 
     Parameters
     ----------
@@ -34,9 +33,26 @@ class FlowAugmentor:
         self.spatial_aug_params = spatial_aug_params
 
     def __call__(self, img1, img2, flow):
-
         """
         Applies the augmentations to the pair of images and the flow field.
+
+        Parameters
+        ----------
+        img1 : numpy.ndarray
+            First image
+        img2 : numpy.ndarray
+            Second image
+        flow : numpy.ndarray
+            Flow field
+
+        Returns
+        -------
+        img1 : numpy.ndarray
+            First image
+        img2 : numpy.ndarray
+            Second image
+        flow : numpy.ndarray
+            Flow field
         """
 
         img1, img2 = color_transform(img1, img2, **self.color_aug_params)

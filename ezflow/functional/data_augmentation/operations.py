@@ -15,6 +15,7 @@ def color_transform(
 ):
     """
     Photometric augmentation
+
     Parameters
     -----------
     img1 : PIL Image or numpy.ndarray
@@ -31,6 +32,7 @@ def color_transform(
         Saturation augmentation factor
     hue : float
         Hue augmentation factor
+
     Returns
     -------
     img1 : PIL Image or numpy.ndarray
