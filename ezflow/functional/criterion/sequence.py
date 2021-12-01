@@ -7,6 +7,18 @@ from ..registry import FUNCTIONAL_REGISTRY
 
 @FUNCTIONAL_REGISTRY.register()
 class SequenceLoss(nn.Module):
+    """
+    Sequence loss for optical flow estimation.
+    Used in **RAFT** (https://arxiv.org/abs/2003.12039)
+
+    Parameters
+    ----------
+    gamma : float
+        Weight for the loss
+    max_flow : float
+        Maximum flow magnitude
+    """
+
     @configurable
     def __init__(self, gamma=0.8, max_flow=400):
         super(SequenceLoss, self).__init__()

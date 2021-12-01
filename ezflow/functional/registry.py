@@ -4,6 +4,18 @@ FUNCTIONAL_REGISTRY = Registry("FUNCTIONAL")
 
 
 def get_functional(cfg_grp=None, name=None, **kwargs):
+    """
+    Retrieve a component from the functional registry
+
+    Parameters
+    ----------
+    cfg_grp : :class: `CfgNode`
+        Configuration for the component
+    name : str
+        Name of the component
+    kwargs : dict
+        Additional keyword arguments
+    """
 
     if cfg_grp is None:
         assert name is not None, "Must provide name or cfg_grp"
