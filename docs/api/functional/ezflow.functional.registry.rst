@@ -1,7 +1,7 @@
-Learnable Cost
+Registry
 =========================================================
 
-.. automodule:: ezflow.decoder.learnable_cost
+.. automodule:: ezflow.functional.registry
    :members:
    :undoc-members:
    :show-inheritance:

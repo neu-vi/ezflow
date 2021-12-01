@@ -8,6 +8,24 @@ from ..registry import FUNCTIONAL_REGISTRY
 
 @FUNCTIONAL_REGISTRY.register()
 class MultiScaleLoss(nn.Module):
+    """
+    Multi-scale loss for optical flow estimation.
+    Used in **DICL** (https://papers.nips.cc/paper/2020/hash/add5aebfcb33a2206b6497d53bc4f309-Abstract.html)
+
+    Parameters
+    ----------
+    norm : str
+        The norm to use for the loss. Can be either "l2", "l1" or "robust"
+    weights : list
+        The weights to use for each scale
+    extra_mask : torch.Tensor
+        A mask to apply to the loss. Useful for removing the loss on the background
+    use_valid_range : bool
+        Whether to use the valid range of flow values for the loss
+    valid_range : list
+        The valid range of flow values for each scale
+    """
+
     @configurable
     def __init__(
         self,

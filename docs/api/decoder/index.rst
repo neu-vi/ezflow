@@ -8,6 +8,5 @@ Decoder
     ezflow.decoder.iterative
     ezflow.decoder.noniterative
     ezflow.decoder.conv_decoder
-    ezflow.decoder.learnable_cost
     ezflow.decoder.separable_conv
     ezflow.decoder.builder
