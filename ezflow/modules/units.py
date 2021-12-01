@@ -162,6 +162,25 @@ class ConvNormRelu(nn.Module):
 
 
 def conv(in_channels, out_channels, kernel_size=3, stride=1, padding=1, dilation=1):
+    """
+    2D convolution layer followed by an activation function
+
+    Parameters
+    ----------
+    in_channels : int
+        Number of input channels
+    out_channels : int
+        Number of output channels
+    kernel_size : int, optional
+        Size of the convolutional kernel
+    stride : int, optional
+        Stride of the convolutional kernel
+    padding : int, optional
+        Padding of the convolutional kernel
+    dilation : int, optional
+        Dilation of the convolutional kernel
+    """
+
     return nn.Sequential(
         nn.Conv2d(
             in_channels,
@@ -177,6 +196,25 @@ def conv(in_channels, out_channels, kernel_size=3, stride=1, padding=1, dilation
 
 
 def deconv(in_channels, out_channels, kernel_size=4, stride=2, padding=1):
+    """
+    2D transpose convolution layer followed by an activation function
+
+    Parameters
+    ----------
+    in_channels : int
+        Number of input channels
+    out_channels : int
+        Number of output channels
+    kernel_size : int, optional
+        Size of the convolutional kernel
+    stride : int, optional
+        Stride of the convolutional kernel
+    padding : int, optional
+        Padding of the convolutional kernel
+    dilation : int, optional
+        Dilation of the convolutional kernel
+    """
+
     return nn.ConvTranspose2d(
         in_channels, out_channels, kernel_size, stride, padding, bias=True
     )
