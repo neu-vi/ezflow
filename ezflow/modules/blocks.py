@@ -19,9 +19,9 @@ class BasicBlock(nn.Module):
     stride : int, optional
         Stride of the convolution
     norm : str, optional
-        Normalization method
+        Normalization method. One of "group", "batch", "instance", or None
     activation : str, optional
-        Activation function
+        Activation function. One of "relu", "leakyrelu", or None
     """
 
     @configurable
@@ -115,9 +115,9 @@ class BottleneckBlock(nn.Module):
     stride : int, optional
         Stride of the convolution
     norm : str, optional
-        Normalization method
+        Normalization method. One of "group", "batch", "instance", or None
     activation : str, optional
-        Activation function
+        Activation function. One of "relu", "leakyrelu", or None
     """
 
     @configurable

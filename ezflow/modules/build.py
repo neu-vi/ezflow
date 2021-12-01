@@ -4,21 +4,24 @@ MODULE_REGISTRY = Registry("MODULE")
 
 
 def build_module(cfg_grp=None, name=None, instantiate=True, **kwargs):
-
     """
-    Build a module from a registered module name.
+    Build a module from a registered module name
 
     Parameters
     ----------
+    cfg_grp : "class: `CfgNode`
+        Config to pass to the module
     name : str
-        Name of the registered module.
-    cfg : CfgNode
-        Config to pass to the module.
+        Name of the registered module
+    instantiate : bool
+        Whether to instantiate the module or not
+    kwargs : dict
+        Keyword arguments to pass to the module
 
     Returns
     -------
-    module : object
-        The module object.
+    object
+        The module object
     """
 
     if cfg_grp is None:
