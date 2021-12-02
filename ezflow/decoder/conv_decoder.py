@@ -164,7 +164,7 @@ class ConvDecoder(nn.Module):
 
 
 @DECODER_REGISTRY.register()
-class FlownetConvDecoder(nn.Module):
+class FlowNetConvDecoder(nn.Module):
     """
     Applies a 2D Convolutional decoder to regress the optical flow
     from the intermediate outputs convolutions of the encoder.
@@ -188,6 +188,7 @@ class FlownetConvDecoder(nn.Module):
         out_channels = [in_channels] + config
         in_channels = []
         prev_out_channels = 0
+
         for i in range(len(out_channels)):
             if i > 0:
                 inp = out_channels[i] + prev_out_channels + 2
