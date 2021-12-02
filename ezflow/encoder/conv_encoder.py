@@ -50,7 +50,7 @@ def conv(in_channels, out_channels, kernel_size=3, stride=1, norm=None):
 
 
 @ENCODER_REGISTRY.register()
-class FlownetConvEncoder(nn.Module):
+class FlowNetConvEncoder(nn.Module):
     """
     Convolutional encoder based on the FlowNet architecture
     Used in **FlowNet: Learning Optical Flow with Convolutional Networks** (https://arxiv.org/abs/1504.06852)
@@ -72,11 +72,11 @@ class FlownetConvEncoder(nn.Module):
         config=[64, 128, 256, 512],
         norm=None,
     ):
-        super(FlownetConvEncoder, self).__init__()
+        super(FlowNetConvEncoder, self).__init__()
 
         assert (
             len(config) >= 3
-        ), "FlownetConvEncoder expects at least 3 output channels in config."
+        ), "FlowNetConvEncoder expects at least 3 output channels in config."
 
         if isinstance(config, tuple):
             config = list(config)

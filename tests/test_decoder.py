@@ -19,6 +19,20 @@ def test_ConvDecoder():
     flow, _ = decoder(cost)
     assert flow.shape[1] == 64
 
+    decoder = DECODER_REGISTRY.get("FlowNetConvDecoder")()
+    flow_preds = decoder(
+        [
+            torch.randn(2, 64, 128, 128),
+            torch.randn(2, 128, 64, 64),
+            torch.randn(2, 256, 32, 32),
+            torch.randn(2, 512, 16, 16),
+            torch.randn(2, 512, 8, 8),
+            torch.randn(2, 1024, 4, 4),
+        ]
+    )
+    assert type(flow_preds) == list and len(flow_preds) == 5
+    assert flow_preds[0].shape[1] == 2
+
     del decoder, flow
 
 

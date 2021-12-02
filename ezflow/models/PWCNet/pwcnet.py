@@ -133,7 +133,7 @@ class PWCNet(nn.Module):
 
         for m in self.modules():
             if isinstance(m, nn.Conv2d) or isinstance(m, nn.ConvTranspose2d):
-                nn.init.kaiming_normal(m.weight.data, mode="fan_in")
+                nn.init.kaiming_normal_(m.weight.data, mode="fan_in")
                 if m.bias is not None:
                     m.bias.data.zero_()
 
