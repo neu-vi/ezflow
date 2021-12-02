@@ -33,7 +33,7 @@ class VCN(nn.Module):
 
     Parameters
     ----------
-    cfg : CfgNode
+    cfg : :class:`CfgNode`
         Configuration for the model
     """
 
