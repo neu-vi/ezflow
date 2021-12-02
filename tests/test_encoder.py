@@ -72,7 +72,7 @@ def test_PSPNetBackbone():
 
 def test_FlownetConvEncoder():
 
-    encoder = ENCODER_REGISTRY.get("FlownetConvEncoder")(
+    encoder = ENCODER_REGISTRY.get("FlowNetConvEncoder")(
         in_channels=3, config=(16, 32, 64)
     )
     outputs = encoder(img)
@@ -84,7 +84,7 @@ def test_FlownetConvEncoder():
 
     del encoder
 
-    encoder = ENCODER_REGISTRY.get("FlownetConvEncoder")(
+    encoder = ENCODER_REGISTRY.get("FlowNetConvEncoder")(
         in_channels=3, config=(16, 32, 64, 64)
     )
     outputs = encoder(img)
