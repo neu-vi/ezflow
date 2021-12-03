@@ -1,6 +1,6 @@
 from ezflow.data import DataloaderCreator
+from ezflow.engine import Trainer, get_training_cfg
 from ezflow.models import build_model
-from ezflow.training import Trainer, get_training_cfg
 
 
 def main(args):

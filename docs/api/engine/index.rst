@@ -1,10 +1,10 @@
-Training
+Engine
 ================
 
-Trainer
+Training
 ---------------
 
-.. automodule:: ezflow.training.trainer
+.. automodule:: ezflow.engine.trainer
    :members:
    :undoc-members:
    :show-inheritance:
@@ -12,7 +12,7 @@ Trainer
 Evaluation
 ---------------
 
-.. automodule:: ezflow.training.eval
+.. automodule:: ezflow.engine.eval
    :members:
    :undoc-members:
    :show-inheritance:
@@ -20,7 +20,7 @@ Evaluation
 Retrieve
 ---------------
 
-.. automodule:: ezflow.training.retrieve
+.. automodule:: ezflow.engine.retrieve
    :members:
    :undoc-members:
    :show-inheritance:
