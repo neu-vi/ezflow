@@ -20,11 +20,11 @@ Welcome to EzFlow's documentation!
    api/data/index
    api/decoder/index
    api/encoder/index
+   api/engine/index
    api/functional/index
    api/models/index
    api/modules/index
    api/similarity/index
-   api/training/index
    api/utils/index
 
 Indices and tables
