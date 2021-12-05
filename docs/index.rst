@@ -7,8 +7,7 @@ Welcome to EzFlow's documentation!
 
    readme
    installation
-   usage
-   modules
+   tutorials/index
    contributing
    authors
 
