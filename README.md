@@ -15,11 +15,12 @@
 <!-- [![Code style](https://github.com/neu-vig/ezflow/actions/workflows/linting.yml/badge.svg)](https://github.com/neu-vig/ezflow/actions/workflows/linting.yml) -->
 <!-- [![Code coverage](https://github.com/neu-vig/ezflow/actions/workflows/codecov.yml/badge.svg)](https://github.com/neu-vig/ezflow/actions/workflows/codecov.yml) -->
 
+**[Documentation](https://ezflow.readthedocs.io/en/latest/)** | **[Tutorials](https://ezflow.readthedocs.io/en/latest/tutorials.html)**
+
 </div>
 
 <br>
 
-#### Documentation and tutorials coming soon! Stay tuned!
 
 ## Installation
 
