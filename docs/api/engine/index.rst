@@ -17,6 +17,14 @@ Evaluation
    :undoc-members:
    :show-inheritance:
 
+Pruning
+---------------
+
+.. automodule:: ezflow.engine.pruning
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 Retrieve
 ---------------
 
