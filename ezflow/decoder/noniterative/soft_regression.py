@@ -63,29 +63,27 @@ class SoftArg2DFlowRegression(nn.Module):
         x = x.squeeze(1)
         B, _, _, H, W = x.shape
 
-        with torch.cuda.device_of(x):
+        disp_u = torch.reshape(
+            torch.arange(
+                -self.max_u,
+                self.max_u + 1,
+                dtype=torch.float32,
+            ),
+            [1, sizeU, 1, 1, 1],
+        ).to(x.device)
+        disp_u = disp_u.expand(B, -1, sizeV, H, W).contiguous()
+        disp_u = disp_u.view(B, sizeU * sizeV, H, W)
 
-            disp_u = torch.reshape(
-                torch.arange(
-                    -self.max_u,
-                    self.max_u + 1,
-                    dtype=torch.float32,
-                ),
-                [1, sizeU, 1, 1, 1],
-            )
-            disp_u = disp_u.expand(B, -1, sizeV, H, W).contiguous()
-            disp_u = disp_u.view(B, sizeU * sizeV, H, W)
-
-            disp_v = torch.reshape(
-                torch.arange(
-                    -self.max_v,
-                    self.max_v + 1,
-                    dtype=torch.float32,
-                ),
-                [1, 1, sizeV, 1, 1],
-            )
-            disp_v = disp_v.expand(B, sizeU, -1, H, W).contiguous()
-            disp_v = disp_v.view(B, sizeU * sizeV, H, W)
+        disp_v = torch.reshape(
+            torch.arange(
+                -self.max_v,
+                self.max_v + 1,
+                dtype=torch.float32,
+            ),
+            [1, 1, sizeV, 1, 1],
+        ).to(x.device)
+        disp_v = disp_v.expand(B, sizeU, -1, H, W).contiguous()
+        disp_v = disp_v.view(B, sizeU * sizeV, H, W)
 
         x = x.view(B, sizeU * sizeV, H, W)
 
