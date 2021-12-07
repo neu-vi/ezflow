@@ -62,12 +62,14 @@ class FlowNetS(nn.Module):
         conv_outputs = self.encoder(x)
 
         flow_preds = self.decoder(conv_outputs)
+        flow_preds.reverse()
 
         if self.training:
             return flow_preds
+
         else:
 
-            flow = flow_preds[-1]
+            flow = flow_preds[0]
 
             if self.cfg.INTERPOLATE_FLOW:
                 H_, W_ = flow.shape[-2:]
