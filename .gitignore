@@ -106,4 +106,4 @@ ENV/
 .idea/
 
 # model_zoo
-ezflow/model_zoo/configs/
+ezflow/model_zoo/configs
