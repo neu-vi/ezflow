@@ -68,7 +68,6 @@ Ready to contribute? Here's how to set up `ezflow` for local development.
 
     $ conda env create -f environment.yml
     $ conda activate ezflow
-    $ cd ezflow/
     $ python setup.py develop
 
 4. Set up pre-commit hooks::
