@@ -2,12 +2,12 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from ...decoder import ConvDecoder
-from ...encoder import build_encoder
-from ...modules import conv, deconv
-from ...similarity import CorrelationLayer
-from ...utils import warp
-from ..build import MODEL_REGISTRY
+from ..decoder import ConvDecoder
+from ..encoder import build_encoder
+from ..modules import conv, deconv
+from ..similarity import CorrelationLayer
+from ..utils import warp
+from .build import MODEL_REGISTRY
 
 
 @MODEL_REGISTRY.register()

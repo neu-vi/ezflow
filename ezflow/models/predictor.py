@@ -4,7 +4,7 @@ from torchvision import io
 from .build import build_model
 
 
-class DefaultPredictor:
+class Predictor:
     """
     A class that uses an instance of an optical flow estimation model to predict flow between two images
 

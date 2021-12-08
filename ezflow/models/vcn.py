@@ -3,11 +3,11 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from ...decoder import Butterfly4D, SeparableConv4D, Soft4DFlowRegression
-from ...encoder import build_encoder
-from ...modules import conv
-from ...utils import warp
-from ..build import MODEL_REGISTRY
+from ..decoder import Butterfly4D, SeparableConv4D, Soft4DFlowRegression
+from ..encoder import build_encoder
+from ..modules import conv
+from ..utils import warp
+from .build import MODEL_REGISTRY
 
 
 def gen_hypotheses_fusion_block(in_channels, out_channels):
@@ -29,7 +29,7 @@ def gen_hypotheses_fusion_block(in_channels, out_channels):
 class VCN(nn.Module):
     """
     Implementation of the paper
-    **Volumetric Correspondence Networks for Optical Flow** (https://papers.nips.cc/paper/2019/hash/bbf94b34eb32268ada57a3be5062fe7d-Abstract.html)
+    `**Volumetric Correspondence Networks for Optical Flow** <https://papers.nips.cc/paper/2019/hash/bbf94b34eb32268ada57a3be5062fe7d-Abstract.html>`_
 
     Parameters
     ----------
