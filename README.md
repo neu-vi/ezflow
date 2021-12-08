@@ -50,7 +50,7 @@ python setup.py install
 - [RAFT](https://github.com/princeton-vl/RAFT)
 - [DICL-Flow](https://github.com/jytime/DICL-Flow)
 - [PWC-Net](https://github.com/NVlabs/PWC-Net)
-- [FlowNetS](https://github.com/ClementPinard/FlowNetPytorch)
+- [FlowNetPytorch](https://github.com/ClementPinard/FlowNetPytorch)
 - [VCN](https://github.com/gengshan-y/VCN)
 - [detectron2](https://github.com/facebookresearch/detectron2)
 - [CorrelationLayer](https://github.com/oblime/CorrelationLayer)
