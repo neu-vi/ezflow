@@ -90,7 +90,7 @@ def test_VCN():
     assert flow_preds[0].shape == (16, 2, 256, 256)
 
     model.eval()
-    flow = model(img1, img2)
-    assert flow.shape == (2, 2, 256, 256)
+    flow = model(img, img)
+    assert flow.shape == (16, 2, 256, 256)
 
     del model, flow, flow_preds

@@ -211,7 +211,7 @@ class VCN(nn.Module):
 
         assert (
             batch_size == self.cfg.SIZE[0]
-        ), f"Batch size in model configuration must be equal to the training batch size. Model config batch size: {batch_size}"
+        ), f"Batch size in model configuration must be equal to the training batch size. Model config batch size: {self.cfg.SIZE[0]}, Training batch size: {batch_size}"
 
         feature_pyramid = self.encoder(torch.cat([img1, img2], dim=0))
 
