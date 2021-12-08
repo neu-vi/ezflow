@@ -105,4 +105,5 @@ ENV/
 .vscode/
 .idea/
 
-
+# model_zoo
+ezflow/model_zoo/configs

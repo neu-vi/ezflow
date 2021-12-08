@@ -64,11 +64,21 @@ def test_SoftArg2DFlowRegression():
     del decoder, flow
 
 
-# def test_Soft4DFlowRegression():
+def test_Soft4DFlowRegression():
 
-#     decoder = DECODER_REGISTRY.get("Soft4DFlowRegression")(size=(1, 4, 4))
-#     cost = torch.randn(2, 16, 16, 4, 4)
-#     flow = decoder(cost)
-#     assert flow.shape[1] == 2
+    decoder = DECODER_REGISTRY.get("Soft4DFlowRegression")(
+        size=(2, 4, 4), max_disp=2, entropy=True, factorization=1
+    )
+    cost = torch.randn(2, 5, 5, 4, 4)
+    flow, entropy = decoder(cost)
+    assert flow.shape[1] == 2
+    assert entropy.shape[1] == 2
 
-#     del decoder, flow
+    decoder = DECODER_REGISTRY.get("Soft4DFlowRegression")(
+        size=(2, 4, 4), max_disp=2, entropy=False, factorization=1
+    )
+    cost = torch.randn(2, 5, 5, 4, 4)
+    flow = decoder(cost)
+    assert flow[0].shape[1] == 2
+
+    del decoder, flow

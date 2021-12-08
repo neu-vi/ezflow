@@ -209,6 +209,10 @@ class VCN(nn.Module):
 
         batch_size = img1.shape[0]
 
+        assert (
+            batch_size == self.cfg.SIZE[0]
+        ), f"Batch size in model configuration must be equal to the training batch size. Model config batch size: {batch_size}"
+
         feature_pyramid = self.encoder(torch.cat([img1, img2], dim=0))
 
         feature_pyramid1 = []
@@ -216,9 +220,6 @@ class VCN(nn.Module):
         for feature in feature_pyramid:
             feature_pyramid1.append(feature[:batch_size])
             feature_pyramid2.append(feature[batch_size:])
-
-        # feature_pyramid1 = self.encoder(img1)
-        # feature_pyramid2 = self.encoder(img2)
 
         for i in range(len(feature_pyramid1)):
 
@@ -263,6 +264,7 @@ class VCN(nn.Module):
 
             B, C, U, V, H, W = cost.shape
             cost = cost.view(-1, U, V, H, W)
+
             flow, ent = self.flow_regressors[i](cost)
 
             if i != 0:
@@ -271,11 +273,7 @@ class VCN(nn.Module):
             flow = flow.view(batch_size, -1, H, W)
             ent = ent.view(batch_size, -1, H, W)
 
-            flow_intermediates.append(flow)
-            ent_intermediates.append(ent)
-
             if i != 0:
-
                 flow = torch.cat(
                     (
                         flow,
@@ -288,6 +286,7 @@ class VCN(nn.Module):
                     ),
                     dim=1,
                 )
+
                 ent = torch.cat(
                     (
                         ent,
@@ -300,6 +299,9 @@ class VCN(nn.Module):
                     dim=1,
                 )
 
+            flow_intermediates.append(flow)
+            ent_intermediates.append(ent)
+
             x = torch.cat([ent.detach(), flow.detach(), feature_pyramid1[i]], dim=1)
             x = self.hypotheses_fusion_blocks[i](x)
             x = x.view(B, -1, 2, H, W)
@@ -307,7 +309,7 @@ class VCN(nn.Module):
             flow = (flow.view(B, -1, 2, H, W) * F.softmax(x, dim=1)).sum(dim=1)
             flow_preds.append(flow)
 
-        flow_preds = flow_preds.reverse()
+        flow_preds.reverse()
 
         scale = 4
         for i in range(len(flow_preds)):
