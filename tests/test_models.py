@@ -77,3 +77,20 @@ def test_FlowNetS():
     del model, flow, flow_preds
 
     _ = build_model("FlowNetS", default=True)
+
+
+def test_VCN():
+
+    model = build_model("VCN", "vcn.yaml")
+
+    img = torch.randn(16, 3, 256, 256)
+
+    flow_preds = model(img, img)
+    assert isinstance(flow_preds, tuple) or isinstance(flow_preds, list)
+    assert flow_preds[0].shape == (16, 2, 256, 256)
+
+    model.eval()
+    flow = model(img, img)
+    assert flow.shape == (16, 2, 256, 256)
+
+    del model, flow, flow_preds

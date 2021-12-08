@@ -1,0 +1,17 @@
+NAME: VCN
+ENCODER:
+  NAME: PSPNetBackbone
+  IS_PROJ: False
+  GROUPS: 1
+  IN_CHANNELS: 3
+  NORM: True
+DECODER:
+    F_DIM_A1: 128
+    F_DIM_A2: 64
+    F_DIM_B1: 16
+    F_DIM_B2: 12 
+    NORM: True
+    ENTROPY: True
+SIZE: [16, 256, 256] # batch_size x H x W
+MAX_DISPLACEMENTS: [2, 2, 2, 2, 2]
+FACTORIZATION: 1
