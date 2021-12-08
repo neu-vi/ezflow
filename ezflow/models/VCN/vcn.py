@@ -272,11 +272,7 @@ class VCN(nn.Module):
             flow = flow.view(batch_size, -1, H, W)
             ent = ent.view(batch_size, -1, H, W)
 
-            flow_intermediates.append(flow)
-            ent_intermediates.append(ent)
-
             if i != 0:
-
                 flow = torch.cat(
                     (
                         flow,
@@ -289,6 +285,7 @@ class VCN(nn.Module):
                     ),
                     dim=1,
                 )
+
                 ent = torch.cat(
                     (
                         ent,
@@ -301,6 +298,9 @@ class VCN(nn.Module):
                     dim=1,
                 )
 
+            flow_intermediates.append(flow)
+            ent_intermediates.append(ent)
+
             x = torch.cat([ent.detach(), flow.detach(), feature_pyramid1[i]], dim=1)
             x = self.hypotheses_fusion_blocks[i](x)
             x = x.view(B, -1, 2, H, W)
@@ -308,7 +308,7 @@ class VCN(nn.Module):
             flow = (flow.view(B, -1, 2, H, W) * F.softmax(x, dim=1)).sum(dim=1)
             flow_preds.append(flow)
 
-        flow_preds = flow_preds.reverse()
+        flow_preds.reverse()
 
         scale = 4
         for i in range(len(flow_preds)):

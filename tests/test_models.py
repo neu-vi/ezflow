@@ -91,4 +91,4 @@ def test_VCN():
     model = build_model("VCN", cfg=cfg)
 
     flow = model(img1, img2)
-    assert flow.shape == (2, 2, 256, 256)
+    assert flow[0].shape == (2, 2, 256, 256)

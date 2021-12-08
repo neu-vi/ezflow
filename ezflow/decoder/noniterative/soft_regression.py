@@ -184,12 +184,12 @@ class Soft4DFlowRegression(nn.Module):
         Parameters
         ----------
         x : torch.Tensor
-            Input feature map
+            Input cost feature map of shape B x U x V x H x W
 
         Returns
         -------
         torch.Tensor
-            A tensor of shape N x 2 x H x W representing the flow
+            A tensor of shape B x C x H x W representing the flow
 
         torch.Tensor
             A tensor representing the local and global entropy cost
