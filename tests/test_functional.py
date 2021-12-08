@@ -17,7 +17,12 @@ def test_FlowAugmentor():
         (224, 224),
         color_aug_params={"aug_prob": 1.0},
         eraser_aug_params={"aug_prob": 1.0},
-        spatial_aug_params={"aug_prob": 1.0},
+        spatial_aug_params={
+            "aug_prob": 1.0,
+            "h_flip_prob": 1.0,
+            "v_flip_prob": 1.0,
+            "stretch_prob": 1.0,
+        },
     )
     _ = augmentor(img1, img2, flow)
 
@@ -25,7 +30,12 @@ def test_FlowAugmentor():
         (224, 224),
         color_aug_params={"aug_prob": 0.0},
         eraser_aug_params={"aug_prob": 0.0},
-        spatial_aug_params={"aug_prob": 0.0},
+        spatial_aug_params={
+            "aug_prob": 0.0,
+            "h_flip_prob": 0.0,
+            "v_flip_prob": 0.0,
+            "stretch_prob": 0.0,
+        },
     )
     _ = augmentor(img1, img2, flow)
 
