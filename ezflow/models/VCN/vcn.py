@@ -211,7 +211,7 @@ class VCN(nn.Module):
 
         assert (
             batch_size == self.cfg.SIZE[0]
-        ), "Training batch size does not match Decoder batch size"
+        ), f"Batch size in model configuration must be equal to the training batch size. Model config batch size: {batch_size}"
 
         feature_pyramid = self.encoder(torch.cat([img1, img2], dim=0))
 
@@ -264,6 +264,7 @@ class VCN(nn.Module):
 
             B, C, U, V, H, W = cost.shape
             cost = cost.view(-1, U, V, H, W)
+
             flow, ent = self.flow_regressors[i](cost)
 
             if i != 0:

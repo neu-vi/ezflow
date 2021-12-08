@@ -1,8 +1,6 @@
 import torch
 from torchvision import transforms as T
 
-from ezflow.config import get_cfg
-from ezflow.model_zoo import _ModelZooConfigs
 from ezflow.models import DefaultPredictor, build_model
 
 img1 = torch.randn(2, 3, 256, 256)
@@ -83,12 +81,16 @@ def test_FlowNetS():
 
 def test_VCN():
 
-    cfg = get_cfg(_ModelZooConfigs.query("VCN"))
+    model = build_model("VCN", "vcn.yaml")
 
-    # Override batch size for Soft4DFlowRegression in the deccoder
-    cfg.SIZE = [2, 256, 256]
+    img = torch.randn(16, 3, 256, 256)
 
-    model = build_model("VCN", cfg=cfg)
+    flow_preds = model(img, img)
+    assert isinstance(flow_preds, tuple) or isinstance(flow_preds, list)
+    assert flow_preds[0].shape == (16, 2, 256, 256)
 
+    model.eval()
     flow = model(img1, img2)
-    assert flow[0].shape == (2, 2, 256, 256)
+    assert flow.shape == (2, 2, 256, 256)
+
+    del model, flow, flow_preds
