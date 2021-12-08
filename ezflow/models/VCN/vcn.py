@@ -209,6 +209,10 @@ class VCN(nn.Module):
 
         batch_size = img1.shape[0]
 
+        assert (
+            batch_size == self.cfg.SIZE[0]
+        ), "Training batch size does not match Decoder batch size"
+
         feature_pyramid = self.encoder(torch.cat([img1, img2], dim=0))
 
         feature_pyramid1 = []
@@ -216,9 +220,6 @@ class VCN(nn.Module):
         for feature in feature_pyramid:
             feature_pyramid1.append(feature[:batch_size])
             feature_pyramid2.append(feature[batch_size:])
-
-        # feature_pyramid1 = self.encoder(img1)
-        # feature_pyramid2 = self.encoder(img2)
 
         for i in range(len(feature_pyramid1)):
 
@@ -260,12 +261,22 @@ class VCN(nn.Module):
             )
             cost = self.butterfly_filters[i](cost)
             cost = self.sep_conv_4d_filters[i](cost)
-
+            print(" cost: ", cost.shape)
             B, C, U, V, H, W = cost.shape
             cost = cost.view(-1, U, V, H, W)
             flow, ent = self.flow_regressors[i](cost)
 
             if i != 0:
+                print(
+                    "step: ",
+                    i,
+                    " flow: ",
+                    flow.shape,
+                    "ent: ",
+                    ent.shape,
+                    " up_flow: ",
+                    up_flow.shape,
+                )
                 flow = flow.view(B, C, 2, H, W) + up_flow[:, np.newaxis]
 
             flow = flow.view(batch_size, -1, H, W)

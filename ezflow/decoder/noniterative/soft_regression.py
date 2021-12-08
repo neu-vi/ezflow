@@ -108,8 +108,8 @@ class Soft4DFlowRegression(nn.Module):
 
     Parameters
     ----------
-    size : int
-        size of B, W, H
+    size : List[int]
+        List containing values of B, H, W
     max_disp : int, default : 4
         Maximum displacement
     entropy : bool, default : False
