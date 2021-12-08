@@ -2,12 +2,12 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from ...decoder import FlowEntropy, build_decoder
-from ...encoder import build_encoder
-from ...modules import ConvNormRelu, build_module
-from ...similarity import build_similarity
-from ...utils import warp
-from ..build import MODEL_REGISTRY
+from ..decoder import FlowEntropy, build_decoder
+from ..encoder import build_encoder
+from ..modules import ConvNormRelu, build_module
+from ..similarity import build_similarity
+from ..utils import warp
+from .build import MODEL_REGISTRY
 
 
 @MODEL_REGISTRY.register()

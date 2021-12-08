@@ -3,9 +3,9 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.nn.init import constant_, kaiming_normal_
 
-from ...decoder import build_decoder
-from ...encoder import build_encoder
-from ..build import MODEL_REGISTRY
+from ..decoder import build_decoder
+from ..encoder import build_encoder
+from .build import MODEL_REGISTRY
 
 
 @MODEL_REGISTRY.register()

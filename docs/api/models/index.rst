@@ -2,17 +2,50 @@ Models
 =================
 
 
-.. toctree::
-    :maxdepth: 1
+Builder
+----------
 
-    ezflow.models.dicl
-    ezflow.models.flownet
-    ezflow.models.pwcnet
-    ezflow.models.raft
-    ezflow.models.vcn
+.. automodule:: ezflow.models.build
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
-.. toctree::
-    :maxdepth: 1
+DICL
+----------
 
-    ezflow.models.predictor
-    ezflow.models.builder
+.. automodule:: ezflow.models.dicl
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+FlowNetS
+----------
+
+.. automodule:: ezflow.models.flownet_s
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Predictor
+----------
+
+.. automodule:: ezflow.models.predictor
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+PWCNet
+----------
+
+.. automodule:: ezflow.models.pwcnet
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+VCN
+----------
+
+.. automodule:: ezflow.models.vcn
+   :members:
+   :undoc-members:
+   :show-inheritance:

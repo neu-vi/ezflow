@@ -2,11 +2,11 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from ...decoder import build_decoder
-from ...encoder import build_encoder
-from ...similarity import build_similarity
-from ...utils import coords_grid, upflow
-from ..build import MODEL_REGISTRY
+from ..decoder import build_decoder
+from ..encoder import build_encoder
+from ..similarity import build_similarity
+from ..utils import coords_grid, upflow
+from .build import MODEL_REGISTRY
 
 try:
     autocast = torch.cuda.amp.autocast
