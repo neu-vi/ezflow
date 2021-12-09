@@ -115,9 +115,9 @@ def test_BasicConvEncoder():
 
 def test_FlownetConvEncoder():
 
-    encoder = ENCODER_REGISTRY.get("FlowNetConvEncoder")(
-        in_channels=3, config=(16, 32, 64)
-    )
+    encoder_class = ENCODER_REGISTRY.get("FlownetConvEncoder")
+
+    encoder = encoder_class(in_channels=3, config=(16, 32, 64))
     outputs = encoder(img)
 
     assert len(outputs) == 3, "Number of outputs do not match"
@@ -127,9 +127,7 @@ def test_FlownetConvEncoder():
 
     del encoder
 
-    encoder = ENCODER_REGISTRY.get("FlowNetConvEncoder")(
-        in_channels=3, config=(16, 32, 64, 64)
-    )
+    encoder = encoder_class(in_channels=3, config=(16, 32, 64, 64))
     outputs = encoder(img)
 
     assert len(outputs) == 3, "Number of outputs do not match"
