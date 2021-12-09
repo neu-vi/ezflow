@@ -54,6 +54,13 @@ class BasicBlock(nn.Module):
                 if stride != 1:
                     norm3 = nn.InstanceNorm2d(out_channels)
 
+            elif norm.lower() == "none":
+                norm1 = nn.Identity()
+                norm2 = nn.Identity()
+
+                if stride != 1:
+                    norm3 = nn.Identity()
+
         else:
             norm1 = nn.Identity()
             norm2 = nn.Identity()
@@ -126,30 +133,46 @@ class BottleneckBlock(nn.Module):
     ):
         super(BottleneckBlock, self).__init__()
 
-        if norm.lower() == "group":
-            num_groups = out_channels // 8
-            norm1 = nn.GroupNorm(num_groups=num_groups, num_channels=out_channels // 4)
-            norm2 = nn.GroupNorm(num_groups=num_groups, num_channels=out_channels // 4)
-            norm3 = nn.GroupNorm(num_groups=num_groups, num_channels=out_channels)
+        if norm is not None:
 
-            if not stride == 1:
-                norm4 = nn.GroupNorm(num_groups=num_groups, num_channels=out_channels)
+            if norm.lower() == "group":
+                num_groups = out_channels // 8
+                norm1 = nn.GroupNorm(
+                    num_groups=num_groups, num_channels=out_channels // 4
+                )
+                norm2 = nn.GroupNorm(
+                    num_groups=num_groups, num_channels=out_channels // 4
+                )
+                norm3 = nn.GroupNorm(num_groups=num_groups, num_channels=out_channels)
 
-        elif norm.lower() == "batch":
-            norm1 = nn.BatchNorm2d(out_channels // 4)
-            norm2 = nn.BatchNorm2d(out_channels // 4)
-            norm3 = nn.BatchNorm2d(out_channels)
+                if not stride == 1:
+                    norm4 = nn.GroupNorm(
+                        num_groups=num_groups, num_channels=out_channels
+                    )
 
-            if not stride == 1:
-                norm4 = nn.BatchNorm2d(out_channels)
+            elif norm.lower() == "batch":
+                norm1 = nn.BatchNorm2d(out_channels // 4)
+                norm2 = nn.BatchNorm2d(out_channels // 4)
+                norm3 = nn.BatchNorm2d(out_channels)
 
-        elif norm.lower() == "instance":
-            norm1 = nn.InstanceNorm2d(out_channels // 4)
-            norm2 = nn.InstanceNorm2d(out_channels // 4)
-            norm3 = nn.InstanceNorm2d(out_channels)
+                if not stride == 1:
+                    norm4 = nn.BatchNorm2d(out_channels)
 
-            if not stride == 1:
-                norm4 = nn.InstanceNorm2d(out_channels)
+            elif norm.lower() == "instance":
+                norm1 = nn.InstanceNorm2d(out_channels // 4)
+                norm2 = nn.InstanceNorm2d(out_channels // 4)
+                norm3 = nn.InstanceNorm2d(out_channels)
+
+                if not stride == 1:
+                    norm4 = nn.InstanceNorm2d(out_channels)
+
+            elif norm.lower() == "none":
+                norm1 = nn.Identity()
+                norm2 = nn.Identity()
+                norm3 = nn.Identity()
+
+                if not stride == 1:
+                    norm4 = nn.Identity()
 
         else:
             norm1 = nn.Identity()
