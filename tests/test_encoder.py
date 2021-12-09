@@ -118,7 +118,7 @@ def test_BasicConvEncoder():
 
 def test_FlownetConvEncoder():
 
-    encoder_class = ENCODER_REGISTRY.get("FlownetConvEncoder")
+    encoder_class = ENCODER_REGISTRY.get("FlowNetConvEncoder")
 
     encoder = encoder_class(in_channels=3, config=(16, 32, 64))
     outputs = encoder(img)
