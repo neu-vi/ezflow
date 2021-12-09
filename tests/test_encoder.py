@@ -93,7 +93,10 @@ def test_PSPNetBackbone():
     assert isinstance(feature_pyramid, list) or isinstance(feature_pyramid, tuple)
     assert len(feature_pyramid) == 5  # PSPNetBackbone returns 5 feature maps
 
-    encoder = encoder_class(dilation=2, norm=False)
+    encoder = encoder_class(norm=False)
+    feature_pyramid = encoder(img)
+    assert isinstance(feature_pyramid, list) or isinstance(feature_pyramid, tuple)
+    assert len(feature_pyramid) == 5  # PSPNetBackbone returns 5 feature maps
 
     del encoder, feature_pyramid
 
