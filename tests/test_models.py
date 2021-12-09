@@ -79,6 +79,21 @@ def test_FlowNetS():
     _ = build_model("FlowNetS", default=True)
 
 
+def test_FlowNetC():
+
+    model = build_model("FlowNetC", "flownet_c.yaml")
+    flow_preds = model(img1, img2)
+    assert isinstance(flow_preds, tuple) or isinstance(flow_preds, list)
+
+    model.eval()
+    flow = model(img1, img2)
+    assert flow.shape == (2, 2, 256, 256)
+
+    del model, flow, flow_preds
+
+    _ = build_model("FlowNetC", default=True)
+
+
 def test_VCN():
 
     model = build_model("VCN", "vcn.yaml")

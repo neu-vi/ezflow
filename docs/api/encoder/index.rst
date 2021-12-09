@@ -1,6 +1,14 @@
 Encoder
 ================
 
+Convolution Encoder
+---------------
+
+.. automodule:: ezflow.encoder.conv_encoder
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 GANet
 ---------------
 
