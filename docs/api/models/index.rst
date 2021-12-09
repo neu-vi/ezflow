@@ -26,6 +26,14 @@ FlowNetS
    :undoc-members:
    :show-inheritance:
 
+FlowNetC
+----------
+
+.. automodule:: ezflow.models.flownet_c
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 Predictor
 ----------
 
