@@ -4,7 +4,8 @@ import torch.nn.functional as F
 from torch.nn.init import constant_, kaiming_normal_
 
 from ..decoder import build_decoder
-from ..encoder import BasicConvEncoder, build_encoder, conv_block
+from ..encoder import BasicConvEncoder, build_encoder
+from ..modules import conv
 from ..similarity import CorrelationLayer
 from .build import MODEL_REGISTRY
 
@@ -37,7 +38,7 @@ class FlowNetC(nn.Module):
         )
         self.corr_activation = nn.LeakyReLU(negative_slope=0.1, inplace=True)
 
-        self.conv_redirect = conv_block(
+        self.conv_redirect = conv(
             in_channels=cfg.ENCODER.CONFIG[-1], out_channels=32, norm=cfg.ENCODER.NORM
         )
 

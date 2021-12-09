@@ -2,53 +2,11 @@ import torch
 import torch.nn as nn
 
 from ..config import configurable
+from ..modules import conv
 from .build import ENCODER_REGISTRY
 
 
-def conv_block(in_channels, out_channels, kernel_size=3, stride=1, norm=None):
-    """
-    Generic convolutional layer with optional batch normalization
-
-    Parameters
-    ----------
-    in_channels : int
-        Number of input channels
-    out_channels : int
-        Number of output channels
-    kernel_size : int
-        Size of the convolutional kernel
-    stride : int
-        Stride of the convolutional kernel
-    norm : str
-        Type of normalization to use. Can be None, 'batch', 'layer', 'instance'
-    """
-
-    if norm == "group":
-        norm_fn = nn.GroupNorm(num_groups=8, num_channels=out_channels)
-
-    elif norm == "batch":
-        norm_fn = nn.BatchNorm2d(out_channels)
-
-    elif norm == "instance":
-        norm_fn = nn.InstanceNorm2d(out_channels)
-
-    else:
-        norm_fn = nn.Identity()
-
-    return nn.Sequential(
-        nn.Conv2d(
-            in_channels,
-            out_channels,
-            kernel_size=kernel_size,
-            stride=stride,
-            padding=(kernel_size - 1) // 2,
-            bias=False,
-        ),
-        norm_fn,
-        nn.LeakyReLU(0.1, inplace=True),
-    )
-
-
+@ENCODER_REGISTRY.register()
 class BasicConvEncoder(nn.Module):
     """
     A Basic Convolution Encoder with a fixed size kernel = 3, padding=1 and dilation = 1.
@@ -64,6 +22,7 @@ class BasicConvEncoder(nn.Module):
         Type of normalization to use. Can be None, 'batch', 'layer', 'instance'
     """
 
+    @configurable
     def __init__(
         self,
         in_channels=3,
@@ -82,16 +41,26 @@ class BasicConvEncoder(nn.Module):
         for i in range(len(channels) - 1):
 
             stride = 1 if i % 2 == 0 else 2
+            kernel_size = 3
 
             self.encoder.append(
-                conv_block(
+                conv(
                     channels[i],
                     channels[i + 1],
                     kernel_size=3,
                     stride=stride,
+                    padding=(kernel_size - 1) // 2,
                     norm=norm,
                 )
             )
+
+    @classmethod
+    def from_config(self, cfg):
+        return {
+            "in_channels": cfg.IN_CHANNELS,
+            "config": cfg.CONFIG,
+            "norm": cfg.NORM,
+        }
 
     def forward(self, x):
         """
@@ -160,14 +129,21 @@ class FlowNetConvEncoder(BasicConvEncoder):
         channels = [in_channels] + config
 
         self.encoder = nn.ModuleList()
+
         self.encoder.append(
-            conv_block(channels[0], channels[1], kernel_size=7, stride=2)
+            conv(
+                channels[0], channels[1], kernel_size=7, stride=2, padding=(7 - 1) // 2
+            )
         )
         self.encoder.append(
-            conv_block(channels[1], channels[2], kernel_size=5, stride=2)
+            conv(
+                channels[1], channels[2], kernel_size=5, stride=2, padding=(5 - 1) // 2
+            )
         )
         self.encoder.append(
-            conv_block(channels[2], channels[3], kernel_size=5, stride=2)
+            conv(
+                channels[2], channels[3], kernel_size=5, stride=2, padding=(5 - 1) // 2
+            )
         )
 
         channels = channels[3:]
@@ -175,13 +151,15 @@ class FlowNetConvEncoder(BasicConvEncoder):
         for i in range(len(channels) - 1):
 
             stride = 1 if i % 2 == 0 else 2
+            kernel_size = 3
 
             self.encoder.append(
-                conv_block(
+                conv(
                     channels[i],
                     channels[i + 1],
-                    kernel_size=3,
+                    kernel_size=kernel_size,
                     stride=stride,
+                    padding=(kernel_size - 1) // 2,
                     norm=norm,
                 )
             )
