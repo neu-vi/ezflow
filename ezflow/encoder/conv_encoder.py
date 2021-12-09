@@ -19,7 +19,7 @@ class BasicConvEncoder(nn.Module):
     config : list of int
         Configuration for the layers in the encoder
     norm : str
-        Type of normalization to use. Can be None, 'batch', 'layer', 'instance'
+        Type of normalization to use. Can be None, 'batch', 'group', 'instance'
     """
 
     @configurable
@@ -107,7 +107,7 @@ class FlowNetConvEncoder(BasicConvEncoder):
     config : list of int
         Configuration for the layers in the encoder
     norm : str
-        Type of normalization to use. Can be None, 'batch', 'layer', 'instance'
+        Type of normalization to use. Can be None, 'batch', 'group', 'instance'
     """
 
     @configurable
