@@ -5,7 +5,7 @@ from ..config import configurable
 from .build import ENCODER_REGISTRY
 
 
-def conv(in_channels, out_channels, kernel_size=3, stride=1, norm=None):
+def conv_block(in_channels, out_channels, kernel_size=3, stride=1, norm=None):
     """
     Generic convolutional layer with optional batch normalization
 
@@ -49,8 +49,85 @@ def conv(in_channels, out_channels, kernel_size=3, stride=1, norm=None):
     )
 
 
+
+class BasicConvEncoder(nn.Module):
+    """
+    A Basic Convolution Encoder with a fixed size kernel = 3, padding=1 and dilation = 1. 
+    Every alternate layer has stride = 1 followed by stride = 2.  
+
+    Parameters
+    ----------
+    in_channels : int
+        Number of input channels
+    config : list of int
+        Configuration for the layers in the encoder
+    norm : str
+        Type of normalization to use. Can be None, 'batch', 'layer', 'instance'
+    """
+    def __init__(
+        self,
+        in_channels=3,
+        config=[64, 128, 256, 512],
+        norm=None,
+    ):
+        super(BasicConvEncoder, self).__init__()
+
+        if isinstance(config, tuple):
+            config = list(config)
+
+        channels = [in_channels] + config
+
+        self.encoder = nn.ModuleList()
+
+        for i in range(len(channels) - 1):
+
+            stride = 1 if i % 2 == 0 else 2
+
+            self.encoder.append(
+                conv_block(
+                    channels[i],
+                    channels[i + 1],
+                    kernel_size=3,
+                    stride=stride,
+                    norm=norm,
+                )
+            )
+
+
+    def forward(self, x):
+        """
+        Performs forward pass.
+
+        Parameters
+        ----------
+        x : torch.Tensor
+            Input tensor
+
+        Returns
+        -------
+        List[torch.Tensor],
+            List of all the output convolutions from each encoder layer
+        """
+
+        outputs = []
+
+        for i in range(len(self.encoder)):
+            x = self.encoder[i](x)
+
+            if len(outputs) > 0:
+                prev_output = outputs[-1]
+                if prev_output.shape[1:] == x.shape[1:]:
+                    outputs[-1] = x
+                else:
+                    outputs.append(x)
+            else:
+                outputs.append(x)
+
+        return outputs
+
+
 @ENCODER_REGISTRY.register()
-class FlowNetConvEncoder(nn.Module):
+class FlowNetConvEncoder(BasicConvEncoder):
     """
     Convolutional encoder based on the FlowNet architecture
     Used in **FlowNet: Learning Optical Flow with Convolutional Networks** (https://arxiv.org/abs/1504.06852)
@@ -75,8 +152,8 @@ class FlowNetConvEncoder(nn.Module):
         super(FlowNetConvEncoder, self).__init__()
 
         assert (
-            len(config) >= 3
-        ), "FlowNetConvEncoder expects at least 3 output channels in config."
+            len(config) >= 2
+        ), "FlowNetConvEncoder expects at least 2 output channels in config."
 
         if isinstance(config, tuple):
             config = list(config)
@@ -84,9 +161,9 @@ class FlowNetConvEncoder(nn.Module):
         channels = [in_channels] + config
 
         self.encoder = nn.ModuleList()
-        self.encoder.append(conv(channels[0], channels[1], kernel_size=7, stride=2))
-        self.encoder.append(conv(channels[1], channels[2], kernel_size=5, stride=2))
-        self.encoder.append(conv(channels[2], channels[3], kernel_size=5, stride=2))
+        self.encoder.append(conv_block(channels[0], channels[1], kernel_size=7, stride=2))
+        self.encoder.append(conv_block(channels[1], channels[2], kernel_size=5, stride=2))
+        self.encoder.append(conv_block(channels[2], channels[3], kernel_size=5, stride=2))
 
         channels = channels[3:]
 
@@ -95,7 +172,7 @@ class FlowNetConvEncoder(nn.Module):
             stride = 1 if i % 2 == 0 else 2
 
             self.encoder.append(
-                conv(
+                conv_block(
                     channels[i],
                     channels[i + 1],
                     kernel_size=3,
@@ -111,21 +188,3 @@ class FlowNetConvEncoder(nn.Module):
             "config": cfg.CONFIG,
             "norm": cfg.NORM,
         }
-
-    def forward(self, x):
-
-        outputs = []
-
-        for i in range(len(self.encoder)):
-            x = self.encoder[i](x)
-
-            if len(outputs) > 0:
-                prev_output = outputs[-1]
-                if prev_output.shape[1:] == x.shape[1:]:
-                    outputs[-1] = x
-                else:
-                    outputs.append(x)
-            else:
-                outputs.append(x)
-
-        return outputs
