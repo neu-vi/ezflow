@@ -12,7 +12,7 @@ class _ModelZooConfigs:
         "PWCNet": "pwcnet.yaml",
         "VCN": "vcn.yaml",
         "FlowNetS": "flownet_s.yaml",
-        "FlowNetC": "flownet_c.yaml"
+        "FlowNetC": "flownet_c.yaml",
     }
 
     @staticmethod

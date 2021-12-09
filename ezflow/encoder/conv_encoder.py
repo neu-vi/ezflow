@@ -49,11 +49,10 @@ def conv_block(in_channels, out_channels, kernel_size=3, stride=1, norm=None):
     )
 
 
-
 class BasicConvEncoder(nn.Module):
     """
-    A Basic Convolution Encoder with a fixed size kernel = 3, padding=1 and dilation = 1. 
-    Every alternate layer has stride = 1 followed by stride = 2.  
+    A Basic Convolution Encoder with a fixed size kernel = 3, padding=1 and dilation = 1.
+    Every alternate layer has stride = 1 followed by stride = 2.
 
     Parameters
     ----------
@@ -64,6 +63,7 @@ class BasicConvEncoder(nn.Module):
     norm : str
         Type of normalization to use. Can be None, 'batch', 'layer', 'instance'
     """
+
     def __init__(
         self,
         in_channels=3,
@@ -92,7 +92,6 @@ class BasicConvEncoder(nn.Module):
                     norm=norm,
                 )
             )
-
 
     def forward(self, x):
         """
@@ -161,9 +160,15 @@ class FlowNetConvEncoder(BasicConvEncoder):
         channels = [in_channels] + config
 
         self.encoder = nn.ModuleList()
-        self.encoder.append(conv_block(channels[0], channels[1], kernel_size=7, stride=2))
-        self.encoder.append(conv_block(channels[1], channels[2], kernel_size=5, stride=2))
-        self.encoder.append(conv_block(channels[2], channels[3], kernel_size=5, stride=2))
+        self.encoder.append(
+            conv_block(channels[0], channels[1], kernel_size=7, stride=2)
+        )
+        self.encoder.append(
+            conv_block(channels[1], channels[2], kernel_size=5, stride=2)
+        )
+        self.encoder.append(
+            conv_block(channels[2], channels[3], kernel_size=5, stride=2)
+        )
 
         channels = channels[3:]
 
