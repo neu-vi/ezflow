@@ -49,6 +49,14 @@ PWCNet
    :members:
    :undoc-members:
    :show-inheritance:
+   
+RAFT
+----------
+
+.. automodule:: ezflow.models.raft
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
 VCN
 ----------
