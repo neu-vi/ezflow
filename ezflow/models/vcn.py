@@ -10,7 +10,7 @@ from ..utils import warp
 from .build import MODEL_REGISTRY
 
 
-def gen_hypotheses_fusion_block(in_channels, out_channels):
+def _gen_hypotheses_fusion_block(in_channels, out_channels):
 
     return nn.Sequential(
         *[
@@ -29,7 +29,7 @@ def gen_hypotheses_fusion_block(in_channels, out_channels):
 class VCN(nn.Module):
     """
     Implementation of the paper
-    `**Volumetric Correspondence Networks for Optical Flow** <https://papers.nips.cc/paper/2019/hash/bbf94b34eb32268ada57a3be5062fe7d-Abstract.html>`_
+    `Volumetric Correspondence Networks for Optical Flow <https://papers.nips.cc/paper/2019/hash/bbf94b34eb32268ada57a3be5062fe7d-Abstract.html>`_
 
     Parameters
     ----------
@@ -139,11 +139,11 @@ class VCN(nn.Module):
             out_channels = 2 * i * f_dim_b1
 
             self.hypotheses_fusion_blocks.append(
-                gen_hypotheses_fusion_block(in_channels, out_channels)
+                _gen_hypotheses_fusion_block(in_channels, out_channels)
             )
 
         self.hypotheses_fusion_blocks.append(
-            gen_hypotheses_fusion_block(
+            _gen_hypotheses_fusion_block(
                 64 + (16 * f_dim_b1) + (4 * f_dim_b2),
                 (8 * f_dim_b1) + (2 * f_dim_b2),
             )

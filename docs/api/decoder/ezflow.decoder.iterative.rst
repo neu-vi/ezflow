@@ -6,5 +6,5 @@ Recurrent Lookup
 
 .. automodule:: ezflow.decoder.iterative.recurrent_lookup
    :members:
-   :undoc-members:
-   :show-inheritance:
+   
+   
