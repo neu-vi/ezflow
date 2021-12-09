@@ -40,7 +40,7 @@ def get_cfg_path(cfg_path, grp="models"):
 
     elif grp == "trainers":
         cfg_complete_path = pkg_resources.resource_filename(
-            "ezflow.engine", os.path.join("configs", grp, cfg_path)
+            "ezflow.model_zoo", os.path.join("configs", grp, cfg_path)
         )
 
     if not os.path.exists(cfg_complete_path):

@@ -161,9 +161,12 @@ class ConvNormRelu(nn.Module):
         return x
 
 
-def conv(in_channels, out_channels, kernel_size=3, stride=1, padding=1, dilation=1):
+def conv(
+    in_channels, out_channels, kernel_size=3, stride=1, padding=1, dilation=1, norm=None
+):
     """
-    2D convolution layer followed by an activation function
+    2D convolution layer with optional normalization followed by
+    an inplace LeakyReLU activation of 0.1 negative slope.
 
     Parameters
     ----------
@@ -171,15 +174,30 @@ def conv(in_channels, out_channels, kernel_size=3, stride=1, padding=1, dilation
         Number of input channels
     out_channels : int
         Number of output channels
-    kernel_size : int, optional
+    kernel_size : int, default: 3
         Size of the convolutional kernel
-    stride : int, optional
+    stride : int, default: 1
         Stride of the convolutional kernel
-    padding : int, optional
+    padding : int, default: 1
         Padding of the convolutional kernel
-    dilation : int, optional
+    dilation : int, default: 1
         Dilation of the convolutional kernel
+    norm : str, default: None
+        Type of normalization to use. Can be None, 'batch', 'layer', 'group'
     """
+    bias = False
+    if norm == "group":
+        norm_fn = nn.GroupNorm(num_groups=8, num_channels=out_channels)
+
+    elif norm == "batch":
+        norm_fn = nn.BatchNorm2d(out_channels)
+
+    elif norm == "instance":
+        norm_fn = nn.InstanceNorm2d(out_channels)
+
+    else:
+        norm_fn = nn.Identity()
+        bias = True
 
     return nn.Sequential(
         nn.Conv2d(
@@ -189,9 +207,10 @@ def conv(in_channels, out_channels, kernel_size=3, stride=1, padding=1, dilation
             stride=stride,
             padding=padding,
             dilation=dilation,
-            bias=True,
+            bias=bias,
         ),
-        nn.LeakyReLU(0.1),
+        norm_fn,
+        nn.LeakyReLU(0.1, inplace=True),
     )
 
 

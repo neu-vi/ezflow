@@ -35,9 +35,11 @@ python setup.py install
 ### Models supported
 
 - [x] [DICL](https://arxiv.org/abs/2010.14851)
-- [x] [FlowNetSimple](https://arxiv.org/abs/1504.06852)
+- [x] [FlowNetS](https://arxiv.org/abs/1504.06852)
+- [x] [FlowNetC](https://arxiv.org/abs/1504.06852)
 - [x] [PWCNet](https://arxiv.org/abs/1709.02371)
 - [x] [RAFT](https://arxiv.org/abs/2003.12039)
+- [x] [VCN](https://papers.nips.cc/paper/2019/hash/bbf94b34eb32268ada57a3be5062fe7d-Abstract.html)
 
 ### Datasets supported
 
@@ -50,7 +52,7 @@ python setup.py install
 - [RAFT](https://github.com/princeton-vl/RAFT)
 - [DICL-Flow](https://github.com/jytime/DICL-Flow)
 - [PWC-Net](https://github.com/NVlabs/PWC-Net)
-- [FlowNetS](https://github.com/ClementPinard/FlowNetPytorch)
+- [FlowNetPytorch](https://github.com/ClementPinard/FlowNetPytorch)
 - [VCN](https://github.com/gengshan-y/VCN)
 - [detectron2](https://github.com/facebookresearch/detectron2)
 - [CorrelationLayer](https://github.com/oblime/CorrelationLayer)

@@ -3,16 +3,16 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.nn.init import constant_, kaiming_normal_
 
-from ...decoder import build_decoder
-from ...encoder import build_encoder
-from ..build import MODEL_REGISTRY
+from ..decoder import build_decoder
+from ..encoder import build_encoder
+from .build import MODEL_REGISTRY
 
 
 @MODEL_REGISTRY.register()
 class FlowNetS(nn.Module):
     """
-    Implementation of FlowNetSimple from the paper
-    **FlowNet: Learning Optical Flow with Convolutional Networks** (https://arxiv.org/abs/1504.06852)
+    Implementation of **FlowNetSimple** from the paper
+    `FlowNet: Learning Optical Flow with Convolutional Networks <https://arxiv.org/abs/1504.06852>`_
 
     Parameters
     ----------

@@ -2,11 +2,11 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from ...decoder import build_decoder
-from ...encoder import build_encoder
-from ...similarity import build_similarity
-from ...utils import coords_grid, upflow
-from ..build import MODEL_REGISTRY
+from ..decoder import build_decoder
+from ..encoder import build_encoder
+from ..similarity import build_similarity
+from ..utils import coords_grid, upflow
+from .build import MODEL_REGISTRY
 
 try:
     autocast = torch.cuda.amp.autocast
@@ -27,7 +27,7 @@ except:
 class RAFT(nn.Module):
     """
     Implementation of the paper
-    **RAFT: Recurrent All-Pairs Field Transforms for Optical Flow** (https://arxiv.org/abs/2003.12039)
+    `RAFT: Recurrent All-Pairs Field Transforms for Optical Flow <https://arxiv.org/abs/2003.12039>`_
 
     Parameters
     ----------
