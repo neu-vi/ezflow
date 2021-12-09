@@ -14,7 +14,7 @@ from .build import MODEL_REGISTRY
 class PWCNet(nn.Module):
     """
     Implementation of the paper
-    **PWC-Net: CNNs for Optical Flow Using Pyramid, Warping, and Cost Volume** (https://arxiv.org/abs/1709.02371)
+    `PWC-Net: CNNs for Optical Flow Using Pyramid, Warping, and Cost Volume <https://arxiv.org/abs/1709.02371>`_
 
     Parameters
     ----------

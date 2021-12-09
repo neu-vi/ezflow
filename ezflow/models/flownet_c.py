@@ -14,7 +14,7 @@ from .build import MODEL_REGISTRY
 class FlowNetC(nn.Module):
     """
     Implementation of FlowNetCorrelation from the paper
-    **FlowNet: Learning Optical Flow with Convolutional Networks** (https://arxiv.org/abs/1504.06852)
+    `FlowNet: Learning Optical Flow with Convolutional Networks <https://arxiv.org/abs/1504.06852>`_
 
     Parameters
     ----------

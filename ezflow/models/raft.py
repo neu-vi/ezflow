@@ -27,7 +27,7 @@ except:
 class RAFT(nn.Module):
     """
     Implementation of the paper
-    **RAFT: Recurrent All-Pairs Field Transforms for Optical Flow** (https://arxiv.org/abs/2003.12039)
+    `RAFT: Recurrent All-Pairs Field Transforms for Optical Flow <https://arxiv.org/abs/2003.12039>`_
 
     Parameters
     ----------

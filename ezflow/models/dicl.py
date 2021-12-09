@@ -14,7 +14,7 @@ from .build import MODEL_REGISTRY
 class DICL(nn.Module):
     """
     Implementation of the paper
-    **Displacement-Invariant Matching Cost Learning for Accurate Optical Flow Estimation** (https://arxiv.org/abs/2010.14851)
+    `Displacement-Invariant Matching Cost Learning for Accurate Optical Flow Estimation <https://arxiv.org/abs/2010.14851>`_
 
     Parameters
     ----------
