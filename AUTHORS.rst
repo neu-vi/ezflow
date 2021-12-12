@@ -1,6 +1,6 @@
-=======
-Credits
-=======
+========
+Authors
+========
 
 
 * Neelay Shah <nstraum1@gmail.com>
