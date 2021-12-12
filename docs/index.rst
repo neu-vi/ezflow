@@ -8,8 +8,6 @@ Welcome to EzFlow's documentation!
    readme
    installation
    tutorials/index
-   contributing
-   authors
 
 .. toctree::
    :maxdepth: 2
