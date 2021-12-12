@@ -21,7 +21,7 @@ This snippet will return a **RAFT** model with the default configuration and par
 
 Let's now tear apart how the models are implemented and how they are accessed using the builder functions.
 Each model is a composite of sub-modules like encoders and decoders which are present in the library. Every implementation takes in
-a `YACS <https://github.com/rbgirshick/yacs>`_ configuration object (CfgNode) as input and returns a model object. This configuration object is 
+a `YACS <https://github.com/rbgirshick/yacs>`_ configuration object (:class:`CfgNode`) as input and returns a model object. This configuration object is 
 used to supply the various parameters for the encoder, decoder, and other modules and hence to build the model.
 
 **EzFlow** packages default configurations for each models which have the apporpriate parameters for the respective models. To access these default configurations,
