@@ -19,7 +19,8 @@ These models can be accessed with the help of builder functions. For example, to
 
 This snippet will return a **RAFT** model with the default configuration and parameters.  
 
-Let's now tear apart how the models are implemented and how they are accessed using the builder functions.
+Let's now talk about how the models are implemented and how they can be accessed using the builder functions.
+
 Each model is a composite of sub-modules like encoders and decoders which are present in the library. Every implementation takes in
 a `YACS <https://github.com/rbgirshick/yacs>`_ configuration object (:class:`CfgNode`) as input and returns a model object. This configuration object is 
 used to supply the various parameters for the encoder, decoder, and other modules and hence to build the model.
@@ -55,7 +56,7 @@ To view all the parameters present in a configration object, the :func:`.to_dict
 
 
 Additinally, you can also supply YAML configuration file paths to the builder function. These can further be of two types.
-**EzFlow** stores config files in the `configs/` directory in the root of the library. Files present in this directory can be accessed by specifying the path to the file 
+**EzFlow** stores config files in the `configs/` directory in the `root <https://github.com/neu-vig/ezflow>`_ of the library. Files present in this directory can be accessed by specifying the path to the file 
 relative to `configs/models`. For example, to build **RAFT** this way:
 
 .. code-block:: python
@@ -81,8 +82,9 @@ This can be done using the :class:`Predictor` class.
 .. code-block:: python
 
     from ezflow.models import Predictor
+    from torchvision.transforms import Resize
 
-    predictor = Predictor("RAFT", default=True, model_weights_path="raft_weights.pth")
-    flow = predictor(img1, img2)
+    predictor = Predictor("RAFT", default=True, model_weights_path="raft_weights.pth", data_transform=Resize((256, 256)))
+    flow = predictor("img1.png", "img2.png")
 
 Please refer to the API documentation for more details.
