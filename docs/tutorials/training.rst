@@ -1,4 +1,4 @@
-Training a model using EzFlow
+Training (and evaluating) a model
 =========================================================
 
 **EzFlow** provides a training (and evaluation) pipeline which makes it easy to train, validate and evaluate models

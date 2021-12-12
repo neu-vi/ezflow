@@ -1,14 +1,9 @@
-Using one of the implemented models in EzFlow
+Using one of the implemented optical flow estimation models
 ==============================================================================
 
-**EzFlow** contains easy-to-use implementations of a number of eminent models for optical flow estimation, namely:
-
-* `DICL <https://arxiv.org/abs/2010.14851>`_
-* `FlowNetC <https://arxiv.org/abs/1504.06852>`_
-* `FlowNetS <https://arxiv.org/abs/1504.06852>`_
-* `PWC-Net <https://arxiv.org/abs/1709.02371>`_
-* `RAFT <https://arxiv.org/abs/2003.12039>`_
-* `VCN <https://papers.nips.cc/paper/2019/hash/bbf94b34eb32268ada57a3be5062fe7d-Abstract.html>`_
+**EzFlow** contains easy-to-use implementations of a number of eminent models for optical flow estimation. 
+`PWC-Net <https://arxiv.org/abs/1709.02371>`_, `RAFT <https://arxiv.org/abs/2003.12039>`_, and 
+`VCN <https://papers.nips.cc/paper/2019/hash/bbf94b34eb32268ada57a3be5062fe7d-Abstract.html>`_ to name a few.
 
 These models can be accessed with the help of builder functions. For example, to build a **RAFT** model, the following code snippet can be used:
 

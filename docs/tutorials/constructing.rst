@@ -1,2 +1,2 @@
-Constructing a custom model using EzFlow
+Constructing a custom model
 =========================================================
