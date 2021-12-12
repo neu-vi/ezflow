@@ -1,7 +1,7 @@
 Training a model using EzFlow
 =========================================================
 
-**EzFlow** a training (and evaluation) pipeline which makes it easy to train, validate and evaluate models
+**EzFlow** provides a training (and evaluation) pipeline which makes it easy to train, validate and evaluate models
 on popular optical flow datasets. This is achieved by using the :class:`Trainer` class packaged with the library. Along with training
 and validation, the trainer can also be used to easily resume training from a checkpoint. It supports logging, checkpointing, and training 
 recipes like distributed training, learning rate scheduling, gradient clipping, and more. To facilitate the training process, **EzFlow** also
