@@ -22,7 +22,7 @@ a `YACS <https://github.com/rbgirshick/yacs>`_ configuration object (:class:`Cfg
 used to supply the various parameters for the encoder, decoder, and other modules and hence to build the model.
 
 **EzFlow** packages default configurations for each models which have the apporpriate parameters for the respective models. To access these default configurations,
-the following functions can be used:
+the following function can be used:
 
 .. code-block:: python
 
