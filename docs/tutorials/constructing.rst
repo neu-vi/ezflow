@@ -57,12 +57,12 @@ use of them. For example:
 
     # Construct model class using the imported modules
 
-    class RAFT_FlowNetS(nn.Module):
+    class MyModel(nn.Module):
         def __init__(self, 
                     encoder_config=[32, 64, 96], 
                     decoder_config=[512, 256, 128, 64]
         ):
-            super(RAFT_FlowNetS, self).__init__()
+            super(MyModel, self).__init__()
 
             self.encoder = BasicEncoder(in_channels=3, layer_config=encoder_config)
             self.decoder = FlowNetConvDecoder(in_channels=encoder_config[-1], config=decoder_config)
@@ -85,9 +85,9 @@ class which takes in a configuration object and register it to a model registry 
     from ezflow.encoder import build_encoder
     from ezflow.models import MODEL_REGISTRY
 
-    class RAFT_FlowNetS(nn.Module):
+    class MyModel(nn.Module):
         def __init__(self, cfg):
-            super(RAFT_FlowNetS, self).__init__()
+            super(MyModel, self).__init__()
 
             self.encoder = build_encoder(cfg.ENCODER)
             self.decoder = build_decoder(cfg.DECODER)
@@ -106,7 +106,7 @@ we now need to write a suitable YAML configuration file which specifies the enco
 
 .. code-block:: yaml
 
-    NAME: RAFT_FlowNetS
+    NAME: MyModel
     ENCODER:
         NAME: ResidualEncoder
         IN_CHANNELS: 3
@@ -126,7 +126,7 @@ The model can now be built using the builder function.
 
     from ezflow.models import build_model
 
-    model = build_model(name="RAFT_FlowNetS", cfg_path="RAFT_FlowNetS.yaml", custom_cfg=True)
+    model = build_model(name="MyModel", cfg_path="MyModel.yaml", custom_cfg=True)
     flow = model(img1, img2)
 
 This whole system can be used to easily mix and match different components. For example, if you wish to use 
@@ -134,7 +134,7 @@ the pyramid feature encoder from **PWC-Net**, you simply need modify the encoder
 
 .. code-block:: yaml
 
-    NAME: RAFT_FlowNetS
+    NAME: MyModel
     ENCODER:
         NAME: PyramidEncoder
         IN_CHANNELS: 3
@@ -178,7 +178,7 @@ The YAML configuration file can now be written as follows:
 
 .. code-block:: yaml
 
-    NAME: RAFT_FlowNetS
+    NAME: MyModel
     ENCODER:
         NAME: MyEncoder
         PARAM1: <param1>
