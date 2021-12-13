@@ -54,6 +54,7 @@ use of them. For example:
 
     from ezflow.encoder import BasicEncoder # RAFT encoder
     from ezflow.decoder import FlowNetConvDecoder # FlowNetS decoder
+    from torch import nn
 
     # Construct model class using the imported modules
 
@@ -84,6 +85,7 @@ class which takes in a configuration object and register it to a model registry 
     from ezflow.decoder import build_encoder
     from ezflow.encoder import build_encoder
     from ezflow.models import MODEL_REGISTRY
+    from torch import nn
 
     class MyModel(nn.Module):
         def __init__(self, cfg):
@@ -153,6 +155,7 @@ You need to perform the following steps to register it to the encoder registry a
 
     from ezflow.config import configurable
     from ezflow.encoder import ENCODER_REGISTRY
+    from torch import nn
 
     @ENCODER_REGISTRY.register()
     class MyEncoder(nn.Module):
