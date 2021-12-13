@@ -209,8 +209,12 @@ class VCN(nn.Module):
 
         batch_size = img1.shape[0]
 
-        if self.cfg.SIZE[0] != img1.shape[0]:
-            self.cfg.SIZE[0] = img1.shape[0]
+        assert (
+            batch_size == self.cfg.SIZE[0]
+        ), f"Batch size in model configuration must be equal to the training batch size. Model config batch size: {self.cfg.SIZE[0]}, Training batch size: {batch_size}"
+
+        # if self.cfg.SIZE[0] != img1.shape[0]:
+        #     self.cfg.SIZE[0] = img1.shape[0]
 
         feature_pyramid1 = self.encoder(img1)
         feature_pyramid2 = self.encoder(img2)
