@@ -160,7 +160,7 @@ You need to perform the following steps to register it to the encoder registry a
         def __init__(self, param1, param2, param3):
             super(MyEncoder, self).__init__()
 
-        # ...
+            # ...
 
         @classmethod
         def from_config(cls, cfg):
