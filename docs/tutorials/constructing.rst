@@ -41,10 +41,10 @@ the pyramid feature encoder from the above example, the following code snippet c
 This function uses the encoder name specified to fetch it from an encoder registry and constructs it using the parameters specified.
 
 While the above examples highlight different ways of accessing component modules present in **EzFlow**, arguably the biggest utility 
-of the library is its ability to make it easy to build custom models using the aforementioned components, registry mechanism, 
+of the library is its ability to make it easy to build custom models using the aforementioned modules, registry mechanism, 
 builder functions, and configuration system.
-To understand how this works, consider the following scenario. Suppose you read the `FlowNet <https://arxiv.org/abs/1504.06852>`_
-`RAFT <https://arxiv.org/abs/2003.12039>`_ and thought it would be interesting to try an ablation analysis of using the residual encoder
+To understand how this works, consider the following scenario. Suppose you read the `FlowNet <https://arxiv.org/abs/1504.06852>`_ and
+`RAFT <https://arxiv.org/abs/2003.12039>`_ papers and thought it would be interesting to try an ablation analysis of using the residual encoder
 present in **RAFT** with the rest of the **FlowNetSimple** architecture. Let's discuss how this can be achieved with EzFlow.
 
 A simple way without the registry system and builder functions would be to directly import the modules from the library and then make 
