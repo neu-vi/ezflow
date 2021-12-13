@@ -37,7 +37,8 @@ consolidated dataloader for multiple datasets. Let's take a look at how to creat
     # Add dataset(s) to the dataloader creator
 
     train_loader_creator.add_flying_chairs(
-        root_dir="data/FlyingChairs_release/train",
+        root_dir="data/FlyingChairs",
+        split="training",
         augment=True,
         aug_params={
             "crop_size": (256, 256),
@@ -52,7 +53,8 @@ consolidated dataloader for multiple datasets. Let's take a look at how to creat
         }
     ) 
     val_loader_creator.add_flying_chairs(
-        root_dir="data/FlyingChairs_release/train",
+        root_dir="data/FlyingChairs",
+        split="validation",
         augment=False
     ) 
 
@@ -146,7 +148,27 @@ optimizer, and scheduler states. The method can also be used with individual che
     )
 
 Similar to the training pipeline, **EzFlow** also provides a set of functions to evaluate and profile inference of models.
+Along with evaluating a model's accuracy on a dataset, the evaluation functions can also be calculate the inference time, size
+and memory consumtion of the model, and more.
+
+.. code-block:: python
+
+    from ezflow.engine import eval_model
+    from torch.profiler import ProfilerActivity
+
+    # Evaluate the model on the validation dataset and calculate inference time 
+    # and memory consumption
+
+    evaluate_model(
+        model=model,
+        val_loader=val_loader,
+        profiler=ProfilerActivity.CUDA,
+        device="0"
+    )
 
 Please refer to the API documentation to learn more about the trainer, dataloaders, augmentation techniques, evaluation and 
 inference functions, and more. We also provide an example training script in the `tools` directory in the 
 `root <https://github.com/neu-vig/ezflow>`_ of the library's GitHub repository.
+
+Do check out the other tutorials to learn how to build a custom model using **EzFlow** and how to use one of the already
+implemented models.

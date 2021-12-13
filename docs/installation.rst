@@ -8,7 +8,7 @@ Installation
 From source (recommended)
 ------------
 
-EzFlow can be installed from the `Github repo`_.
+EzFlow can be installed from the `GitHub repo`_.
 
 Clone the public repository:
 

@@ -22,7 +22,7 @@ a `YACS <https://github.com/rbgirshick/yacs>`_ configuration object (:class:`Cfg
 used to supply the various parameters for the encoder, decoder, and other modules and hence to build the model.
 
 **EzFlow** packages default configurations for each models which have the apporpriate parameters for the respective models. To access these default configurations,
-the following functions can be used:
+the following function can be used:
 
 .. code-block:: python
 
@@ -87,4 +87,6 @@ This can be done using the :class:`Predictor` class.
     )
     flow = predictor("img1.png", "img2.png")
 
-Please refer to the API documentation for more details.
+Please refer to the API documentation for more details. 
+Also, do check out out the other tutorials for details on how to use **EzFlow** to build custom models
+and how to train them using the training pipeline provided by the library.
