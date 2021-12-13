@@ -104,23 +104,21 @@ class which takes in a configuration object and register it to a model registry 
 Notice that we have used configuration groups in the configuration object to build the encoder and decoder. Keeping this in mind,
 we now need to write a suitable YAML configuration file which specifies the encoder and decoder configuration groups.
 
-.. configuration-block::
+.. code-block:: yaml
 
-    .. code-block:: yaml
-
-        NAME: RAFT_FlowNetS
-        ENCODER:
-            NAME: ResidualEncoder
-            IN_CHANNELS: 3
-            OUT_CHANNELS: 256
-            LAYER_CONFIG: [32, 64, 96]
-            NORM: instance
-            P_DROPOUT: 0.0
-            INTERMEDIATE_FEATURES: True
-        DECODER:
-            NAME: FlowNetConvDecoder
-            IN_CHANNELS: 1024
-            CONFIG: [512, 256, 128, 64]
+    NAME: RAFT_FlowNetS
+    ENCODER:
+        NAME: ResidualEncoder
+        IN_CHANNELS: 3
+        OUT_CHANNELS: 256
+        LAYER_CONFIG: [32, 64, 96]
+        NORM: instance
+        P_DROPOUT: 0.0
+        INTERMEDIATE_FEATURES: True
+    DECODER:
+        NAME: FlowNetConvDecoder
+        IN_CHANNELS: 1024
+        CONFIG: [512, 256, 128, 64]
 
 The model can now be built using the builder function.
 
@@ -134,19 +132,17 @@ The model can now be built using the builder function.
 This whole system can be used to easily mix and match different components. For example, if you wish to use 
 the pyramid feature encoder from **PWC-Net**, you simply need modify the encoder configuration group in the configuration file.
 
-.. configuration-block::
+.. code-block:: yaml
 
-    .. code-block:: yaml
-
-        NAME: RAFT_FlowNetS
-        ENCODER:
-            NAME: PyramidEncoder
-            IN_CHANNELS: 3
-            CONFIG: [16, 32, 64, 96, 128, 196]
-        DECODER:
-            NAME: FlowNetConvDecoder
-            IN_CHANNELS: 1024
-            CONFIG: [512, 256, 128, 64]
+    NAME: RAFT_FlowNetS
+    ENCODER:
+        NAME: PyramidEncoder
+        IN_CHANNELS: 3
+        CONFIG: [16, 32, 64, 96, 128, 196]
+    DECODER:
+        NAME: FlowNetConvDecoder
+        IN_CHANNELS: 1024
+        CONFIG: [512, 256, 128, 64]
 
 This way one can easily experiment with different model configurations and easily switch between different components.
 
@@ -180,20 +176,18 @@ You need to perform the following steps to register it to the encoder registry a
 
 The YAML configuration file can now be written as follows:
 
-.. configuration-block::
+.. code-block:: yaml
 
-    .. code-block:: yaml
-
-        NAME: RAFT_FlowNetS
-        ENCODER:
-            NAME: MyEncoder
-            PARAM1: <param1>
-            PARAM2: <param2>
-            PARAM3: <param3>
-        DECODER:
-            NAME: FlowNetConvDecoder
-            IN_CHANNELS: 1024
-            CONFIG: [512, 256, 128, 64]
+    NAME: RAFT_FlowNetS
+    ENCODER:
+        NAME: MyEncoder
+        PARAM1: <param1>
+        PARAM2: <param2>
+        PARAM3: <param3>
+    DECODER:
+        NAME: FlowNetConvDecoder
+        IN_CHANNELS: 1024
+        CONFIG: [512, 256, 128, 64]
 
 The model can now be similarly built using the builder function as described above.
 
