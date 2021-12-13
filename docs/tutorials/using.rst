@@ -87,4 +87,6 @@ This can be done using the :class:`Predictor` class.
     )
     flow = predictor("img1.png", "img2.png")
 
-Please refer to the API documentation for more details.
+Please refer to the API documentation for more details. 
+Also, do check out out the other tutorials for details on how to use **EzFlow** to build custom models
+and how to train them using the training pipeline provided by the library.
