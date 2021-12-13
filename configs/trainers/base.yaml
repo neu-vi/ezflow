@@ -7,8 +7,8 @@ DATA:
   TARGET_SCALE_FACTOR: 1.0 
 OPTIMIZER:
   NAME: Adam
-  PARAMS:
-    lr: 0.001
+  LR: 0.0003
+  PARAMS: #null
     betas: [0.9, 0.999]
     eps: 1.e-08
 SCHEDULER:
@@ -22,8 +22,8 @@ CRITERION:
   NAME: SequenceLoss
   PARAMS: null
 GRAD_CLIP: 
-  USE: False
-  VALUE: 1.0
+  USE: True
+  VALUE: 2.5
 DEVICE: "0"
 DISTRIBUTED: True
 LOG_DIR: "./logs"

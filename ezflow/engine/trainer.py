@@ -108,9 +108,13 @@ class Trainer:
 
             if self.cfg.OPTIMIZER.PARAMS:
                 optimizer_params = self.cfg.OPTIMIZER.PARAMS.to_dict()
-                optimizer = opt(self.model.parameters(), **optimizer_params)
+                optimizer = opt(
+                    self.model.parameters(),
+                    lr=self.cfg.OPTIMIZER.LR,
+                    **optimizer_params,
+                )
             else:
-                optimizer = opt(self.model.parameters())
+                optimizer = opt(self.model.parameters(), lr=self.cfg.OPTIMIZER.LR)
 
         if scheduler is None:
 
