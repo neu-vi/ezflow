@@ -19,11 +19,11 @@ SCHEDULER:
     gamma: 0.1
 CRITERION:
   CUSTOM: True
-  NAME: SequenceLoss
+  NAME: L1Loss
   PARAMS: null
 GRAD_CLIP: 
   USE: True
-  VALUE: 2.5
+  VALUE: 1.0
 DEVICE: "0"
 DISTRIBUTED: True
 LOG_DIR: "./logs"
@@ -37,4 +37,3 @@ RESUME_TRAINING:
   CONSOLIDATED_CKPT: null
   EPOCHS: null
   START_EPOCH: null
-
