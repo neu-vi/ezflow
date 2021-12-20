@@ -1,9 +1,9 @@
-fvcore==0.1.5.post20210915
+fvcore==0.1.5
 numpy==1.20.2
 omegaconf==2.1.1
 Pillow==8.4.0
 scipy==1.7.3
-setuptools==52.0.0.post20210125
+setuptools==52.0.0
 spatial_correlation_sampler==0.3.0
 tensorboard==2.6.0
 tensorboard-data-server==0.6.1
