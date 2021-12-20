@@ -96,7 +96,7 @@ class Trainer:
             else:
                 loss = loss_functions.get(self.cfg.CRITERION.NAME)
 
-            if self.cfg.CRITERION.PARAMS:
+            if self.cfg.CRITERION.PARAMS is not None:
                 loss_params = self.cfg.CRITERION.PARAMS.to_dict()
                 loss_fn = loss(**loss_params)
             else:
@@ -106,7 +106,7 @@ class Trainer:
 
             opt = optimizers.get(self.cfg.OPTIMIZER.NAME)
 
-            if self.cfg.OPTIMIZER.PARAMS:
+            if self.cfg.OPTIMIZER.PARAMS is not None:
                 optimizer_params = self.cfg.OPTIMIZER.PARAMS.to_dict()
                 optimizer = opt(
                     self.model.parameters(),
@@ -121,7 +121,7 @@ class Trainer:
             if self.cfg.SCHEDULER.USE:
                 sched = schedulers.get(self.cfg.SCHEDULER.NAME)
 
-                if self.cfg.SCHEDULER.PARAMS:
+                if self.cfg.SCHEDULER.PARAMS is not None:
                     scheduler_params = self.cfg.SCHEDULER.PARAMS.to_dict()
                     scheduler = sched(optimizer, **scheduler_params)
                 else:
@@ -409,7 +409,7 @@ class Trainer:
 
         if consolidated_ckpt is not None:
 
-            ckpt = torch.load(consolidated_ckpt)
+            ckpt = torch.load(consolidated_ckpt, map_location=torch.device("cpu"))
 
             model_state_dict = ckpt["model_state_dict"]
             optimizer_state_dict = ckpt["optimizer_state_dict"]
@@ -426,13 +426,21 @@ class Trainer:
                 model_ckpt is not None and optimizer_ckpt is not None
             ), "Must provide a consolidated ckpt or model and optimizer ckpts separately"
 
-            model_state_dict = torch.load(model_ckpt)
-            optimizer_state_dict = torch.load(optimizer_ckpt)
+            model_state_dict = torch.load(model_ckpt, map_location=torch.device("cpu"))
+            optimizer_state_dict = torch.load(
+                optimizer_ckpt, map_location=torch.device("cpu")
+            )
 
             if scheduler_ckpt is not None:
-                scheduler_state_dict = torch.load(scheduler_ckpt)
+                scheduler_state_dict = torch.load(
+                    scheduler_ckpt, map_location=torch.device("cpu")
+                )
 
-        model = self.model.module
+        if self.model_parallel:
+            model = self.model.module
+        else:
+            model = self.model
+
         model.load_state_dict(model_state_dict)
         self._setup_model(model)
 
