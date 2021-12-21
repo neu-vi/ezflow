@@ -171,6 +171,7 @@ and memory consumtion of the model, and more.
 In order to evaluate the performance metrics such as memory consumption of the model, **EzFlow** provides a wrapper `ezflow.engine.Profiler` to initialize the parameters for the PyTorch Profiler. The performance metrics can be viewed using the TensorBoard.
 
 .. code-block:: python
+
     from ezflow.models import build_model
     from ezflow.engine import eval_model, Profiler
 
