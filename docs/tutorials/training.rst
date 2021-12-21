@@ -172,7 +172,7 @@ In order to evaluate the performance metrics such as memory consumption of the m
 to initialize the parameters for the PyTorch Profiler. The performance metrics can be viewed using the TensorBoard.
 
 .. code-block:: python
-
+    from ezflow.models import build_model
     from ezflow.engine import eval_model, Profiler
 
     # Initialize the parameters for the profiler
