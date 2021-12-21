@@ -111,7 +111,7 @@ def profile_inference(
         Device (CUDA / CPU) to be used for prediction / inference
     metric_fn : function
         Function to be used to calculate the evaluation metric
-    profiler : ezflow.utils.Profiler
+    profiler : ezflow.engine.Profiler
         Profiler to be used for collecting performance metrics of the model
     flow_scale : float, optional
         Scale factor to be applied to the predicted flow
