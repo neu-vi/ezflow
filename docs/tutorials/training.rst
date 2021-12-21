@@ -153,16 +153,53 @@ and memory consumtion of the model, and more.
 
 .. code-block:: python
 
+    from ezflow.models import build_model
     from ezflow.engine import eval_model
-    from torch.profiler import ProfilerActivity
+
+    # Initialize the model from an existing checkpoint
+    model = build_model("RAFT", default=True, weights_path="./checkpoints/model_epoch_10.pth")
 
     # Evaluate the model on the validation dataset and calculate inference time 
-    # and memory consumption
 
     evaluate_model(
         model=model,
         val_loader=val_loader,
-        profiler=ProfilerActivity.CUDA,
+        device="0"
+    )
+
+
+In order to evaluate the performance metrics such as memory consumption of the model, **EzFlow** provides a wrapper :func:`ezflow.engine.Profiler`
+to initialize the parameters for the PyTorch Profiler. The performance metrics can be viewed using the TensorBoard.
+
+.. code-block:: python
+
+    from ezflow.engine import eval_model, Profiler
+
+    # Initialize the parameters for the profiler
+
+    profiler = Profiler(
+        model_name="RAFT",
+        log_dir="./profiler_logs",
+        profile_cpu=True,
+        profile_cuda=True,
+        profile_memory=True,
+        record_shapes=True,
+        wait=1,
+        warmup=1,
+        active=1,
+        repeat=10
+    )
+
+
+    # Evaluate the model on the validation dataset and 
+    # collect performance metrics of the model during inference.
+
+    model = build_model("RAFT", default=True, weights_path="./checkpoints/model_epoch_10.pth")
+
+    evaluate_model(
+        model=model,
+        val_loader=val_loader,
+        profiler=profiler,
         device="0"
     )
 
