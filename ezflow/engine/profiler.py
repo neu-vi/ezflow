@@ -3,7 +3,11 @@ from torch.profiler import ProfilerActivity, schedule, tensorboard_trace_handler
 
 class Profiler:
     """
-    Wrapper class for PyTorch profiler
+    This class is a wrapper to initialize the parameters of PyTorch profiler.
+    An instance of this class can be passed as an argument to ezflow.engine.eval_model
+    to enable profiling of the model during inference.
+
+    `Official documentation on torch.profiler <https://pytorch.org/docs/stable/profiler.html?highlight=profiler#module-torch.profiler>`_
 
     Parameters
     ----------

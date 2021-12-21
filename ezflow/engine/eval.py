@@ -6,6 +6,7 @@ from torch.nn.parallel import DistributedDataParallel as DDP
 from torch.profiler import profile, record_function
 
 from ..utils import AverageMeter, endpointerror
+from .profiler import Profiler
 
 
 def warmup(model, dataloader, device):
@@ -110,8 +111,8 @@ def profile_inference(
         Device (CUDA / CPU) to be used for prediction / inference
     metric_fn : function
         Function to be used to calculate the evaluation metric
-    profiler : torch.profiler.profile
-        Profiler to be used for profiling model characteristics
+    profiler : ezflow.engine.Profiler
+        Profiler to be used for collecting performance metrics of the model
     flow_scale : float, optional
         Scale factor to be applied to the predicted flow
     count_params : bool, optional
