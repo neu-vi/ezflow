@@ -58,7 +58,6 @@ def color_transform(
 
 
 def eraser_transform(img1, img2, bounds=[50, 100], aug_prob=0.5):
-
     """
     Occlusion augmentation
     Parameters
@@ -71,6 +70,7 @@ def eraser_transform(img1, img2, bounds=[50, 100], aug_prob=0.5):
         Bounds of the eraser
     aug_prob : float
         Probability of applying the augmentation
+
     Returns
     -------
     img1 : PIL Image or numpy.ndarray
@@ -109,9 +109,9 @@ def spatial_transform(
     h_flip_prob=0.5,
     v_flip_prob=0.1,
 ):
-
     """
     Spatial augmentation
+
     Parameters
     -----------
     img1 : PIL Image or numpy.ndarray
@@ -138,6 +138,7 @@ def spatial_transform(
         Probability of applying the horizontal flip transform
     v_flip_prob : float
         Probability of applying the vertical flip transform
+
     Returns
     -------
     img1 : PIL Image or numpy.ndarray
@@ -195,10 +196,30 @@ def spatial_transform(
     return img1, img2, flow
 
 
-def resize_sparse_flow_map(self, flow, valid, fx=1.0, fy=1.0):
-    """"""
-    ht, wd = flow.shape[:2]
-    coords = np.meshgrid(np.arange(wd), np.arange(ht))
+def resize_sparse_flow_map(flow, valid, fx=1.0, fy=1.0):
+    """
+    Resize flow field and valid flow by the scaling factor of fx and fy
+
+    Parameters
+    -----------
+    flow : numpy.ndarray
+            Flow field
+    valid : numpy.ndarray
+            Valid Flow field
+    fx : float
+        Scaling factor along x
+    fy : float
+        Scaling factor along y
+
+    Returns
+    -------
+    flow : numpy.ndarray
+            Flow field
+    valid : numpy.ndarray
+            Valid Flow field
+    """
+    H, W = flow.shape[:2]
+    coords = np.meshgrid(np.arange(W), np.arange(H))
     coords = np.stack(coords, axis=-1)
 
     coords = coords.reshape(-1, 2).astype(np.float32)
@@ -208,8 +229,8 @@ def resize_sparse_flow_map(self, flow, valid, fx=1.0, fy=1.0):
     coords0 = coords[valid >= 1]
     flow0 = flow[valid >= 1]
 
-    ht1 = int(round(ht * fy))
-    wd1 = int(round(wd * fx))
+    H1 = int(round(H * fy))
+    W1 = int(round(W * fx))
 
     coords1 = coords0 * [fx, fy]
     flow1 = flow0 * [fx, fy]
@@ -217,13 +238,13 @@ def resize_sparse_flow_map(self, flow, valid, fx=1.0, fy=1.0):
     xx = np.round(coords1[:, 0]).astype(np.int32)
     yy = np.round(coords1[:, 1]).astype(np.int32)
 
-    v = (xx > 0) & (xx < wd1) & (yy > 0) & (yy < ht1)
+    v = (xx > 0) & (xx < W1) & (yy > 0) & (yy < H1)
     xx = xx[v]
     yy = yy[v]
     flow1 = flow1[v]
 
-    flow_img = np.zeros([ht1, wd1, 2], dtype=np.float32)
-    valid_img = np.zeros([ht1, wd1], dtype=np.int32)
+    flow_img = np.zeros([H1, W1, 2], dtype=np.float32)
+    valid_img = np.zeros([H1, W1], dtype=np.int32)
 
     flow_img[yy, xx] = flow1
     valid_img[yy, xx] = 1
@@ -243,13 +264,51 @@ def sparse_spatial_transform(
     flip=True,
     h_flip_prob=0.5,
 ):
+    """
+    Sparse spatial augmentation.
 
+    Parameters
+    -----------
+    img1 : PIL Image or numpy.ndarray
+        First of the pair of images
+    img2 : PIL Image or numpy.ndarray
+        Second of the pair of images
+    flow : numpy.ndarray
+        Flow field
+    valid : numpy.ndarray
+        Valid flow field
+    crop_size : :obj:`list` of :obj:`int`
+        Size of the crop
+    aug_prob : float
+        Probability of applying the augmentation
+    min_scale : float
+        Minimum scale factor
+    max_scale : float
+        Maximum scale factor
+    flip : bool
+        Whether to apply the flip transform
+    h_flip_prob : float
+        Probability of applying the horizontal flip transform
+    v_flip_prob : float
+        Probability of applying the vertical flip transform
+
+    Returns
+    -------
+    img1 : PIL Image or numpy.ndarray
+        Augmented image 1
+    img2 : PIL Image or numpy.ndarray
+        Augmented image 2
+    flow : numpy.ndarray
+        Augmented flow field
+    valid : numpy.ndarray
+        Valid flow field
+    """
     H, W = img1.shape[:2]
     min_scale = np.maximum((crop_size[0] + 1) / float(H), (crop_size[1] + 1) / float(W))
 
     scale = 2 ** np.random.uniform(min_scale, max_scale)
-    scale_x = np.clip(scale_x, min_scale, None)
-    scale_y = np.clip(scale_y, min_scale, None)
+    scale_x = np.clip(scale, min_scale, None)
+    scale_y = np.clip(scale, min_scale, None)
 
     if np.random.rand() < aug_prob:
 
@@ -259,7 +318,7 @@ def sparse_spatial_transform(
         img2 = cv2.resize(
             img2, None, fx=scale_x, fy=scale_y, interpolation=cv2.INTER_LINEAR
         )
-        flow, valid = self.resize_sparse_flow_map(flow, valid, fx=scale_x, fy=scale_y)
+        flow, valid = resize_sparse_flow_map(flow, valid, fx=scale_x, fy=scale_y)
 
     if flip:
         if np.random.rand() < h_flip_prob:

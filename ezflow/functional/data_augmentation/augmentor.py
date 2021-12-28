@@ -71,7 +71,7 @@ class FlowAugmentor:
 @FUNCTIONAL_REGISTRY.register()
 class SparseFlowAugmentor(FlowAugmentor):
     """
-    Class for appyling a series of augmentations to a pair of images and a flow field
+    Class for appyling a series of augmentations to a pair of images, flow field and valid flow field.
 
     Parameters
     ----------

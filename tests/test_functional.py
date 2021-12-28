@@ -1,7 +1,12 @@
 import numpy as np
 import torch
 
-from ezflow.functional import FlowAugmentor, MultiScaleLoss, SequenceLoss
+from ezflow.functional import (
+    FlowAugmentor,
+    MultiScaleLoss,
+    SequenceLoss,
+    SparseFlowAugmentor,
+)
 
 img1 = np.random.rand(256, 256, 3).astype(np.uint8)
 img2 = np.random.rand(256, 256, 3).astype(np.uint8)
@@ -38,6 +43,29 @@ def test_FlowAugmentor():
         },
     )
     _ = augmentor(img1, img2, flow)
+
+    del augmentor
+
+
+def test_SparseFlowAugmentor():
+
+    valid = np.random.rand(256, 256).astype(np.float32)
+
+    augmentor = SparseFlowAugmentor(
+        (224, 224),
+        color_aug_params={"aug_prob": 1.0},
+        eraser_aug_params={"aug_prob": 1.0},
+        spatial_aug_params={"aug_prob": 1.0, "h_flip_prob": 1.0},
+    )
+    _ = augmentor(img1, img2, flow, valid)
+
+    augmentor = SparseFlowAugmentor(
+        (224, 224),
+        color_aug_params={"aug_prob": 0.0},
+        eraser_aug_params={"aug_prob": 0.0},
+        spatial_aug_params={"aug_prob": 0.0, "h_flip_prob": 0.0},
+    )
+    _ = augmentor(img1, img2, flow, valid)
 
     del augmentor
 
