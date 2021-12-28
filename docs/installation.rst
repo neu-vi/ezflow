@@ -14,7 +14,7 @@ Clone the public repository:
 
 .. code-block:: console
 
-    $ git clone git://github.com/neu-vig/ezflow
+    $ git clone https://github.com/neu-vig/ezflow.git
 
 and then run the following command to install EzFlow:
 
