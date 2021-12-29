@@ -3,6 +3,7 @@ from glob import glob
 
 import numpy as np
 
+from ...functional import FlowAugmentor
 from .base_dataset import BaseDataset
 
 
@@ -52,6 +53,8 @@ class FlyingChairs(BaseDataset):
         ), "Incorrect split values. Accepted split values: training, validation"
 
         self.is_prediction = is_prediction
+        if augment:
+            self.augmentor = FlowAugmentor(**aug_params)
 
         images = sorted(glob(osp.join(root_dir, "*.ppm")))
         flows = sorted(glob(osp.join(root_dir, "*.flo")))

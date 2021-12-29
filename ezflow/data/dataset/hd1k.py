@@ -3,6 +3,7 @@ from glob import glob
 
 import numpy as np
 
+from ...functional import SparseFlowAugmentor
 from .base_dataset import BaseDataset
 
 
@@ -34,6 +35,8 @@ class HD1K(BaseDataset):
         )
 
         self.is_prediction = is_prediction
+        if augment:
+            self.augmentor = SparseFlowAugmentor(**aug_params)
 
         seq_ix = 0
         while 1:

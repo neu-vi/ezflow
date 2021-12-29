@@ -3,6 +3,7 @@ from glob import glob
 
 import numpy as np
 
+from ...functional import SparseFlowAugmentor
 from .base_dataset import BaseDataset
 
 
@@ -38,6 +39,8 @@ class KITTI(BaseDataset):
         ), "Incorrect split values. Accepted split values: training, validation"
 
         self.is_prediction = is_prediction
+        if augment:
+            self.augmentor = SparseFlowAugmentor(**aug_params)
 
         split = split.lower()
         if split == "validation":

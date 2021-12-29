@@ -35,17 +35,15 @@ class SequenceLoss(nn.Module):
         n_preds = len(pred)
         flow_loss = 0.0
 
-        mag = torch.sqrt(torch.sum(label ** 2, dim=1))
+        flow, valid = label[0], label[1]
 
-        # Temp Fix
-        valid = (label[:, 0].abs() < 1000) & (label[:, 1].abs() < 1000)
-        valid = valid.float()
+        mag = torch.sqrt(torch.sum(flow ** 2, dim=1))
         valid = (valid >= 0.5) & (mag < self.max_flow)
 
         for i in range(n_preds):
 
             i_weight = self.gamma ** (n_preds - i - 1)
-            i_loss = torch.abs(pred[i] - label)
+            i_loss = torch.abs(pred[i] - flow)
             flow_loss += i_weight * torch.mean((valid[:, None] * i_loss))
 
         return flow_loss

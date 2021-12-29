@@ -12,7 +12,7 @@ cv2.ocl.setUseOpenCL(False)
 TAG_CHAR = np.array([202021.25], np.float32)
 
 
-def read_flow(fn):
+def read_flow_middlebury(fn):
     """
     Read .flo file in Middlebury format
 
@@ -45,9 +45,9 @@ def read_flow(fn):
             return np.resize(data, (int(h), int(w), 2))
 
 
-def read_pfm(file):
+def read_flow_pfm(file):
     """
-    Read a pfm file from disk
+    Read optical flow from a .pfm file
 
     Parameters
     -----------
@@ -98,6 +98,30 @@ def read_pfm(file):
     return data
 
 
+def read_flow_png(file):
+    """
+    Read optical flow from a png file.
+
+    Parameters
+    -----------
+    file : str
+        Path to flow file
+
+    Returns
+    --------
+    flow : np.ndarray
+        Optical flow map
+
+    valid : np.ndarray
+        Valid flow map
+    """
+    flow = cv2.imread(filename, cv2.IMREAD_ANYDEPTH | cv2.IMREAD_COLOR)
+    flow = flow[:, :, ::-1].astype(np.float32)
+    flow, valid = flow[:, :, :2], flow[:, :, 2]
+    flow = (flow - 2 ** 15) / 64.0
+    return flow, valid
+
+
 def write_flow(filename, uv, v=None):
     """Write optical flow to file.
 
@@ -141,9 +165,9 @@ def write_flow(filename, uv, v=None):
     f.close()
 
 
-def read_gen(file_name):
+def read_image(file_name):
     """
-    Read optical flow from a variety of file formats
+    Read images from a variety of file formats
 
     Parameters
     -----------
@@ -164,17 +188,44 @@ def read_gen(file_name):
     elif ext == ".bin" or ext == ".raw":
         return np.load(file_name)
 
-    elif ext == ".flo":
-        return read_flow(file_name).astype(np.float32)
+    return []
+
+
+def read_flow(file_name):
+    """
+    Read ground truth flow from a variety of file formats
+
+    Parameters
+    -----------
+    file_name : str
+        Path to flow file
+
+    Returns
+    --------
+    flow : np.ndarray
+        Optical flow map
+
+    valid : None if .flo and .pfm files else np.ndarray
+        Valid flow map
+    """
+
+    ext = splitext(file_name)[-1]
+
+    if ext == ".flo":
+        flow = read_flow_middlebury(file_name).astype(np.float32)
+        return flow, None
 
     elif ext == ".pfm":
 
-        flow = read_pfm(file_name).astype(np.float32)
+        flow = read_flow_pfm(file_name).astype(np.float32)
 
         if len(flow.shape) == 2:
-            return flow
+            return flow, None
         else:
-            return flow[:, :, :-1]
+            return flow[:, :, :-1], None
+
+    elif ext == ".png":
+        return read_flow_png(file_name)
 
     return []
 
