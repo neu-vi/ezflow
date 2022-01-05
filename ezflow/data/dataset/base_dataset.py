@@ -18,6 +18,8 @@ class BaseDataset(data.Dataset):
         If True,   If True, only image data are loaded for prediction otherwise both images and flow data are loaded
     init_seed : bool, default : False
         If True, sets random seed to the worker
+    append_valid_mask : bool, default :  False
+        If True, appends the valid flow mask to the original flow mask at dim=0
     augment : bool, default : False
         If True, applies data augmentation
     crop_size : :obj:`tuple` of :obj:`int`
@@ -29,6 +31,9 @@ class BaseDataset(data.Dataset):
 
     def __init__(
         self,
+        is_prediction=False,
+        init_seed=False,
+        append_valid_mask=False,
         augment=True,
         aug_params={
             "crop_size": (224, 224),
@@ -36,12 +41,11 @@ class BaseDataset(data.Dataset):
             "eraser_aug_params": {"aug_prob": 0.5},
             "spatial_aug_params": {"aug_prob": 0.8},
         },
-        is_prediction=False,
-        init_seed=False,
     ):
 
         self.is_prediction = is_prediction
         self.init_seed = init_seed
+        self.append_valid_mask = append_valid_mask
 
         self.augmentor = None
 
@@ -61,6 +65,10 @@ class BaseDataset(data.Dataset):
         -------
         tuple
             A tuple consisting of ((img1, img2), flow)
+
+            img1 and img2 of shape 3 x H x W.
+            flow of shape 2 x H x W if append_valid_mask is False.
+            flow of shape 3 x H x W if append_valid_mask is True.
         """
         if self.is_prediction:
             img1 = read_image(self.image_list[index][0])
@@ -105,14 +113,17 @@ class BaseDataset(data.Dataset):
         img2 = torch.from_numpy(img2).permute(2, 0, 1).float()
         flow = torch.from_numpy(flow).permute(2, 0, 1).float()
 
-        if valid is not None:
-            valid = torch.from_numpy(valid)
-        else:
-            valid = (flow[0].abs() < 1000) & (flow[1].abs() < 1000)
+        if self.append_valid_mask:
+            if valid is not None:
+                valid = torch.from_numpy(valid)
+            else:
+                valid = (flow[0].abs() < 1000) & (flow[1].abs() < 1000)
 
-        valid = valid.float()
+            valid = valid.float()
+            valid = torch.unsqueeze(valid, dim=0)
+            flow = torch.cat([flow, valid], dim=0)
 
-        return (img1, img2), (flow, valid)
+        return (img1, img2), flow
 
     def __rmul__(self, v):
         """
