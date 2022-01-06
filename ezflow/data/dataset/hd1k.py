@@ -54,10 +54,10 @@ class Hd1k(BaseDataset):
         seq_ix = 0
         while 1:
             flows = sorted(
-                glob(osp.join(root, "hd1k_flow_gt", "flow_occ/%06d_*.png" % seq_ix))
+                glob(osp.join(root_dir, "hd1k_flow_gt", "flow_occ/%06d_*.png" % seq_ix))
             )
             images = sorted(
-                glob(osp.join(root, "hd1k_input", "image_2/%06d_*.png" % seq_ix))
+                glob(osp.join(root_dir, "hd1k_input", "image_2/%06d_*.png" % seq_ix))
             )
 
             if len(flows) == 0:
