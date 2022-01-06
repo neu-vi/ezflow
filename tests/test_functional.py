@@ -85,3 +85,10 @@ def test_MultiScaleLoss():
     loss_fn = MultiScaleLoss()
     _ = loss_fn(flow_pred, flow_gt)
     del loss_fn
+
+    valid_mask = torch.randn(4, 1, 256, 256)
+    flow_target = torch.cat([flow_gt, valid_mask], dim=1)
+
+    loss_fn = MultiScaleLoss()
+    _ = loss_fn(flow_pred, flow_target)
+    del loss_fn
