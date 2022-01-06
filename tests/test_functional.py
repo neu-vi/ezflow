@@ -72,8 +72,11 @@ def test_SparseFlowAugmentor():
 
 def test_SequenceLoss():
 
+    valid_mask = torch.randn(4, 1, 256, 256)
+    flow_target = torch.cat([flow_gt, valid_mask], dim=1)
+
     loss_fn = SequenceLoss()
-    _ = loss_fn(flow_pred, flow_gt)
+    _ = loss_fn(flow_pred, flow_target)
     del loss_fn
 
 
