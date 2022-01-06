@@ -53,6 +53,8 @@ class Kitti(BaseDataset):
         ), "Incorrect split values. Accepted split values: training, validation"
 
         self.is_prediction = is_prediction
+        self.append_valid_mask = append_valid_mask
+
         if augment:
             self.augmentor = SparseFlowAugmentor(**aug_params)
 

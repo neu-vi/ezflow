@@ -46,6 +46,8 @@ class Hd1k(BaseDataset):
         )
 
         self.is_prediction = is_prediction
+        self.append_valid_mask = append_valid_mask
+
         if augment:
             self.augmentor = SparseFlowAugmentor(**aug_params)
 
