@@ -41,7 +41,7 @@ class Hd1k(BaseDataset):
             "spatial_aug_params": {"aug_prob": 0.8},
         },
     ):
-        super(HD1K, self).__init__(
+        super(Hd1k, self).__init__(
             augment, aug_params, is_prediction, init_seed, append_valid_mask
         )
 
