@@ -71,5 +71,5 @@ class MPISintel(BaseDataset):
             for i in range(len(image_list) - 1):
                 self.image_list += [[image_list[i], image_list[i + 1]]]
 
-            if split != "test":
+            if not self.is_prediction:
                 self.flow_list += sorted(glob(osp.join(flow_root, scene, "*.flo")))

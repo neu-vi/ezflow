@@ -23,6 +23,8 @@ class DataloaderCreator:
         If True, the last incomplete batch is dropped
     init_seed : bool, default : False
         If True, sets random seed to worker
+    append_valid_mask : bool, default :  False
+        If True, appends the valid flow mask to the original flow mask at dim=0
     is_prediction : bool, default : False
         If True, only image data are loaded for prediction otherwise both images and flow data are loaded
     """
@@ -35,6 +37,7 @@ class DataloaderCreator:
         num_workers=4,
         drop_last=True,
         init_seed=False,
+        append_valid_mask=False,
         is_prediction=False,
     ):
         self.dataset_list = []
@@ -44,6 +47,7 @@ class DataloaderCreator:
         self.num_workers = num_workers
         self.drop_last = drop_last
         self.init_seed = init_seed
+        self.append_valid_mask = append_valid_mask
         self.is_prediction = is_prediction
 
     def add_flying_chairs(self, root_dir, split="training", augment=True, **kwargs):
@@ -66,6 +70,7 @@ class DataloaderCreator:
                 split=split,
                 init_seed=self.init_seed,
                 is_prediction=self.is_prediction,
+                append_valid_mask=self.append_valid_mask,
                 augment=augment,
                 **kwargs
             )
@@ -101,6 +106,7 @@ class DataloaderCreator:
                 dstype=dstype,
                 init_seed=self.init_seed,
                 is_prediction=self.is_prediction,
+                append_valid_mask=self.append_valid_mask,
                 augment=augment,
                 **kwargs
             )
@@ -130,18 +136,59 @@ class DataloaderCreator:
                 dstype=dstype,
                 init_seed=self.init_seed,
                 is_prediction=self.is_prediction,
+                append_valid_mask=self.append_valid_mask,
                 augment=augment,
                 **kwargs
             )
         )
 
     def add_kitti(self, root_dir, split="training", augment=True, **kwargs):
+        """
+        Adds the KITTI dataset to the DataloaderCreator object.
 
-        raise NotImplementedError
+        Parameters
+        ----------
+        root_dir : str
+            path of the root directory for the MPI Sintel dataset
+        split : str, default : "training"
+            specify the training or validation split
+        augment : bool, default : True
+            If True, applies data augmentation
+        """
+
+        self.dataset_list.append(
+            Kitti(
+                root_dir,
+                split=split,
+                init_seed=self.init_seed,
+                is_prediction=self.is_prediction,
+                append_valid_mask=self.append_valid_mask,
+                augment=augment,
+                **kwargs
+            )
+        )
 
     def add_hd1k(self, root_dir, augment=True, **kwargs):
+        """
+        Adds the HD1K dataset to the DataloaderCreator object.
 
-        raise NotImplementedError
+        Parameters
+        ----------
+        root_dir : str
+            path of the root directory for the MPI Sintel dataset
+        augment : bool, default : True
+            If True, applies data augmentation
+        """
+        self.dataset_list.append(
+            Hd1k(
+                root_dir,
+                init_seed=self.init_seed,
+                is_prediction=self.is_prediction,
+                append_valid_mask=self.append_valid_mask,
+                augment=augment,
+                **kwargs
+            )
+        )
 
     def add_autoflow(self, split="training", root_dir=""):
         raise NotImplementedError

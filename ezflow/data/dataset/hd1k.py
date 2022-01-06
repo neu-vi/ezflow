@@ -7,7 +7,7 @@ from ...functional import SparseFlowAugmentor
 from .base_dataset import BaseDataset
 
 
-class HD1K(BaseDataset):
+class Hd1k(BaseDataset):
     """
     Dataset Class for preparing the HD1K dataset for training and validation.
 

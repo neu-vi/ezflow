@@ -7,7 +7,7 @@ from ...functional import SparseFlowAugmentor
 from .base_dataset import BaseDataset
 
 
-class KITTI(BaseDataset):
+class Kitti(BaseDataset):
     """
     Dataset Class for preparing the Kitti dataset for training and validation.
 
@@ -67,5 +67,5 @@ class KITTI(BaseDataset):
         for img1, img2 in zip(images1, images2):
             self.image_list += [[img1, img2]]
 
-        if split == "training":
+        if not self.is_prediction:
             self.flow_list = sorted(glob(osp.join(root_dir, "flow_occ/*_10.png")))

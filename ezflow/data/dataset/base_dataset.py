@@ -14,10 +14,10 @@ class BaseDataset(data.Dataset):
 
     Parameters
     ----------
-    is_prediction : bool, default : False
-        If True,   If True, only image data are loaded for prediction otherwise both images and flow data are loaded
     init_seed : bool, default : False
         If True, sets random seed to the worker
+    is_prediction : bool, default : False
+        If True,   If True, only image data are loaded for prediction otherwise both images and flow data are loaded
     append_valid_mask : bool, default :  False
         If True, appends the valid flow mask to the original flow mask at dim=0
     augment : bool, default : False
@@ -31,8 +31,8 @@ class BaseDataset(data.Dataset):
 
     def __init__(
         self,
-        is_prediction=False,
         init_seed=False,
+        is_prediction=False,
         append_valid_mask=False,
         augment=True,
         aug_params={
