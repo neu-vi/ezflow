@@ -14,8 +14,7 @@ dependencies:
   - cffi=1.14.6
   - click=8.0.1
   - colorama=0.4.4
-  - cpuonly=1.0
-  - cudatoolkit=10.1.243
+  - cudatoolkit=11.3
   - cycler=0.10.0
   - dnspython=1.16.0
   - docopt=0.6.2
@@ -67,7 +66,7 @@ dependencies:
   - python-dateutil=2.8.1
   - python-jsonrpc-server=0.3.4
   - python_abi=3.7
-  - pytorch=1.9.0
+  - pytorch=1.10.1
   - qt=5.9.7
   - regex=2021.7.6
   - setuptools=52.0.0
@@ -76,7 +75,7 @@ dependencies:
   - sqlite=3.36.0
   - tk=8.6.10
   - toml=0.10.2
-  - torchvision=0.10.0
+  - torchvision=0.11.2
   - tornado=6.1
   - typed-ast=1.4.3
   - typing_extensions=3.10.0.0
