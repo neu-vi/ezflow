@@ -61,6 +61,7 @@ class Kitti(BaseDataset):
         split = split.lower()
         if split == "validation":
             split = "testing"
+            self.is_prediction = True
 
         root_dir = osp.join(root_dir, split)
         images1 = sorted(glob(osp.join(root_dir, "image_2/*_10.png")))
@@ -70,4 +71,4 @@ class Kitti(BaseDataset):
             self.image_list += [[img1, img2]]
 
         if not self.is_prediction:
-            self.flow_list = sorted(glob(osp.join(root_dir, "flow_occ/*_10.png")))
+            self.flow_list += sorted(glob(osp.join(root_dir, "flow_occ/*_10.png")))
