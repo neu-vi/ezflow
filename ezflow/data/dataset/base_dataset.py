@@ -73,8 +73,18 @@ class BaseDataset(data.Dataset):
         if self.is_prediction:
             img1 = read_image(self.image_list[index][0])
             img2 = read_image(self.image_list[index][1])
-            img1 = np.array(img1).astype(np.uint8)[..., :3]
-            img2 = np.array(img2).astype(np.uint8)[..., :3]
+
+            img1 = np.array(img1).astype(np.uint8)
+            img2 = np.array(img2).astype(np.uint8)
+
+            # grayscale images
+            if len(img1.shape) == 2:
+                img1 = np.tile(img1[..., None], (1, 1, 3))
+                img2 = np.tile(img2[..., None], (1, 1, 3))
+            else:
+                img1 = img1[..., :3]
+                img2 = img2[..., :3]
+
             img1 = torch.from_numpy(img1).permute(2, 0, 1).float()
             img2 = torch.from_numpy(img2).permute(2, 0, 1).float()
 
