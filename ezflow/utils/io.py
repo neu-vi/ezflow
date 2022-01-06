@@ -98,13 +98,13 @@ def read_flow_pfm(file):
     return data
 
 
-def read_flow_png(file):
+def read_flow_png(filename):
     """
     Read optical flow from a png file.
 
     Parameters
     -----------
-    file : str
+    filename : str
         Path to flow file
 
     Returns
