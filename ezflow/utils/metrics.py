@@ -20,6 +20,9 @@ def endpointerror(pred, target):
     if isinstance(pred, tuple) or isinstance(pred, list):
         pred = pred[-1]
 
+    if target.shape[1] == 3:
+        target = target[:, :2, :, :]
+
     epe = torch.norm(target - pred, p=2, dim=1).mean()
 
     return epe
