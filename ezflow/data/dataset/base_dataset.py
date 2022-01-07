@@ -4,7 +4,6 @@ import numpy as np
 import torch
 import torch.utils.data as data
 
-from ...functional import FlowAugmentor, SparseFlowAugmentor
 from ...utils import read_flow, read_image
 
 

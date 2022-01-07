@@ -62,6 +62,10 @@ class DataloaderCreator:
             specify the training or validation split
         augment : bool, default : True
             If True, applies data augmentation
+        **kwargs
+            Arbitrary keword arguments for augmentation
+            specifying crop_size and the probability of
+            color, eraser and spatial transformation
         """
 
         self.dataset_list.append(
@@ -97,6 +101,10 @@ class DataloaderCreator:
             specify dataset type
         augment : bool, default : True
             If True, applies data augmentation
+        **kwargs
+            Arbitrary keword arguments for augmentation
+            specifying crop_size and the probability of
+            color, eraser and spatial transformation
         """
 
         self.dataset_list.append(
@@ -128,6 +136,10 @@ class DataloaderCreator:
             specify dataset type
         augment : bool, default : True
             If True, applies data augmentation
+        **kwargs
+            Arbitrary keword arguments for augmentation
+            specifying crop_size and the probability of
+            color, eraser and spatial transformation
         """
         self.dataset_list.append(
             MPISintel(
@@ -154,6 +166,10 @@ class DataloaderCreator:
             specify the training or validation split
         augment : bool, default : True
             If True, applies data augmentation
+        **kwargs
+            Arbitrary keword arguments for augmentation
+            specifying crop_size and the probability of
+            color, eraser and spatial transformation
         """
 
         self.dataset_list.append(
@@ -178,6 +194,10 @@ class DataloaderCreator:
             path of the root directory for the MPI Sintel dataset
         augment : bool, default : True
             If True, applies data augmentation
+        **kwargs
+            Arbitrary keword arguments for augmentation
+            specifying crop_size and the probability of
+            color, eraser and spatial transformation
         """
         self.dataset_list.append(
             Hd1k(
