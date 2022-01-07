@@ -63,7 +63,7 @@ class DataloaderCreator:
         augment : bool, default : True
             If True, applies data augmentation
         **kwargs
-            Arbitrary keword arguments for augmentation
+            Arbitrary keyword arguments for augmentation
             specifying crop_size and the probability of
             color, eraser and spatial transformation
         """
@@ -102,7 +102,7 @@ class DataloaderCreator:
         augment : bool, default : True
             If True, applies data augmentation
         **kwargs
-            Arbitrary keword arguments for augmentation
+            Arbitrary keyword arguments for augmentation
             specifying crop_size and the probability of
             color, eraser and spatial transformation
         """
@@ -137,7 +137,7 @@ class DataloaderCreator:
         augment : bool, default : True
             If True, applies data augmentation
         **kwargs
-            Arbitrary keword arguments for augmentation
+            Arbitrary keyword arguments for augmentation
             specifying crop_size and the probability of
             color, eraser and spatial transformation
         """
@@ -167,7 +167,7 @@ class DataloaderCreator:
         augment : bool, default : True
             If True, applies data augmentation
         **kwargs
-            Arbitrary keword arguments for augmentation
+            Arbitrary keyword arguments for augmentation
             specifying crop_size and the probability of
             color, eraser and spatial transformation
         """
@@ -195,7 +195,7 @@ class DataloaderCreator:
         augment : bool, default : True
             If True, applies data augmentation
         **kwargs
-            Arbitrary keword arguments for augmentation
+            Arbitrary keyword arguments for augmentation
             specifying crop_size and the probability of
             color, eraser and spatial transformation
         """
