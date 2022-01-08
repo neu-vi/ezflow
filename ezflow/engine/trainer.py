@@ -67,7 +67,7 @@ class Trainer:
                     torch.distributed.init_process_group(
                         backend=self.cfg.DISTRIBUTED_BACKEND
                     )
-                    model = DDP(model)
+                    model = DDP(model.cuda())
                 else:
                     model = nn.DataParallel(model)
                 print(f"Running on all available CUDA devices\n")
@@ -85,7 +85,7 @@ class Trainer:
                     torch.distributed.init_process_group(
                         backend=self.cfg.DISTRIBUTED_BACKEND
                     )
-                    model = DDP(model, device_ids=device_ids)
+                    model = DDP(model.cuda(), device_ids=device_ids)
                 else:
                     model = nn.DataParallel(model, device_ids=device_ids)
                 print(f"Running on CUDA devices {device_ids}\n")
