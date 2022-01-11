@@ -70,13 +70,25 @@ if __name__ == "__main__":
         "--model", type=str, required=True, help="Name of the model to train"
     )
     parser.add_argument(
+        "--n_epochs", type=int, default=None, help="Number of epochs to train"
+    )
+    parser.add_argument(
         "--device",
         type=str,
         default=None,
         help="Device(s) to train on separated by commas. -1 for CPU",
     )
     parser.add_argument(
-        "--n_epochs", type=int, default=None, help="Number of epochs to train"
+        "--distributed",
+        type=bool,
+        default=False,
+        help="Whether to do distributed training",
+    )
+    parser.add_argument(
+        "--distributed_backend",
+        type=str,
+        default="nccl",
+        help="Backend to use for distributed computing",
     )
 
     args = parser.parse_args()

@@ -32,7 +32,7 @@ class FlowAugmentor:
         self.eraser_aug_params = eraser_aug_params
         self.spatial_aug_params = spatial_aug_params
 
-    def __call__(self, img1, img2, flow):
+    def __call__(self, img1, img2, flow, valid=None):
         """
         Applies the augmentations to the pair of images and the flow field.
 
@@ -44,6 +44,8 @@ class FlowAugmentor:
             Second image
         flow : numpy.ndarray
             Flow field
+        valid : default: None
+            None object
 
         Returns
         -------
@@ -53,6 +55,8 @@ class FlowAugmentor:
             Second image
         flow : numpy.ndarray
             Flow field
+        valid : None
+            None object
         """
 
         img1, img2 = color_transform(img1, img2, **self.color_aug_params)
@@ -65,7 +69,7 @@ class FlowAugmentor:
         img2 = np.ascontiguousarray(img2)
         flow = np.ascontiguousarray(flow)
 
-        return img1, img2, flow
+        return img1, img2, flow, None
 
 
 @FUNCTIONAL_REGISTRY.register()
@@ -111,7 +115,6 @@ class SparseFlowAugmentor(FlowAugmentor):
         valid : numpy.ndarray
             Valid Flow field
         """
-
         img1, img2 = color_transform(img1, img2, **self.color_aug_params)
         img1, img2 = eraser_transform(img1, img2, **self.eraser_aug_params)
         img1, img2, flow, valid = sparse_spatial_transform(

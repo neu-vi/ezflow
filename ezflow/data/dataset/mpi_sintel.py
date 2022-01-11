@@ -4,6 +4,7 @@ from glob import glob
 
 import numpy as np
 
+from ...functional import FlowAugmentor
 from .base_dataset import BaseDataset
 
 
@@ -23,6 +24,8 @@ class MPISintel(BaseDataset):
         If True, only image data are loaded for prediction otherwise both images and flow data are loaded
     init_seed : bool, default : False
         If True, sets random seed to worker
+    append_valid_mask : bool, default :  False
+        If True, appends the valid flow mask to the original flow mask at dim=0
     augment : bool, default : True
         If True, applies data augmentation
     aug_param : :obj:`dict`, optional
@@ -36,6 +39,7 @@ class MPISintel(BaseDataset):
         dstype="clean",
         is_prediction=False,
         init_seed=False,
+        append_valid_mask=False,
         augment=True,
         aug_params={
             "crop_size": (224, 224),
@@ -45,20 +49,22 @@ class MPISintel(BaseDataset):
         },
     ):
         super(MPISintel, self).__init__(
-            augment,
-            aug_params,
-            is_prediction,
-            init_seed,
+            augment, aug_params, is_prediction, init_seed, append_valid_mask
         )
         assert (
             split.lower() == "training" or split.lower() == "validation"
         ), "Incorrect split values. Accepted split values: training, validation"
 
         self.is_prediction = is_prediction
+        self.append_valid_mask = append_valid_mask
+
+        if augment:
+            self.augmentor = FlowAugmentor(**aug_params)
 
         split = split.lower()
         if split == "validation":
             split = "test"
+            self.is_prediction = True
 
         image_root = osp.join(root_dir, split, dstype)
         flow_root = osp.join(root_dir, split, "flow")
@@ -68,5 +74,5 @@ class MPISintel(BaseDataset):
             for i in range(len(image_list) - 1):
                 self.image_list += [[image_list[i], image_list[i + 1]]]
 
-            if split != "test":
+            if not self.is_prediction:
                 self.flow_list += sorted(glob(osp.join(flow_root, scene, "*.flo")))
