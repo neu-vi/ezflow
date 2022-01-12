@@ -1,4 +1,3 @@
-import torch
 from torch import nn
 
 from ezflow.engine import prune_l1_structured, prune_l1_unstructured
