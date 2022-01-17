@@ -120,6 +120,40 @@ class DataloaderCreator:
             )
         )
 
+    def add_monkaa(
+        self,
+        root_dir,
+        split="training",
+        dstype="frames_cleanpass",
+        augment=True,
+        **kwargs
+    ):
+        """
+        Adds the Monkaa dataset to the DataloaderCreator object.
+
+        Parameters
+        ----------
+        root_dir : str
+            path of the root directory for the Monkaa dataset
+        augment : bool, default : True
+            If True, applies data augmentation
+        **kwargs
+            Arbitrary keyword arguments for augmentation
+            specifying crop_size and the probability of
+            color, eraser and spatial transformation
+        """
+
+        self.dataset_list.append(
+            Monkaa(
+                root_dir,
+                init_seed=self.init_seed,
+                is_prediction=self.is_prediction,
+                append_valid_mask=self.append_valid_mask,
+                augment=augment,
+                **kwargs
+            )
+        )
+
     def add_mpi_sintel(
         self, root_dir, split="training", dstype="clean", augment=True, **kwargs
     ):
