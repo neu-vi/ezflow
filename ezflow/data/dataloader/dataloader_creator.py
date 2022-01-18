@@ -305,7 +305,7 @@ class DataloaderCreator:
             color, eraser and spatial transformation
         """
         self.dataset_list.append(
-            Hd1k(
+            HD1K(
                 root_dir,
                 init_seed=self.init_seed,
                 is_prediction=self.is_prediction,
