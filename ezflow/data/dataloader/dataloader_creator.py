@@ -50,7 +50,7 @@ class DataloaderCreator:
         self.append_valid_mask = append_valid_mask
         self.is_prediction = is_prediction
 
-    def add_flying_chairs(self, root_dir, split="training", augment=True, **kwargs):
+    def add_FlyingChairs(self, root_dir, split="training", augment=True, **kwargs):
         """
         Adds the Flying Chairs dataset to the DataloaderCreator object.
 
@@ -80,7 +80,7 @@ class DataloaderCreator:
             )
         )
 
-    def add_flying_things3d(
+    def add_FlyingThings3D(
         self,
         root_dir,
         split="training",
@@ -94,7 +94,7 @@ class DataloaderCreator:
         Parameters
         ----------
         root_dir : str
-            path of the root directory for the flying things 3D dataset
+            path of the root directory for the flying things 3D dataset in SceneFlow
         split : str, default : "training"
             specify the training or validation split
         dstype : str, default : "frames_cleanpass"
@@ -120,7 +120,112 @@ class DataloaderCreator:
             )
         )
 
-    def add_mpi_sintel(
+    def add_FlyingThings3DSubset(
+        self, root_dir, split="training", augment=True, **kwargs
+    ):
+        """
+        Adds the Flying Things 3D Subset dataset to the DataloaderCreator object.
+
+        Parameters
+        ----------
+        root_dir : str
+            path of the root directory for the flying things 3D Subset dataset in SceneFlow
+        split : str, default : "training"
+            specify the training or validation split
+        augment : bool, default : True
+            If True, applies data augmentation
+        **kwargs
+            Arbitrary keyword arguments for augmentation
+            specifying crop_size and the probability of
+            color, eraser and spatial transformation
+        """
+
+        self.dataset_list.append(
+            FlyingThings3DSubset(
+                root_dir,
+                split=split,
+                init_seed=self.init_seed,
+                is_prediction=self.is_prediction,
+                append_valid_mask=self.append_valid_mask,
+                augment=augment,
+                **kwargs
+            )
+        )
+
+    def add_Monkaa(self, root_dir, augment=True, **kwargs):
+        """
+        Adds the Monkaa dataset to the DataloaderCreator object.
+
+        Parameters
+        ----------
+        root_dir : str
+            path of the root directory for the Monkaa dataset in SceneFlow
+        augment : bool, default : True
+            If True, applies data augmentation
+        **kwargs
+            Arbitrary keyword arguments for augmentation
+            specifying crop_size and the probability of
+            color, eraser and spatial transformation
+        """
+
+        self.dataset_list.append(
+            Monkaa(
+                root_dir,
+                init_seed=self.init_seed,
+                is_prediction=self.is_prediction,
+                append_valid_mask=self.append_valid_mask,
+                augment=augment,
+                **kwargs
+            )
+        )
+
+    def add_Driving(self, root_dir, augment=True, **kwargs):
+        """
+        Adds the Driving dataset to the DataloaderCreator object.
+
+        Parameters
+        ----------
+        root_dir : str
+            path of the root directory for the Driving dataset in SceneFlow
+        augment : bool, default : True
+            If True, applies data augmentation
+        **kwargs
+            Arbitrary keyword arguments for augmentation
+            specifying crop_size and the probability of
+            color, eraser and spatial transformation
+        """
+
+        self.dataset_list.append(
+            Driving(
+                root_dir,
+                init_seed=self.init_seed,
+                is_prediction=self.is_prediction,
+                append_valid_mask=self.append_valid_mask,
+                augment=augment,
+                **kwargs
+            )
+        )
+
+    def add_SceneFlow(self, root_dir, augment=True, **kwargs):
+        """
+        Adds FlyingThings3D, Driving and Monkaa datasets to the DataloaderCreator object.
+
+        Parameters
+        ----------
+        root_dir : str
+            path of the root directory for the SceneFlow dataset
+        augment : bool, default : True
+            If True, applies data augmentation
+        **kwargs
+            Arbitrary keyword arguments for augmentation
+            specifying crop_size and the probability of
+            color, eraser and spatial transformation
+        """
+        self.add_FlyingThings3D(root_dir=root_dir + "/FlyingThings3D", augment=augment)
+        self.add_Monkaa(root_dir=root_dir + "/Monkaa", augment=augment)
+        self.add_Driving(root_dir=root_dir + "/Driving", augment=augment)
+
+    def add_MPISintel(
         self, root_dir, split="training", dstype="clean", augment=True, **kwargs
     ):
         """
@@ -154,7 +259,7 @@ class DataloaderCreator:
             )
         )
 
-    def add_kitti(self, root_dir, split="training", augment=True, **kwargs):
+    def add_Kitti(self, root_dir, split="training", augment=True, **kwargs):
         """
         Adds the KITTI dataset to the DataloaderCreator object.
 
@@ -184,7 +289,7 @@ class DataloaderCreator:
             )
         )
 
-    def add_hd1k(self, root_dir, augment=True, **kwargs):
+    def add_HD1K(self, root_dir, augment=True, **kwargs):
         """
         Adds the HD1K dataset to the DataloaderCreator object.
 
@@ -200,7 +305,7 @@ class DataloaderCreator:
             color, eraser and spatial transformation
         """
         self.dataset_list.append(
-            Hd1k(
+            HD1K(
                 root_dir,
                 init_seed=self.init_seed,
                 is_prediction=self.is_prediction,
@@ -210,8 +315,32 @@ class DataloaderCreator:
             )
         )
 
-    def add_autoflow(self, split="training", root_dir=""):
-        raise NotImplementedError
+    def add_AutoFlow(self, root_dir, augment=True, **kwargs):
+        """
+        Adds the AutoFLow dataset to the DataloaderCreator object.
+
+        Parameters
+        ----------
+        root_dir : str
+            path of the root directory for the Monkaa dataset in SceneFlow
+        augment : bool, default : True
+            If True, applies data augmentation
+        **kwargs
+            Arbitrary keyword arguments for augmentation
+            specifying crop_size and the probability of
+            color, eraser and spatial transformation
+        """
+
+        self.dataset_list.append(
+            AutoFlow(
+                root_dir,
+                init_seed=self.init_seed,
+                is_prediction=self.is_prediction,
+                append_valid_mask=self.append_valid_mask,
+                augment=augment,
+                **kwargs
+            )
+        )
 
     def get_dataloader(self):
         """
