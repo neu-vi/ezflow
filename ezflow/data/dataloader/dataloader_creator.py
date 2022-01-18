@@ -221,9 +221,7 @@ class DataloaderCreator:
             specifying crop_size and the probability of
             color, eraser and spatial transformation
         """
-        self.add_FlyingThings3D(root_dir)(
-            root_dir=root_dir + "/FlyingThings3D", augment=augment
-        )
+        self.add_FlyingThings3D(root_dir=root_dir + "/FlyingThings3D", augment=augment)
         self.add_Monkaa(root_dir=root_dir + "/Monkaa", augment=augment)
         self.add_Driving(root_dir=root_dir + "/Driving", augment=augment)
 
