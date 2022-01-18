@@ -7,7 +7,7 @@ from ...functional import SparseFlowAugmentor
 from .base_dataset import BaseDataset
 
 
-class Hd1k(BaseDataset):
+class HD1K(BaseDataset):
     """
     Dataset Class for preparing the HD1K dataset for training and validation.
 
@@ -41,7 +41,7 @@ class Hd1k(BaseDataset):
             "spatial_aug_params": {"aug_prob": 0.8},
         },
     ):
-        super(Hd1k, self).__init__(
+        super(HD1K, self).__init__(
             augment, aug_params, is_prediction, init_seed, append_valid_mask
         )
 

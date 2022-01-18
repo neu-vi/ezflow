@@ -50,7 +50,7 @@ class DataloaderCreator:
         self.append_valid_mask = append_valid_mask
         self.is_prediction = is_prediction
 
-    def add_flying_chairs(self, root_dir, split="training", augment=True, **kwargs):
+    def add_FlyingChairs(self, root_dir, split="training", augment=True, **kwargs):
         """
         Adds the Flying Chairs dataset to the DataloaderCreator object.
 
@@ -80,7 +80,7 @@ class DataloaderCreator:
             )
         )
 
-    def add_flying_things3d(
+    def add_FlyingThings3D(
         self,
         root_dir,
         split="training",
@@ -120,7 +120,7 @@ class DataloaderCreator:
             )
         )
 
-    def add_flying_things3d_subset(
+    def add_FlyingThings3DSubset(
         self, root_dir, split="training", augment=True, **kwargs
     ):
         """
@@ -152,7 +152,7 @@ class DataloaderCreator:
             )
         )
 
-    def add_monkaa(self, root_dir, augment=True, **kwargs):
+    def add_Monkaa(self, root_dir, augment=True, **kwargs):
         """
         Adds the Monkaa dataset to the DataloaderCreator object.
 
@@ -179,7 +179,7 @@ class DataloaderCreator:
             )
         )
 
-    def add_driving(self, root_dir, augment=True, **kwargs):
+    def add_Driving(self, root_dir, augment=True, **kwargs):
         """
         Adds the Driving dataset to the DataloaderCreator object.
 
@@ -206,9 +206,9 @@ class DataloaderCreator:
             )
         )
 
-    def add_sceneflow(self, root_dir, augment=True, **kwargs):
+    def add_SceneFlow(self, root_dir, augment=True, **kwargs):
         """
-        Adds Flying Things 3D, Driving and Monkaa datasets to the DataloaderCreator object.
+        Adds FlyingThings3D, Driving and Monkaa datasets to the DataloaderCreator object.
 
         Parameters
         ----------
@@ -221,11 +221,13 @@ class DataloaderCreator:
             specifying crop_size and the probability of
             color, eraser and spatial transformation
         """
-        self.add_flying_things3d(root_dir=root_dir + "/FlyingThings3D", augment=augment)
-        self.add_monkaa(root_dir=root_dir + "/Monkaa", augment=augment)
-        self.add_driving(root_dir=root_dir + "/Driving", augment=augment)
+        self.add_FlyingThings3D(root_dir)(
+            root_dir=root_dir + "/FlyingThings3D", augment=augment
+        )
+        self.add_Monkaa(root_dir=root_dir + "/Monkaa", augment=augment)
+        self.add_Driving(root_dir=root_dir + "/Driving", augment=augment)
 
-    def add_mpi_sintel(
+    def add_MPISintel(
         self, root_dir, split="training", dstype="clean", augment=True, **kwargs
     ):
         """
@@ -259,7 +261,7 @@ class DataloaderCreator:
             )
         )
 
-    def add_kitti(self, root_dir, split="training", augment=True, **kwargs):
+    def add_Kitti(self, root_dir, split="training", augment=True, **kwargs):
         """
         Adds the KITTI dataset to the DataloaderCreator object.
 
@@ -289,7 +291,7 @@ class DataloaderCreator:
             )
         )
 
-    def add_hd1k(self, root_dir, augment=True, **kwargs):
+    def add_HD1K(self, root_dir, augment=True, **kwargs):
         """
         Adds the HD1K dataset to the DataloaderCreator object.
 
@@ -315,7 +317,7 @@ class DataloaderCreator:
             )
         )
 
-    def add_autoflow(self, root_dir, augment=True, **kwargs):
+    def add_AutoFlow(self, root_dir, augment=True, **kwargs):
         """
         Adds the AutoFLow dataset to the DataloaderCreator object.
 
