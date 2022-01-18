@@ -1,3 +1,4 @@
+from .autoflow import AutoFlow
 from .base_dataset import BaseDataset
 from .driving import Driving
 from .flying_chairs import FlyingChairs

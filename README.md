@@ -41,6 +41,7 @@ python setup.py install
 
 ### Datasets supported
 
+- [x] [AutoFlow](https://autoflow-google.github.io/)
 - [x] [FlyingChairs](https://lmb.informatik.uni-freiburg.de/resources/datasets/FlyingChairs.en.html#flyingchairs)
 - [x] [HD1K](http://hci-benchmark.iwr.uni-heidelberg.de/)
 - [x] [KITTI](http://www.cvlibs.net/datasets/kitti/eval_scene_flow.php?benchmark=flow)

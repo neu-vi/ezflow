@@ -315,8 +315,32 @@ class DataloaderCreator:
             )
         )
 
-    def add_autoflow(self, split="training", root_dir=""):
-        raise NotImplementedError
+    def add_autoflow(self, root_dir, augment=True, **kwargs):
+        """
+        Adds the AutoFLow dataset to the DataloaderCreator object.
+
+        Parameters
+        ----------
+        root_dir : str
+            path of the root directory for the Monkaa dataset in SceneFlow
+        augment : bool, default : True
+            If True, applies data augmentation
+        **kwargs
+            Arbitrary keyword arguments for augmentation
+            specifying crop_size and the probability of
+            color, eraser and spatial transformation
+        """
+
+        self.dataset_list.append(
+            AutoFlow(
+                root_dir,
+                init_seed=self.init_seed,
+                is_prediction=self.is_prediction,
+                append_valid_mask=self.append_valid_mask,
+                augment=augment,
+                **kwargs
+            )
+        )
 
     def get_dataloader(self):
         """
