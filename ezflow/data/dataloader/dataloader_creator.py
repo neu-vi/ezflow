@@ -120,6 +120,38 @@ class DataloaderCreator:
             )
         )
 
+    def add_flying_things3d_subset(
+        self, root_dir, split="training", augment=True, **kwargs
+    ):
+        """
+        Adds the Flying Things 3D Subset dataset to the DataloaderCreator object.
+
+        Parameters
+        ----------
+        root_dir : str
+            path of the root directory for the flying things 3D Subset dataset in SceneFlow
+        split : str, default : "training"
+            specify the training or validation split
+        augment : bool, default : True
+            If True, applies data augmentation
+        **kwargs
+            Arbitrary keyword arguments for augmentation
+            specifying crop_size and the probability of
+            color, eraser and spatial transformation
+        """
+
+        self.dataset_list.append(
+            FlyingThings3DSubset(
+                root_dir,
+                split=split,
+                init_seed=self.init_seed,
+                is_prediction=self.is_prediction,
+                append_valid_mask=self.append_valid_mask,
+                augment=augment,
+                **kwargs
+            )
+        )
+
     def add_monkaa(self, root_dir, augment=True, **kwargs):
         """
         Adds the Monkaa dataset to the DataloaderCreator object.
