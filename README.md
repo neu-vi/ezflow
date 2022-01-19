@@ -5,7 +5,7 @@
 </p>
 
 <h1 align="center">EzFlow</h1>
-<h3 align="center">A PyTorch library for optical flow estimation using neural networks</h3>
+<h3 align="center">A modular PyTorch library for optical flow estimation using neural networks</h3>
 
 <div align='center'>
 
