@@ -3,18 +3,18 @@ from glob import glob
 
 import numpy as np
 
-from ...functional import SparseFlowAugmentor
+from ...functional import FlowAugmentor
 from .base_dataset import BaseDataset
 
 
-class HD1K(BaseDataset):
+class AutoFlow(BaseDataset):
     """
-    Dataset Class for preparing the HD1K dataset for training and validation.
+    Dataset Class for preparing the AutoFlow Synthetic dataset for training and validation.
 
     Parameters
     ----------
     root_dir : str
-        path of the root directory for the HD1K dataset
+        path of the root directory for the Monkaa dataset
     is_prediction : bool, default : False
         If True, only image data are loaded for prediction otherwise both images and flow data are loaded
     init_seed : bool, default : False
@@ -41,7 +41,7 @@ class HD1K(BaseDataset):
             "spatial_aug_params": {"aug_prob": 0.8},
         },
     ):
-        super(HD1K, self).__init__(
+        super(AutoFlow, self).__init__(
             augment, aug_params, is_prediction, init_seed, append_valid_mask
         )
 
@@ -49,22 +49,22 @@ class HD1K(BaseDataset):
         self.append_valid_mask = append_valid_mask
 
         if augment:
-            self.augmentor = SparseFlowAugmentor(**aug_params)
+            self.augmentor = FlowAugmentor(**aug_params)
 
-        seq_ix = 0
-        while 1:
-            flows = sorted(
-                glob(osp.join(root_dir, "hd1k_flow_gt", "flow_occ/%06d_*.png" % seq_ix))
-            )
-            images = sorted(
-                glob(osp.join(root_dir, "hd1k_input", "image_2/%06d_*.png" % seq_ix))
-            )
+        scenes = [
+            "static_40k_png_1_of_4",
+            "static_40k_png_2_of_4",
+            "static_40k_png_2_of_4",
+            "static_40k_png_2_of_4",
+        ]
 
-            if len(flows) == 0:
-                break
-
-            for i in range(len(flows) - 1):
-                self.flow_list += [flows[i]]
-                self.image_list += [[images[i], images[i + 1]]]
-
-            seq_ix += 1
+        for scene in scenes:
+            seqs = glob(osp.join(root_dir, scene, "*"))
+            for s in seqs:
+                images = sorted(glob(osp.join(s, "*.png")))
+                flows = sorted(glob(osp.join(s, "*.flo")))
+                if len(images) == 2:
+                    assert len(flows) == 1
+                    for i in range(len(flows)):
+                        self.flow_list += [flows[i]]
+                        self.image_list += [[images[i], images[i + 1]]]
