@@ -73,14 +73,15 @@ class Trainer:
             self.model_parallel = True
 
             if device == "all":
+
                 device = torch.device("cuda")
-                if self.cfg.DISTRIBUTED:
-                    torch.distributed.init_process_group(
-                        backend=self.cfg.DISTRIBUTED_BACKEND
-                    )
-                    model = DDP(model.cuda())
+
+                if self.cfg.DISTRIBUTED.USE is True:
+                    self._setup_ddp()
+                    model = DDP(model.cuda(), device_ids=[self.cfg.DISTRIBUTED.RANK])
                 else:
                     model = nn.DataParallel(model)
+
                 print(f"Running on all available CUDA devices\n")
 
             else:
@@ -91,10 +92,11 @@ class Trainer:
                 device_ids = device.split(",")
                 device_ids = [int(id) for id in device_ids]
                 cuda_str = "cuda:" + device
-                device = torch.device(cuda_str)
+                device = torch.device("cuda")
 
                 if self.cfg.DISTRIBUTED.USE is True:
-                    model = DDP(model.cuda(), device_ids=device_ids)
+                    self._setup_ddp()
+                    model = DDP(model.cuda(), device_ids=[self.cfg.DISTRIBUTED.RANK])
                 else:
                     model = nn.DataParallel(model, device_ids=device_ids)
 
@@ -423,7 +425,6 @@ class Trainer:
 
         """
 
-        self._setup_ddp()
         mp.spawn(
             self.train,
             args=(loss_fn, optimizer, scheduler, n_epochs, start_epoch),
@@ -552,7 +553,6 @@ class Trainer:
 
         """
 
-        self._setup_ddp()
         mp.spawn(
             self.resume_training,
             args=(
