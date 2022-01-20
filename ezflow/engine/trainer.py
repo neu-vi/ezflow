@@ -92,13 +92,12 @@ class Trainer:
                 device_ids = [int(id) for id in device_ids]
                 cuda_str = "cuda:" + device
                 device = torch.device(cuda_str)
-                if self.cfg.DISTRIBUTED:
-                    torch.distributed.init_process_group(
-                        backend=self.cfg.DISTRIBUTED_BACKEND
-                    )
+
+                if self.cfg.DISTRIBUTED.USE is True:
                     model = DDP(model.cuda(), device_ids=device_ids)
                 else:
                     model = nn.DataParallel(model, device_ids=device_ids)
+
                 print(f"Running on CUDA devices {device_ids}\n")
 
         self.device = device
@@ -106,8 +105,8 @@ class Trainer:
 
     def _setup_ddp(self):
 
-        os.environ["MASTER_ADDR"] = "localhost"
-        os.environ["MASTER_PORT"] = "12355"
+        os.environ["MASTER_ADDR"] = self.cfg.DISTRIBUTED.MASTER_ADDR
+        os.environ["MASTER_PORT"] = self.cfg.DISTRIBUTED.MASTER_PORT
 
         seed(0)
 
@@ -425,8 +424,10 @@ class Trainer:
         """
 
         self._setup_ddp()
-        mp.spawan(
-            self.train, args=(loss_fn, optimizer, scheduler, n_epochs, start_epoch)
+        mp.spawn(
+            self.train,
+            args=(loss_fn, optimizer, scheduler, n_epochs, start_epoch),
+            nprocs=self.cfg.DISTRIBUTED.WORLD_SIZE,
         )
 
     def resume_training(
@@ -563,6 +564,7 @@ class Trainer:
                 scheduler_ckpt,
                 use_cfg,
             ),
+            nprocs=self.cfg.DISTRIBUTED.WORLD_SIZE,
         )
 
     def validate(self, model=None):
