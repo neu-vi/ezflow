@@ -1,6 +1,7 @@
 import os
 from copy import deepcopy
 
+import numpy as np
 import torch
 import torch.backends.cudnn as cudnn
 import torch.distributed as dist
@@ -16,6 +17,7 @@ from .registry import loss_functions, optimizers, schedulers
 
 def seed(seed):
 
+    np.random.seed(seed)
     torch.manual_seed(seed)
     torch.cuda.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)
@@ -91,7 +93,6 @@ class Trainer:
 
                 device_ids = device.split(",")
                 device_ids = [int(id) for id in device_ids]
-                cuda_str = "cuda:" + device
                 device = torch.device("cuda")
 
                 if self.cfg.DISTRIBUTED.USE is True:
