@@ -204,11 +204,15 @@ class BottleneckEncoder(nn.Module):
         elif norm == "none":
             norm_fn = nn.Identity()
 
-        layers = [
-            nn.Conv2d(in_channels, start_channels, kernel_size=7, stride=2, padding=3),
-            norm_fn,
-            nn.ReLU(inplace=True),
-        ]
+        layers = nn.ModuleList(
+            [
+                nn.Conv2d(
+                    in_channels, start_channels, kernel_size=7, stride=2, padding=3
+                ),
+                norm_fn,
+                nn.ReLU(inplace=True),
+            ]
+        )
 
         for i in range(len(layer_config)):
 
@@ -269,11 +273,13 @@ class BottleneckEncoder(nn.Module):
         if self.intermediate_features is True:
 
             features = []
-            for layer in self.encoder:
-                x = layer(x)
+            for i in range(len(self.encoder)):
+                x = self.encoder[i](x)
 
-                if isinstance(layer, nn.Sequential):
+                if isinstance(self.encoder[i], nn.Sequential):
                     features.append(x)
+
+            features.append(x)
 
             return features
 
