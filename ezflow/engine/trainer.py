@@ -98,6 +98,7 @@ class Trainer:
                 if self.cfg.DISTRIBUTED.USE is True:
                     self._setup_ddp()
                     model = DDP(model.cuda(), device_ids=[self.cfg.DISTRIBUTED.RANK])
+                    print("Performing distributed training")
                 else:
                     model = nn.DataParallel(model, device_ids=device_ids)
 
