@@ -20,7 +20,7 @@ def test_BasicEncoder():
         intermediate_features=True,
     )
     output = encoder(img)
-    assert isinstance(output, list) and len(output) == 3
+    assert isinstance(output, list) and len(output) == 4
 
     encoder = encoder_class(in_channels=3, out_channels=32, norm="group", p_dropout=0.1)
     output = encoder(img)
@@ -48,7 +48,7 @@ def test_BottleneckEncoder():
         intermediate_features=True,
     )
     output = encoder(img)
-    assert isinstance(output, list) and len(output) == 3
+    assert isinstance(output, list) and len(output) == 4
 
     encoder = encoder_class(in_channels=3, out_channels=32, norm="group", p_dropout=0.1)
     output = encoder(img)
