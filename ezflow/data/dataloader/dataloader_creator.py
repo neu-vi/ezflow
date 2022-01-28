@@ -1,4 +1,5 @@
 from torch.utils.data.dataloader import DataLoader
+from torch.utils.data.distributed import DistributedSampler
 
 from ..dataset import *
 
@@ -39,6 +40,9 @@ class DataloaderCreator:
         init_seed=False,
         append_valid_mask=False,
         is_prediction=False,
+        distributed=False,
+        world_size=None,
+        rank=None,
     ):
         self.dataset_list = []
         self.batch_size = batch_size
@@ -49,6 +53,15 @@ class DataloaderCreator:
         self.init_seed = init_seed
         self.append_valid_mask = append_valid_mask
         self.is_prediction = is_prediction
+
+        if distributed:
+            assert (
+                world_size is not None and rank is not None
+            ), "world_size and rank must be set to perform distributed training"
+
+        self.distributed = distributed
+        self.world_size = world_size
+        self.rank = rank
 
     def add_FlyingChairs(self, root_dir, split="training", augment=True, **kwargs):
         """
@@ -361,14 +374,33 @@ class DataloaderCreator:
             for i in range(len(self.dataset_list) - 1):
                 dataset += self.dataset_list[i + 1]
 
-        data_loader = DataLoader(
-            dataset,
-            batch_size=self.batch_size,
-            pin_memory=self.pin_memory,
-            shuffle=self.shuffle,
-            num_workers=self.num_workers,
-            drop_last=self.drop_last,
-        )
+        if self.distributed:
+
+            sampler = DistributedSampler(
+                dataset,
+                num_replicas=self.world_size,
+                rank=self.rank,
+                shuffle=self.shuffle,
+                drop_last=self.drop_last,
+            )
+            data_loader = DataLoader(
+                dataset,
+                batch_size=self.batch_size,
+                pin_memory=self.pin_memory,
+                num_workers=self.num_workers,
+                sampler=sampler,
+            )
+
+        else:
+            data_loader = DataLoader(
+                dataset,
+                batch_size=self.batch_size,
+                pin_memory=self.pin_memory,
+                shuffle=self.shuffle,
+                num_workers=self.num_workers,
+                drop_last=self.drop_last,
+            )
 
         print("Total image pairs: %d" % len(dataset))
+
         return data_loader
