@@ -63,10 +63,12 @@ def run_inference(model, dataloader, device, metric_fn, flow_scale=1.0):
     metric_meter = AverageMeter()
     times = []
 
+    inp, target = next(iter(dataloader))
+    batch_size = target.shape[0]
+
     with torch.no_grad():
 
         for inp, target in dataloader:
-            start_time = time.time()
 
             img1, img2 = inp
             img1, img2, target = (
@@ -75,8 +77,12 @@ def run_inference(model, dataloader, device, metric_fn, flow_scale=1.0):
                 target.to(device),
             )
 
+            if torch.cuda.is_available():
+                torch.cuda.synchronize()
+
+            start_time = time.time()
+
             pred = model(img1, img2)
-            pred = pred * flow_scale
 
             if torch.cuda.is_available():
                 torch.cuda.synchronize()
@@ -84,10 +90,12 @@ def run_inference(model, dataloader, device, metric_fn, flow_scale=1.0):
             end_time = time.time()
             times.append(end_time - start_time)
 
+            pred = pred * flow_scale
             metric = metric_fn(pred, target)
             metric_meter.update(metric.item())
 
     avg_inference_time = sum(times) / len(times)
+    avg_inference_time /= batch_size  # Average inference time per sample
 
     print("=" * 100)
     print(f"Average inference time: {avg_inference_time}, FPS: {1/avg_inference_time}")
