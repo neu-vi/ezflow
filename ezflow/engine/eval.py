@@ -209,7 +209,6 @@ def eval_model(
     model,
     dataloader,
     device,
-    distributed=False,
     metric=None,
     profiler=None,
     flow_scale=1.0,
@@ -225,8 +224,6 @@ def eval_model(
         Dataloader to be used for prediction / inference
     device : torch.device
         Device (CUDA / CPU) to be used for prediction / inference
-    distributed : bool, optional
-        Flag to indicate whether to perform distributed inference on multiple GPUs
     metric : function, optional
         Function to be used to calculate the evaluation metric
     profiler : torch.profiler.profile, optional
@@ -254,10 +251,7 @@ def eval_model(
     else:
         if device == "all":
             device = torch.device("cuda")
-            if distributed:
-                model = DDP(model)
-            else:
-                model = DataParallel(model)
+            model = DataParallel(model)
             print(f"Running on all available CUDA devices\n")
 
         else:
@@ -266,12 +260,9 @@ def eval_model(
 
             device_ids = device.split(",")
             device_ids = [int(id) for id in device_ids]
-            cuda_str = "cuda:" + device
-            device = torch.device(cuda_str)
-            if distributed:
-                model = DDP(model)
-            else:
-                model = DataParallel(model, device_ids=device_ids)
+            device = torch.device("cuda")
+
+            model = DataParallel(model, device_ids=device_ids)
             print(f"Running on CUDA devices {device_ids}\n")
 
     model = model.to(device)
