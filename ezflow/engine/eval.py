@@ -5,7 +5,7 @@ from torch.nn import DataParallel
 from torch.nn.parallel import DistributedDataParallel as DDP
 from torch.profiler import profile, record_function
 
-from ..utils import AverageMeter, endpointerror
+from ..utils import AverageMeter, InputPadder, endpointerror
 from .profiler import Profiler
 
 
@@ -66,6 +66,8 @@ def run_inference(model, dataloader, device, metric_fn, flow_scale=1.0):
     inp, target = next(iter(dataloader))
     batch_size = target.shape[0]
 
+    padder = InputPadder(inp[0].shape)
+
     with torch.no_grad():
 
         for inp, target in dataloader:
@@ -76,6 +78,8 @@ def run_inference(model, dataloader, device, metric_fn, flow_scale=1.0):
                 img2.to(device),
                 target.to(device),
             )
+
+            img1, img2 = padder.pad(img1, img2)
 
             if torch.cuda.is_available():
                 torch.cuda.synchronize()
@@ -90,8 +94,10 @@ def run_inference(model, dataloader, device, metric_fn, flow_scale=1.0):
             end_time = time.time()
             times.append(end_time - start_time)
 
-            pred = pred * flow_scale
-            metric = metric_fn(pred, target)
+            pred = padder.unpad(pred)
+            flow = pred * flow_scale
+
+            metric = metric_fn(flow, target)
             metric_meter.update(metric.item())
 
     avg_inference_time = sum(times) / len(times)
@@ -137,6 +143,11 @@ def profile_inference(
     metric_meter = AverageMeter()
     times = []
 
+    inp, target = next(iter(dataloader))
+    batch_size = target.shape[0]
+
+    padder = InputPadder(inp[0].shape)
+
     with profile(
         activities=profiler.activites,
         record_shapes=profiler.record_shapes,
@@ -148,7 +159,6 @@ def profile_inference(
         with torch.no_grad():
 
             for inp, target in dataloader:
-                start_time = time.time()
 
                 img1, img2 = inp
                 img1, img2, target = (
@@ -157,18 +167,28 @@ def profile_inference(
                     target.to(device),
                 )
 
-                with record_function(profiler.model_name):
-                    pred = model(img1, img2)
-                    pred = pred * flow_scale
+                img1, img2 = padder.pad(img1, img2)
 
                 if torch.cuda.is_available():
                     torch.cuda.synchronize()
 
-                prof.step()
+                start_time = time.time()
+
+                with record_function(profiler.model_name):
+                    pred = model(img1, img2)
+
+                if torch.cuda.is_available():
+                    torch.cuda.synchronize()
+
                 end_time = time.time()
                 times.append(end_time - start_time)
 
-                metric = metric_fn(pred, target)
+                prof.step()
+
+                pred = padder.unpad(pred)
+                flow = pred * flow_scale
+
+                metric = metric_fn(flow, target)
                 metric_meter.update(metric.item())
 
     print(
@@ -193,6 +213,7 @@ def profile_inference(
     )
 
     avg_inference_time = sum(times) / len(times)
+    avg_inference_time /= batch_size  # Average inference time per sample
     n_params = sum(p.numel() for p in model.parameters())
 
     print("=" * 100)

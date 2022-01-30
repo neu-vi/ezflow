@@ -249,6 +249,7 @@ class InputPadder:
         self.ht, self.wd = dims[-2:]
         pad_ht = (((self.ht // scale) + 1) * scale - self.ht) % scale
         pad_wd = (((self.wd // scale) + 1) * scale - self.wd) % scale
+
         if mode == "sintel":
             self._pad = [
                 pad_wd // 2,
