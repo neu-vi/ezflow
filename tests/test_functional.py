@@ -19,7 +19,8 @@ flow_gt = torch.rand(4, 2, 256, 256)
 def test_FlowAugmentor():
 
     augmentor = FlowAugmentor(
-        (224, 224),
+        crop_size=(224, 224),
+        crop_type="random",
         color_aug_params={"aug_prob": 1.0},
         eraser_aug_params={"aug_prob": 1.0},
         spatial_aug_params={
@@ -32,7 +33,8 @@ def test_FlowAugmentor():
     _ = augmentor(img1, img2, flow)
 
     augmentor = FlowAugmentor(
-        (224, 224),
+        crop_size=(224, 224),
+        crop_type="center",
         color_aug_params={"aug_prob": 0.0},
         eraser_aug_params={"aug_prob": 0.0},
         spatial_aug_params={

@@ -100,6 +100,7 @@ def spatial_transform(
     img2,
     flow,
     crop_size,
+    crop_type="center",
     aug_prob=0.8,
     stretch_prob=0.8,
     max_stretch=0.2,
@@ -155,6 +156,7 @@ def spatial_transform(
     scale = 2 ** np.random.uniform(min_scale, max_scale)
     scale_x = scale
     scale_y = scale
+
     if np.random.rand() < stretch_prob:
         scale_x *= 2 ** np.random.uniform(-max_stretch, max_stretch)
         scale_y *= 2 ** np.random.uniform(-max_stretch, max_stretch)
@@ -186,8 +188,13 @@ def spatial_transform(
             img2 = img2[::-1, :]
             flow = flow[::-1, :] * [1.0, -1.0]
 
-    y0 = np.random.randint(0, img1.shape[0] - crop_size[0])
-    x0 = np.random.randint(0, img1.shape[1] - crop_size[1])
+    if crop_type.lower() == "center":
+        y0 = H // 2
+        x0 = W // 2
+
+    else:
+        y0 = np.random.randint(0, img1.shape[0] - crop_size[0])
+        x0 = np.random.randint(0, img1.shape[1] - crop_size[1])
 
     img1 = img1[y0 : y0 + crop_size[0], x0 : x0 + crop_size[1]]
     img2 = img2[y0 : y0 + crop_size[0], x0 : x0 + crop_size[1]]
@@ -258,6 +265,7 @@ def sparse_spatial_transform(
     flow,
     valid,
     crop_size,
+    crop_type="center",
     aug_prob=0.8,
     min_scale=-0.2,
     max_scale=0.5,
@@ -330,11 +338,15 @@ def sparse_spatial_transform(
     margin_y = 20
     margin_x = 50
 
-    y0 = np.random.randint(0, img1.shape[0] - crop_size[0] + margin_y)
-    x0 = np.random.randint(-margin_x, img1.shape[1] - crop_size[1] + margin_x)
+    if crop_type.lower() == "center":
+        y0 = H // 2
+        x0 = W // 2
 
-    y0 = np.clip(y0, 0, img1.shape[0] - crop_size[0])
-    x0 = np.clip(x0, 0, img1.shape[1] - crop_size[1])
+    else:
+        y0 = np.random.randint(0, img1.shape[0] - crop_size[0] + margin_y)
+        x0 = np.random.randint(-margin_x, img1.shape[1] - crop_size[1] + margin_x)
+        y0 = np.clip(y0, 0, img1.shape[0] - crop_size[0])
+        x0 = np.clip(x0, 0, img1.shape[1] - crop_size[1])
 
     img1 = img1[y0 : y0 + crop_size[0], x0 : x0 + crop_size[1]]
     img2 = img2[y0 : y0 + crop_size[0], x0 : x0 + crop_size[1]]
