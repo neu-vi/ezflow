@@ -9,6 +9,8 @@ class FlowAugmentor:
 
     Parameters
     ----------
+    crop_type : str
+        Type of crop to apply to the images; one of "center", "random".
     crop_size : int
         Size of the crop to be applied to the images.
     color_aug_params : dict
