@@ -189,8 +189,8 @@ def spatial_transform(
             flow = flow[::-1, :] * [1.0, -1.0]
 
     if crop_type.lower() == "center":
-        y0 = H // 2
-        x0 = W // 2
+        y0 = int(H / 2 - crop_size[0] / 2)
+        x0 = int(W / 2 - crop_size[1] / 2)
 
     else:
         y0 = np.random.randint(0, img1.shape[0] - crop_size[0])
@@ -339,8 +339,8 @@ def sparse_spatial_transform(
     margin_x = 50
 
     if crop_type.lower() == "center":
-        y0 = H // 2
-        x0 = W // 2
+        y0 = int(H / 2 - crop_size[0] / 2)
+        x0 = int(W / 2 - crop_size[1] / 2)
 
     else:
         y0 = np.random.randint(0, img1.shape[0] - crop_size[0] + margin_y)
