@@ -238,17 +238,17 @@ class InputPadder:
     -----------
     dims : tuple
         Dimensions of the input
-    scale : int
-        Scale of the padding
+    divisor : int
+        Divisor to make the input evenly divisible by
     mode : str
         Padding mode
     """
 
-    def __init__(self, dims, scale=8, mode="sintel"):
+    def __init__(self, dims, divisor=8, mode="sintel"):
 
         self.ht, self.wd = dims[-2:]
-        pad_ht = (((self.ht // scale) + 1) * scale - self.ht) % scale
-        pad_wd = (((self.wd // scale) + 1) * scale - self.wd) % scale
+        pad_ht = (((self.ht // divisor) + 1) * divisor - self.ht) % divisor
+        pad_wd = (((self.wd // divisor) + 1) * divisor - self.wd) % divisor
 
         if mode == "sintel":
             self._pad = [

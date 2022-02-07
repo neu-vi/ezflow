@@ -2,7 +2,6 @@ import time
 
 import torch
 from torch.nn import DataParallel
-from torch.nn.parallel import DistributedDataParallel as DDP
 from torch.profiler import profile, record_function
 
 from ..utils import AverageMeter, InputPadder, endpointerror
@@ -34,7 +33,7 @@ def warmup(model, dataloader, device):
     _ = model(img1, img2)
 
 
-def run_inference(model, dataloader, device, metric_fn, flow_scale=1.0):
+def run_inference(model, dataloader, device, metric_fn, flow_scale=1.0, pad_divisor=1):
     """
     Uses a model to perform inference on a dataloader and captures inference time and evaluation metric
 
@@ -50,6 +49,8 @@ def run_inference(model, dataloader, device, metric_fn, flow_scale=1.0):
         Function to be used to calculate the evaluation metric
     flow_scale : float, optional
         Scale factor to be applied to the predicted flow
+    pad_divisor : int, optional
+        The divisor to make images evenly divisible by using padding, by default 1
 
     Returns
     -------
@@ -66,7 +67,7 @@ def run_inference(model, dataloader, device, metric_fn, flow_scale=1.0):
     inp, target = next(iter(dataloader))
     batch_size = target.shape[0]
 
-    padder = InputPadder(inp[0].shape)
+    padder = InputPadder(inp[0].shape, divisor=pad_divisor)
 
     with torch.no_grad():
 
@@ -110,7 +111,14 @@ def run_inference(model, dataloader, device, metric_fn, flow_scale=1.0):
 
 
 def profile_inference(
-    model, dataloader, device, metric_fn, profiler, flow_scale=1.0, count_params=False
+    model,
+    dataloader,
+    device,
+    metric_fn,
+    profiler,
+    flow_scale=1.0,
+    count_params=False,
+    pad_divisor=1,
 ):
     """
     Uses a model to perform inference on a dataloader and profiles model characteristics such as memory usage, inference time, and evaluation metric
@@ -131,6 +139,8 @@ def profile_inference(
         Scale factor to be applied to the predicted flow
     count_params : bool, optional
         Flag to indicate whether to count model parameters
+    pad_divisor : int, optional
+        The divisor to make images evenly divisible by using padding, by default 1
 
     Returns
     -------
@@ -146,7 +156,7 @@ def profile_inference(
     inp, target = next(iter(dataloader))
     batch_size = target.shape[0]
 
-    padder = InputPadder(inp[0].shape)
+    padder = InputPadder(inp[0].shape, divisor=pad_divisor)
 
     with profile(
         activities=profiler.activites,
@@ -233,6 +243,7 @@ def eval_model(
     metric=None,
     profiler=None,
     flow_scale=1.0,
+    pad_divisor=1,
 ):
     """
     Evaluates a model on a dataloader and optionally profiles model characteristics such as memory usage, inference time, and evaluation metric
@@ -251,6 +262,8 @@ def eval_model(
         Profiler to be used for profiling model characteristics
     flow_scale : float, optional
         Scale factor to be applied to the predicted flow
+    pad_divisor : int, optional
+        The divisor to make images evenly divisible by using padding, by default 1
 
     Returns
     -------
@@ -297,11 +310,22 @@ def eval_model(
 
     if profiler is None:
         metric_meter, _ = run_inference(
-            model, dataloader, device, metric_fn, flow_scale=flow_scale
+            model,
+            dataloader,
+            device,
+            metric_fn,
+            flow_scale=flow_scale,
+            pad_divisor=pad_divisor,
         )
     else:
         metric_meter, _ = profile_inference(
-            model, dataloader, device, metric_fn, profiler, flow_scale=flow_scale
+            model,
+            dataloader,
+            device,
+            metric_fn,
+            profiler,
+            flow_scale=flow_scale,
+            pad_divisor=pad_divisor,
         )
 
     print(f"Average evaluation metric = {metric_meter.avg}")
