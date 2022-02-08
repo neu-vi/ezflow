@@ -1,6 +1,7 @@
 import torch
 from torchvision import io
 
+from ..utils import InputPadder
 from .build import build_model
 
 
@@ -28,6 +29,8 @@ class Predictor:
         The device to use for the model, by default "cpu"
     flow_scale : float, optional
         The scale to apply to the predicted flow, by default 1.0
+    pad_divisor : int, optional
+        The divisor to make images evenly divisible by using padding, by default 1
     """
 
     def __init__(
@@ -41,9 +44,11 @@ class Predictor:
         data_transform=None,
         device="cpu",
         flow_scale=1.0,
+        pad_divisor=1,
     ):
 
         self.flow_scale = flow_scale
+        self.pad_divisor = pad_divisor
 
         if model_cfg_path is not None:
             self.model = build_model(
@@ -97,7 +102,11 @@ class Predictor:
             img1 = self.data_transform(img1)
             img2 = self.data_transform(img2)
 
-        pred = self.model(img1, img2)
-        pred = pred * self.flow_scale
+        padder = InputPadder(img1.shape, divisor=self.pad_divisor)
+        img1, img2 = padder.pad(img1, img2)
 
-        return pred
+        flow_pred = self.model(img1, img2)
+        flow_pred = padder.unpad(flow_pred)
+        flow_pred = flow_pred * self.flow_scale
+
+        return flow_pred
