@@ -50,7 +50,7 @@ def run_inference(model, dataloader, device, metric_fn, flow_scale=1.0, pad_divi
     flow_scale : float, optional
         Scale factor to be applied to the predicted flow
     pad_divisor : int, optional
-        The divisor to make images evenly divisible by using padding, by default 1
+        The divisor to make the image dimensions evenly divisible by using padding, by default 1
 
     Returns
     -------
@@ -140,7 +140,7 @@ def profile_inference(
     count_params : bool, optional
         Flag to indicate whether to count model parameters
     pad_divisor : int, optional
-        The divisor to make images evenly divisible by using padding, by default 1
+        The divisor to make the image dimensions evenly divisible by using padding, by default 1
 
     Returns
     -------
@@ -263,7 +263,7 @@ def eval_model(
     flow_scale : float, optional
         Scale factor to be applied to the predicted flow
     pad_divisor : int, optional
-        The divisor to make images evenly divisible by using padding, by default 1
+        The divisor to make the image dimensions evenly divisible by using padding, by default 1
 
     Returns
     -------
