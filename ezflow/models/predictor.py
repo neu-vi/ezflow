@@ -30,7 +30,7 @@ class Predictor:
     flow_scale : float, optional
         The scale to apply to the predicted flow, by default 1.0
     pad_divisor : int, optional
-        The divisor to make images evenly divisible by using padding, by default 1
+        The divisor to make the image dimensions evenly divisible by using padding, by default 1
     """
 
     def __init__(
