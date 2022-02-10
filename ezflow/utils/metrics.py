@@ -1,7 +1,7 @@
 import torch
 
 
-def endpointerror(pred, target):
+def endpointerror(pred, target, multi_magnitude=False):
     """
     Endpoint error
 
@@ -24,6 +24,17 @@ def endpointerror(pred, target):
         """Ignore valid mask for EPE calculation."""
         target = target[:, :2, :, :]
 
-    epe = torch.norm(target - pred, p=2, dim=1).mean()
+    epe = torch.norm(pred - target, p=2, dim=1)
 
-    return epe
+    if not multi_magnitude:
+        return epe.mean().item()
+
+    epe = epe.view(-1)
+    multi_magnitude_epe = {
+        "epe": epe.mean().item(),
+        "1px": (epe < 1).float().mean().item(),
+        "3px": (epe < 3).float().mean().item(),
+        "5px": (epe < 5).float().mean().item(),
+    }
+
+    return multi_magnitude_epe
