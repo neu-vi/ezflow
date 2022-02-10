@@ -99,7 +99,7 @@ def run_inference(model, dataloader, device, metric_fn, flow_scale=1.0, pad_divi
             flow = pred * flow_scale
 
             metric = metric_fn(flow, target)
-            metric_meter.update(metric.item())
+            metric_meter.update(metric)
 
     avg_inference_time = sum(times) / len(times)
     avg_inference_time /= batch_size  # Average inference time per sample
@@ -199,7 +199,7 @@ def profile_inference(
                 flow = pred * flow_scale
 
                 metric = metric_fn(flow, target)
-                metric_meter.update(metric.item())
+                metric_meter.update(metric)
 
     print(
         prof.key_averages(group_by_input_shape=True).table(
