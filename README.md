@@ -22,11 +22,21 @@
 
 ## Installation
 
+### From source (recommended)
+
 ```shell
 
 git clone https://github.com/neu-vig/ezflow
 cd ezflow/
 python setup.py install
+
+```
+
+### From PyPI
+
+```shell
+
+pip install ezflow
 
 ```
 
