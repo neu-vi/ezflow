@@ -9,8 +9,6 @@ class FlowAugmentor:
 
     Parameters
     ----------
-    crop_type : str
-        Type of crop to apply to the images; one of "center", "random".
     crop_size : int
         Size of the crop to be applied to the images.
     color_aug_params : dict
@@ -24,14 +22,12 @@ class FlowAugmentor:
     def __init__(
         self,
         crop_size,
-        crop_type="center",
         color_aug_params={"aug_prob": 0.2},
         eraser_aug_params={"aug_prob": 0.5},
         spatial_aug_params={"aug_prob": 0.8},
     ):
 
         self.crop_size = crop_size
-        self.crop_type = crop_type
         self.color_aug_params = color_aug_params
         self.eraser_aug_params = eraser_aug_params
         self.spatial_aug_params = spatial_aug_params
@@ -66,7 +62,7 @@ class FlowAugmentor:
         img1, img2 = color_transform(img1, img2, **self.color_aug_params)
         img1, img2 = eraser_transform(img1, img2, **self.eraser_aug_params)
         img1, img2, flow = spatial_transform(
-            img1, img2, flow, self.crop_size, self.crop_type, **self.spatial_aug_params
+            img1, img2, flow, self.crop_size, **self.spatial_aug_params
         )
 
         img1 = np.ascontiguousarray(img1)
@@ -122,13 +118,7 @@ class SparseFlowAugmentor(FlowAugmentor):
         img1, img2 = color_transform(img1, img2, **self.color_aug_params)
         img1, img2 = eraser_transform(img1, img2, **self.eraser_aug_params)
         img1, img2, flow, valid = sparse_spatial_transform(
-            img1,
-            img2,
-            flow,
-            valid,
-            self.crop_size,
-            self.crop_type,
-            **self.spatial_aug_params
+            img1, img2, flow, valid, self.crop_size, **self.spatial_aug_params
         )
 
         img1 = np.ascontiguousarray(img1)
