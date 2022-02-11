@@ -22,6 +22,15 @@ def test_crop():
     _ = crop(img1, img2, flow, crop_size=(224, 224))
     _ = crop(img1, img2, flow, crop_size=(224, 224), crop_type="random")
     _ = crop(img1, img2, flow, valid=flow, crop_size=(224, 224), sparse_transform=True)
+    _ = crop(
+        img1,
+        img2,
+        flow,
+        valid=flow,
+        crop_size=(224, 224),
+        crop_type="random",
+        sparse_transform=True,
+    )
 
 
 def test_FlowAugmentor():
