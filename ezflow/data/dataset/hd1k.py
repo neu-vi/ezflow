@@ -1,8 +1,6 @@
 import os.path as osp
 from glob import glob
 
-import numpy as np
-
 from ...functional import SparseFlowAugmentor
 from .base_dataset import BaseDataset
 
@@ -21,9 +19,15 @@ class HD1K(BaseDataset):
         If True, sets random seed to worker
     append_valid_mask : bool, default :  False
         If True, appends the valid flow mask to the original flow mask at dim=0
+    crop: bool, default : True
+        Whether to perform cropping
+    crop_size : :obj:`tuple` of :obj:`int`
+        The size of the image crop
+    crop_type : :obj:`str`, default : 'center'
+        The type of croppping to be performed
     augment : bool, default : True
         If True, applies data augmentation
-    aug_param : :obj:`dict`, optional
+    aug_params : :obj:`dict`, optional
         The parameters for data augmentation
     """
 
@@ -33,23 +37,33 @@ class HD1K(BaseDataset):
         is_prediction=False,
         init_seed=False,
         append_valid_mask=False,
+        crop=False,
+        crop_size=(256, 256),
+        crop_type="center",
         augment=True,
         aug_params={
-            "crop_size": (224, 224),
             "color_aug_params": {"aug_prob": 0.2},
             "eraser_aug_params": {"aug_prob": 0.5},
             "spatial_aug_params": {"aug_prob": 0.8},
         },
     ):
         super(HD1K, self).__init__(
-            augment, aug_params, is_prediction, init_seed, append_valid_mask
+            augment,
+            aug_params,
+            is_prediction,
+            init_seed,
+            append_valid_mask,
+            crop,
+            crop_size,
+            crop_type,
+            sparse_transform=True,
         )
 
         self.is_prediction = is_prediction
         self.append_valid_mask = append_valid_mask
 
         if augment:
-            self.augmentor = SparseFlowAugmentor(**aug_params)
+            self.augmentor = SparseFlowAugmentor(crop_size=crop_size, **aug_params)
 
         seq_ix = 0
         while 1:

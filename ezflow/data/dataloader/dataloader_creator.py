@@ -63,7 +63,7 @@ class DataloaderCreator:
         self.world_size = world_size
         self.rank = rank
 
-    def add_FlyingChairs(self, root_dir, split="training", augment=True, **kwargs):
+    def add_FlyingChairs(self, root_dir, split="training", augment=False, **kwargs):
         """
         Adds the Flying Chairs dataset to the DataloaderCreator object.
 
@@ -98,7 +98,7 @@ class DataloaderCreator:
         root_dir,
         split="training",
         dstype="frames_cleanpass",
-        augment=True,
+        augment=False,
         **kwargs
     ):
         """
@@ -134,7 +134,7 @@ class DataloaderCreator:
         )
 
     def add_FlyingThings3DSubset(
-        self, root_dir, split="training", augment=True, **kwargs
+        self, root_dir, split="training", augment=False, **kwargs
     ):
         """
         Adds the Flying Things 3D Subset dataset to the DataloaderCreator object.
@@ -165,7 +165,7 @@ class DataloaderCreator:
             )
         )
 
-    def add_Monkaa(self, root_dir, augment=True, **kwargs):
+    def add_Monkaa(self, root_dir, augment=False, **kwargs):
         """
         Adds the Monkaa dataset to the DataloaderCreator object.
 
@@ -192,7 +192,7 @@ class DataloaderCreator:
             )
         )
 
-    def add_Driving(self, root_dir, augment=True, **kwargs):
+    def add_Driving(self, root_dir, augment=False, **kwargs):
         """
         Adds the Driving dataset to the DataloaderCreator object.
 
@@ -219,7 +219,7 @@ class DataloaderCreator:
             )
         )
 
-    def add_SceneFlow(self, root_dir, augment=True, **kwargs):
+    def add_SceneFlow(self, root_dir, augment=False, **kwargs):
         """
         Adds FlyingThings3D, Driving and Monkaa datasets to the DataloaderCreator object.
 
@@ -241,7 +241,7 @@ class DataloaderCreator:
         self.add_Driving(root_dir=root_dir + "/Driving", augment=augment, **kwargs)
 
     def add_MPISintel(
-        self, root_dir, split="training", dstype="clean", augment=True, **kwargs
+        self, root_dir, split="training", dstype="clean", augment=False, **kwargs
     ):
         """
         Adds the MPI Sintel dataset to the DataloaderCreator object.
@@ -274,7 +274,7 @@ class DataloaderCreator:
             )
         )
 
-    def add_Kitti(self, root_dir, split="training", augment=True, **kwargs):
+    def add_Kitti(self, root_dir, split="training", augment=False, **kwargs):
         """
         Adds the KITTI dataset to the DataloaderCreator object.
 
@@ -304,7 +304,7 @@ class DataloaderCreator:
             )
         )
 
-    def add_HD1K(self, root_dir, augment=True, **kwargs):
+    def add_HD1K(self, root_dir, augment=False, **kwargs):
         """
         Adds the HD1K dataset to the DataloaderCreator object.
 
@@ -330,7 +330,7 @@ class DataloaderCreator:
             )
         )
 
-    def add_AutoFlow(self, root_dir, augment=True, **kwargs):
+    def add_AutoFlow(self, root_dir, augment=False, **kwargs):
         """
         Adds the AutoFLow dataset to the DataloaderCreator object.
 
