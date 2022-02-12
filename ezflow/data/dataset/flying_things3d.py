@@ -27,7 +27,7 @@ class FlyingThings3D(BaseDataset):
     crop_size : :obj:`tuple` of :obj:`int`
         The size of the image crop
     crop_type : :obj:`str`, default : 'center'
-        The type of croppping to be performed
+        The type of croppping to be performed, one of "center", "random"
         If True, appends the valid flow mask to the original flow mask at dim=0
     augment : bool, default : True
         If True, applies data augmentation

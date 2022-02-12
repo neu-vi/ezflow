@@ -26,7 +26,7 @@ class Kitti(BaseDataset):
     crop_size : :obj:`tuple` of :obj:`int`
         The size of the image crop
     crop_type : :obj:`str`, default : 'center'
-        The type of croppping to be performed
+        The type of croppping to be performed, one of "center", "random"
     augment : bool, default : True
         If True, applies data augmentation
     aug_params : :obj:`dict`, optional
