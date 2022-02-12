@@ -35,7 +35,7 @@ class DataloaderCreator:
         batch_size,
         pin_memory=False,
         shuffle=True,
-        num_workers=1,
+        num_workers=0,
         drop_last=True,
         init_seed=False,
         append_valid_mask=False,
