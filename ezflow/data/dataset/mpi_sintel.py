@@ -65,6 +65,7 @@ class MPISintel(BaseDataset):
             aug_params=aug_params,
             sparse_transform=False,
         )
+
         assert (
             split.lower() == "training" or split.lower() == "validation"
         ), "Incorrect split values. Accepted split values: training, validation"

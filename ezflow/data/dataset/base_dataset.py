@@ -136,10 +136,10 @@ class BaseDataset(data.Dataset):
                 img1,
                 img2,
                 flow,
-                valid,
-                self.crop_size,
-                self.crop_type,
-                self.sparse_transform,
+                valid=valid,
+                crop_size=self.crop_size,
+                crop_type=self.crop_type,
+                sparse_transform=self.sparse_transform,
             )
 
         img1 = torch.from_numpy(img1).permute(2, 0, 1).float()
