@@ -6,6 +6,7 @@ from ezflow.functional import (
     MultiScaleLoss,
     SequenceLoss,
     SparseFlowAugmentor,
+    crop,
 )
 
 img1 = np.random.rand(256, 256, 3).astype(np.uint8)
@@ -16,11 +17,26 @@ flow_pred = [torch.rand(4, 2, 256, 256)]
 flow_gt = torch.rand(4, 2, 256, 256)
 
 
+def test_crop():
+
+    _ = crop(img1, img2, flow, crop_size=(224, 224))
+    _ = crop(img1, img2, flow, crop_size=(224, 224), crop_type="random")
+    _ = crop(img1, img2, flow, valid=flow, crop_size=(224, 224), sparse_transform=True)
+    _ = crop(
+        img1,
+        img2,
+        flow,
+        valid=flow,
+        crop_size=(224, 224),
+        crop_type="random",
+        sparse_transform=True,
+    )
+
+
 def test_FlowAugmentor():
 
     augmentor = FlowAugmentor(
         crop_size=(224, 224),
-        crop_type="random",
         color_aug_params={"aug_prob": 1.0},
         eraser_aug_params={"aug_prob": 1.0},
         spatial_aug_params={
@@ -34,7 +50,6 @@ def test_FlowAugmentor():
 
     augmentor = FlowAugmentor(
         crop_size=(224, 224),
-        crop_type="center",
         color_aug_params={"aug_prob": 0.0},
         eraser_aug_params={"aug_prob": 0.0},
         spatial_aug_params={
@@ -55,7 +70,6 @@ def test_SparseFlowAugmentor():
 
     augmentor = SparseFlowAugmentor(
         crop_size=(224, 224),
-        crop_type="random",
         color_aug_params={"aug_prob": 1.0},
         eraser_aug_params={"aug_prob": 1.0},
         spatial_aug_params={"aug_prob": 1.0, "h_flip_prob": 1.0},
@@ -64,7 +78,6 @@ def test_SparseFlowAugmentor():
 
     augmentor = SparseFlowAugmentor(
         crop_size=(224, 224),
-        crop_type="center",
         color_aug_params={"aug_prob": 0.0},
         eraser_aug_params={"aug_prob": 0.0},
         spatial_aug_params={"aug_prob": 0.0, "h_flip_prob": 0.0},

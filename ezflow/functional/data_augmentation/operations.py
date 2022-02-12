@@ -4,6 +4,79 @@ from PIL import Image
 from torchvision.transforms import ColorJitter
 
 
+def crop(
+    img1,
+    img2,
+    flow,
+    crop_size=(256, 256),
+    crop_type="center",
+    sparse_transform=False,
+    valid=None,
+):
+
+    """
+    Function to crop the images and flow field
+
+    Parameters
+    -----------
+    img1 : PIL Image or numpy.ndarray
+        First of the pair of images
+    img2 : PIL Image or numpy.ndarray
+        Second of the pair of images
+    flow : numpy.ndarray
+        Flow field
+    valid : numpy.ndarray
+        Valid flow mask
+    crop_size : tuple
+        Size of the crop
+    crop_type : str
+        Type of cropping
+    sparse_transform : bool
+        Whether to apply sparse transform
+
+    Returns
+    -------
+    img1 : PIL Image or numpy.ndarray
+        Augmented image 1
+    img2 : PIL Image or numpy.ndarray
+        Augmented image 2
+    flow : numpy.ndarray
+        Augmented flow field
+
+    """
+
+    if sparse_transform is True:
+        assert valid is not None, "Valid flow mask is required for sparse transform"
+
+    H, W = img1.shape[:2]
+
+    if crop_type.lower() == "center":
+        y0 = max(0, int(H / 2 - crop_size[0] / 2))
+        x0 = max(0, int(W / 2 - crop_size[1] / 2))
+
+    else:
+        if sparse_transform is True:
+            margin_y = 20
+            margin_x = 50
+            y0 = np.random.randint(0, img1.shape[0] - crop_size[0] + margin_y)
+            x0 = np.random.randint(-margin_x, img1.shape[1] - crop_size[1] + margin_x)
+            y0 = max(0, np.clip(y0, 0, img1.shape[0] - crop_size[0]))
+            x0 = max(0, np.clip(x0, 0, img1.shape[1] - crop_size[1]))
+
+        else:
+            y0 = max(0, np.random.randint(0, img1.shape[0] - crop_size[0]))
+            x0 = max(0, np.random.randint(0, img1.shape[1] - crop_size[1]))
+
+    img1 = img1[y0 : y0 + crop_size[0], x0 : x0 + crop_size[1]]
+    img2 = img2[y0 : y0 + crop_size[0], x0 : x0 + crop_size[1]]
+    flow = flow[y0 : y0 + crop_size[0], x0 : x0 + crop_size[1]]
+
+    if sparse_transform is True:
+        valid = valid[y0 : y0 + crop_size[0], x0 : x0 + crop_size[1]]
+
+    return img1, img2, flow, valid
+
+
 def color_transform(
     img1,
     img2,
@@ -100,7 +173,6 @@ def spatial_transform(
     img2,
     flow,
     crop_size,
-    crop_type="center",
     aug_prob=0.8,
     stretch_prob=0.8,
     max_stretch=0.2,
@@ -188,18 +260,6 @@ def spatial_transform(
             img2 = img2[::-1, :]
             flow = flow[::-1, :] * [1.0, -1.0]
 
-    if crop_type.lower() == "center":
-        y0 = int(H / 2 - crop_size[0] / 2)
-        x0 = int(W / 2 - crop_size[1] / 2)
-
-    else:
-        y0 = np.random.randint(0, img1.shape[0] - crop_size[0])
-        x0 = np.random.randint(0, img1.shape[1] - crop_size[1])
-
-    img1 = img1[y0 : y0 + crop_size[0], x0 : x0 + crop_size[1]]
-    img2 = img2[y0 : y0 + crop_size[0], x0 : x0 + crop_size[1]]
-    flow = flow[y0 : y0 + crop_size[0], x0 : x0 + crop_size[1]]
-
     return img1, img2, flow
 
 
@@ -265,7 +325,6 @@ def sparse_spatial_transform(
     flow,
     valid,
     crop_size,
-    crop_type="center",
     aug_prob=0.8,
     min_scale=-0.2,
     max_scale=0.5,
@@ -334,23 +393,5 @@ def sparse_spatial_transform(
             img2 = img2[:, ::-1]
             flow = flow[:, ::-1] * [-1.0, 1.0]
             valid = valid[:, ::-1]
-
-    margin_y = 20
-    margin_x = 50
-
-    if crop_type.lower() == "center":
-        y0 = int(H / 2 - crop_size[0] / 2)
-        x0 = int(W / 2 - crop_size[1] / 2)
-
-    else:
-        y0 = np.random.randint(0, img1.shape[0] - crop_size[0] + margin_y)
-        x0 = np.random.randint(-margin_x, img1.shape[1] - crop_size[1] + margin_x)
-        y0 = np.clip(y0, 0, img1.shape[0] - crop_size[0])
-        x0 = np.clip(x0, 0, img1.shape[1] - crop_size[1])
-
-    img1 = img1[y0 : y0 + crop_size[0], x0 : x0 + crop_size[1]]
-    img2 = img2[y0 : y0 + crop_size[0], x0 : x0 + crop_size[1]]
-    flow = flow[y0 : y0 + crop_size[0], x0 : x0 + crop_size[1]]
-    valid = valid[y0 : y0 + crop_size[0], x0 : x0 + crop_size[1]]
 
     return img1, img2, flow, valid

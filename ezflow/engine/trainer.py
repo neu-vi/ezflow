@@ -340,7 +340,7 @@ class Trainer:
                 loss_meter.update(loss.item())
 
                 metric = self._calculate_metric(pred, target)
-                metric_meter.update(metric.item())
+                metric_meter.update(metric)
 
         model.train()
 

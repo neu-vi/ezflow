@@ -4,6 +4,7 @@ import numpy as np
 import torch
 import torch.utils.data as data
 
+from ...functional import crop
 from ...utils import read_flow, read_image
 
 
@@ -19,10 +20,14 @@ class BaseDataset(data.Dataset):
         If True,   If True, only image data are loaded for prediction otherwise both images and flow data are loaded
     append_valid_mask : bool, default :  False
         If True, appends the valid flow mask to the original flow mask at dim=0
-    augment : bool, default : False
-        If True, applies data augmentation
+    crop: bool, default : True
+        Whether to perform cropping
     crop_size : :obj:`tuple` of :obj:`int`
         The size of the image crop
+    crop_type : :obj:`str`, default : 'center'
+        The type of croppping to be performed, one of "center", "random"
+    augment : bool, default : False
+        If True, applies data augmentation
     aug_params : :obj:`dict`
         The parameters for data augmentation
 
@@ -33,19 +38,27 @@ class BaseDataset(data.Dataset):
         init_seed=False,
         is_prediction=False,
         append_valid_mask=False,
+        crop=False,
+        crop_size=(256, 256),
+        crop_type="center",
         augment=True,
         aug_params={
-            "crop_size": (224, 224),
             "color_aug_params": {"aug_prob": 0.2},
             "eraser_aug_params": {"aug_prob": 0.5},
             "spatial_aug_params": {"aug_prob": 0.8},
         },
+        sparse_transform=False,
     ):
 
         self.is_prediction = is_prediction
         self.init_seed = init_seed
         self.append_valid_mask = append_valid_mask
+        self.crop = crop
+        self.crop_size = crop_size
+        self.crop_type = crop_type
+        self.sparse_transform = sparse_transform
 
+        self.augment = augment
         self.augmentor = None
 
         self.flow_list = []
@@ -115,8 +128,19 @@ class BaseDataset(data.Dataset):
             img1 = img1[..., :3]
             img2 = img2[..., :3]
 
-        if self.augmentor is not None:
+        if self.augment is True and self.augmentor is not None:
             img1, img2, flow, valid = self.augmentor(img1, img2, flow, valid)
+
+        if self.crop is True:
+            img1, img2, flow, valid = crop(
+                img1,
+                img2,
+                flow,
+                valid=valid,
+                crop_size=self.crop_size,
+                crop_type=self.crop_type,
+                sparse_transform=self.sparse_transform,
+            )
 
         img1 = torch.from_numpy(img1).permute(2, 0, 1).float()
         img2 = torch.from_numpy(img2).permute(2, 0, 1).float()
