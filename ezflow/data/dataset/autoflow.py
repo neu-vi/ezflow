@@ -48,14 +48,14 @@ class AutoFlow(BaseDataset):
         },
     ):
         super(AutoFlow, self).__init__(
-            augment,
-            aug_params,
-            is_prediction,
-            init_seed,
-            append_valid_mask,
-            crop,
-            crop_size,
-            crop_type,
+            init_seed=init_seed,
+            is_prediction=is_prediction,
+            append_valid_mask=append_valid_mask,
+            crop=crop,
+            crop_size=crop_size,
+            crop_type=crop_type,
+            augment=augment,
+            aug_params=aug_params,
             sparse_transform=False,
         )
 

@@ -51,8 +51,8 @@ def crop(
     H, W = img1.shape[:2]
 
     if crop_type.lower() == "center":
-        y0 = int(H / 2 - crop_size[0] / 2)
-        x0 = int(W / 2 - crop_size[1] / 2)
+        y0 = max(0, int(H / 2 - crop_size[0] / 2))
+        x0 = max(0, int(W / 2 - crop_size[1] / 2))
 
     else:
         if sparse_transform is True:
@@ -60,12 +60,12 @@ def crop(
             margin_x = 50
             y0 = np.random.randint(0, img1.shape[0] - crop_size[0] + margin_y)
             x0 = np.random.randint(-margin_x, img1.shape[1] - crop_size[1] + margin_x)
-            y0 = np.clip(y0, 0, img1.shape[0] - crop_size[0])
-            x0 = np.clip(x0, 0, img1.shape[1] - crop_size[1])
+            y0 = max(0, np.clip(y0, 0, img1.shape[0] - crop_size[0]))
+            x0 = max(0, np.clip(x0, 0, img1.shape[1] - crop_size[1]))
 
         else:
-            y0 = np.random.randint(0, img1.shape[0] - crop_size[0])
-            x0 = np.random.randint(0, img1.shape[1] - crop_size[1])
+            y0 = max(0, np.random.randint(0, img1.shape[0] - crop_size[0]))
+            x0 = max(0, np.random.randint(0, img1.shape[1] - crop_size[1]))
 
     img1 = img1[y0 : y0 + crop_size[0], x0 : x0 + crop_size[1]]
     img2 = img2[y0 : y0 + crop_size[0], x0 : x0 + crop_size[1]]
