@@ -8,7 +8,7 @@ from ..utils import AverageMeter, InputPadder, endpointerror
 from .profiler import Profiler
 
 
-def warmup(model, dataloader, device):
+def warmup(model, dataloader, device, pad_divisor=1):
     """Performs an iteration of dataloading and model prediction to warm up CUDA device
 
     Parameters
@@ -19,11 +19,16 @@ def warmup(model, dataloader, device):
         Dataloader to be used for prediction / inference
     device : torch.device
         Device (CUDA / CPU) to be used for prediction / inference
+    pad_divisor : int, optional
+        The divisor to make the image dimensions evenly divisible by using padding, by default 1
     """
 
-    inp, target = iter(dataloader).next()
-
+    inp, target = next(iter(dataloader))
     img1, img2 = inp
+
+    padder = InputPadder(img1.shape, divisor=pad_divisor)
+    img1, img2 = padder.pad(img1, img2)
+
     img1, img2, target = (
         img1.to(device),
         img2.to(device),
@@ -304,7 +309,7 @@ def eval_model(
 
     metric_fn = metric or endpointerror
 
-    warmup(model, dataloader, device)
+    warmup(model, dataloader, device, pad_divisor=pad_divisor)
     if torch.cuda.is_available():
         torch.cuda.synchronize()
 
