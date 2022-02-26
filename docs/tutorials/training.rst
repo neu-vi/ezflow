@@ -26,12 +26,14 @@ consolidated dataloader for multiple datasets. Let's take a look at how to creat
     train_loader_creator = DataloaderCreator(
         batch_size=16,
         num_workers=1,
-        pin_memory=True
+        pin_memory=True,
+        shuffle=True,
     )
     val_loader_creator = DataloaderCreator(
         batch_size=16,
         num_workers=1,
-        pin_memory=True
+        pin_memory=True,
+        shuffle=False,
     )
 
     # Add dataset(s) to the dataloader creator
@@ -41,6 +43,7 @@ consolidated dataloader for multiple datasets. Let's take a look at how to creat
         split="training",
         crop=True,
         crop_size=(384, 384),
+        crop_type="random",
         augment=True,
         aug_params={
             "color_aug_params": {
