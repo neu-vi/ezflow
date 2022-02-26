@@ -63,7 +63,7 @@ consolidated dataloader for multiple datasets. Let's take a look at how to creat
         augment=False
     ) 
 
-Do note that using the dataloader creator, one can create a dataloader which comprises of multiple datasets.
+(Do note that one can create a dataloader which comprises of multiple datasets using the dataloader creator.)
 
 .. code-block:: python
 
@@ -72,7 +72,7 @@ Do note that using the dataloader creator, one can create a dataloader which com
     train_loader = train_loader_creator.get_dataloader()
     val_loader = val_loader_creator.get_dataloader()
 
-Next, let's create a RAFT model for training.
+Next, let's create a `RAFT <https://arxiv.org/abs/2003.12039>`_ model for training.
 
 .. code-block:: python
 
@@ -110,7 +110,7 @@ where the checkpoints are saved.
 
     training_cfg.CKPT_DIR = "./checkpoints"
 
-(To view all the parameters present in a configration object, the :func:`.to_dict()` method of the object can be used can be used)
+(To view all the parameters present in a configration object, the :func:`.to_dict()` method of the object can be used can be used.)
 
 Now that we have a training configuration object, we can create a trainer object.
 
@@ -143,8 +143,8 @@ The trainer can also be used to resume training from a checkpoint as:
         n_epochs=10
     )
 
-The `consolidated_ckpt` here is a checkpoint saved previously by EzFlow's trainer which contains checkpoints for model, 
-optimizer, and scheduler states. The method can also be used with individual checkpoints which might not have been saved by EzFlow's trainer.
+The `consolidated_ckpt` here is a checkpoint saved previously by **EzFlow's** trainer which contains checkpoints for model, 
+optimizer, and scheduler states. The method can also be used with individual checkpoints which might not have been saved by **EzFlow's** trainer.
 
 .. code-block:: python
 

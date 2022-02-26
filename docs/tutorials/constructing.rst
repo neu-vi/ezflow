@@ -27,7 +27,7 @@ Or, to use the learnable matching function present in **DICL**, one can do the f
     cost_fn = LearnableMatching(max_u=3, max_v=3)
     cost = cost_fn(features1, features2)
 
-(Please refer to the documentation of the individual modules for more details)
+(Please refer to the documentation of the individual modules for more details.)
 
 Alternatively, the modules can also be accessed using builder functions which work with the registry mechanism. For example, to access
 the pyramid feature encoder from the above example, the following code snippet can be used:
