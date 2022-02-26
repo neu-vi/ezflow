@@ -24,6 +24,12 @@ Pruning
    :members:
    
    
+Profiler
+---------------
+
+.. automodule:: ezflow.engine.profiler
+   :members:
+
 
 Retrieve
 ---------------

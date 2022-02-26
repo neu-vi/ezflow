@@ -1,4 +1,5 @@
 from torch.utils.data.dataloader import DataLoader
+from torch.utils.data.distributed import DistributedSampler
 
 from ..dataset import *
 
@@ -23,6 +24,8 @@ class DataloaderCreator:
         If True, the last incomplete batch is dropped
     init_seed : bool, default : False
         If True, sets random seed to worker
+    append_valid_mask : bool, default :  False
+        If True, appends the valid flow mask to the original flow mask at dim=0
     is_prediction : bool, default : False
         If True, only image data are loaded for prediction otherwise both images and flow data are loaded
     """
@@ -32,10 +35,14 @@ class DataloaderCreator:
         batch_size,
         pin_memory=False,
         shuffle=True,
-        num_workers=4,
+        num_workers=0,
         drop_last=True,
         init_seed=False,
+        append_valid_mask=False,
         is_prediction=False,
+        distributed=False,
+        world_size=None,
+        rank=None,
     ):
         self.dataset_list = []
         self.batch_size = batch_size
@@ -44,9 +51,19 @@ class DataloaderCreator:
         self.num_workers = num_workers
         self.drop_last = drop_last
         self.init_seed = init_seed
+        self.append_valid_mask = append_valid_mask
         self.is_prediction = is_prediction
 
-    def add_flying_chairs(self, root_dir, split="training", augment=True, **kwargs):
+        if distributed:
+            assert (
+                world_size is not None and rank is not None
+            ), "world_size and rank must be set to perform distributed training"
+
+        self.distributed = distributed
+        self.world_size = world_size
+        self.rank = rank
+
+    def add_FlyingChairs(self, root_dir, split="training", augment=False, **kwargs):
         """
         Adds the Flying Chairs dataset to the DataloaderCreator object.
 
@@ -58,6 +75,10 @@ class DataloaderCreator:
             specify the training or validation split
         augment : bool, default : True
             If True, applies data augmentation
+        **kwargs
+            Arbitrary keyword arguments for augmentation
+            specifying crop_size and the probability of
+            color, eraser and spatial transformation
         """
 
         self.dataset_list.append(
@@ -66,17 +87,18 @@ class DataloaderCreator:
                 split=split,
                 init_seed=self.init_seed,
                 is_prediction=self.is_prediction,
+                append_valid_mask=self.append_valid_mask,
                 augment=augment,
                 **kwargs
             )
         )
 
-    def add_flying_things3d(
+    def add_FlyingThings3D(
         self,
         root_dir,
         split="training",
         dstype="frames_cleanpass",
-        augment=True,
+        augment=False,
         **kwargs
     ):
         """
@@ -85,13 +107,17 @@ class DataloaderCreator:
         Parameters
         ----------
         root_dir : str
-            path of the root directory for the flying things 3D dataset
+            path of the root directory for the flying things 3D dataset in SceneFlow
         split : str, default : "training"
             specify the training or validation split
         dstype : str, default : "frames_cleanpass"
             specify dataset type
         augment : bool, default : True
             If True, applies data augmentation
+        **kwargs
+            Arbitrary keyword arguments for augmentation
+            specifying crop_size and the probability of
+            color, eraser and spatial transformation
         """
 
         self.dataset_list.append(
@@ -101,13 +127,121 @@ class DataloaderCreator:
                 dstype=dstype,
                 init_seed=self.init_seed,
                 is_prediction=self.is_prediction,
+                append_valid_mask=self.append_valid_mask,
                 augment=augment,
                 **kwargs
             )
         )
 
-    def add_mpi_sintel(
-        self, root_dir, split="training", dstype="clean", augment=True, **kwargs
+    def add_FlyingThings3DSubset(
+        self, root_dir, split="training", augment=False, **kwargs
+    ):
+        """
+        Adds the Flying Things 3D Subset dataset to the DataloaderCreator object.
+
+        Parameters
+        ----------
+        root_dir : str
+            path of the root directory for the flying things 3D Subset dataset in SceneFlow
+        split : str, default : "training"
+            specify the training or validation split
+        augment : bool, default : True
+            If True, applies data augmentation
+        **kwargs
+            Arbitrary keyword arguments for augmentation
+            specifying crop_size and the probability of
+            color, eraser and spatial transformation
+        """
+
+        self.dataset_list.append(
+            FlyingThings3DSubset(
+                root_dir,
+                split=split,
+                init_seed=self.init_seed,
+                is_prediction=self.is_prediction,
+                append_valid_mask=self.append_valid_mask,
+                augment=augment,
+                **kwargs
+            )
+        )
+
+    def add_Monkaa(self, root_dir, augment=False, **kwargs):
+        """
+        Adds the Monkaa dataset to the DataloaderCreator object.
+
+        Parameters
+        ----------
+        root_dir : str
+            path of the root directory for the Monkaa dataset in SceneFlow
+        augment : bool, default : True
+            If True, applies data augmentation
+        **kwargs
+            Arbitrary keyword arguments for augmentation
+            specifying crop_size and the probability of
+            color, eraser and spatial transformation
+        """
+
+        self.dataset_list.append(
+            Monkaa(
+                root_dir,
+                init_seed=self.init_seed,
+                is_prediction=self.is_prediction,
+                append_valid_mask=self.append_valid_mask,
+                augment=augment,
+                **kwargs
+            )
+        )
+
+    def add_Driving(self, root_dir, augment=False, **kwargs):
+        """
+        Adds the Driving dataset to the DataloaderCreator object.
+
+        Parameters
+        ----------
+        root_dir : str
+            path of the root directory for the Driving dataset in SceneFlow
+        augment : bool, default : True
+            If True, applies data augmentation
+        **kwargs
+            Arbitrary keyword arguments for augmentation
+            specifying crop_size and the probability of
+            color, eraser and spatial transformation
+        """
+
+        self.dataset_list.append(
+            Driving(
+                root_dir,
+                init_seed=self.init_seed,
+                is_prediction=self.is_prediction,
+                append_valid_mask=self.append_valid_mask,
+                augment=augment,
+                **kwargs
+            )
+        )
+
+    def add_SceneFlow(self, root_dir, augment=False, **kwargs):
+        """
+        Adds FlyingThings3D, Driving and Monkaa datasets to the DataloaderCreator object.
+
+        Parameters
+        ----------
+        root_dir : str
+            path of the root directory for the SceneFlow dataset
+        augment : bool, default : True
+            If True, applies data augmentation
+        **kwargs
+            Arbitrary keyword arguments for augmentation
+            specifying crop_size and the probability of
+            color, eraser and spatial transformation
+        """
+        self.add_FlyingThings3D(
+            root_dir=root_dir + "/FlyingThings3D", augment=augment, **kwargs
+        )
+        self.add_Monkaa(root_dir=root_dir + "/Monkaa", augment=augment, **kwargs)
+        self.add_Driving(root_dir=root_dir + "/Driving", augment=augment, **kwargs)
+
+    def add_MPISintel(
+        self, root_dir, split="training", dstype="clean", augment=False, **kwargs
     ):
         """
         Adds the MPI Sintel dataset to the DataloaderCreator object.
@@ -122,6 +256,10 @@ class DataloaderCreator:
             specify dataset type
         augment : bool, default : True
             If True, applies data augmentation
+        **kwargs
+            Arbitrary keyword arguments for augmentation
+            specifying crop_size and the probability of
+            color, eraser and spatial transformation
         """
         self.dataset_list.append(
             MPISintel(
@@ -130,21 +268,94 @@ class DataloaderCreator:
                 dstype=dstype,
                 init_seed=self.init_seed,
                 is_prediction=self.is_prediction,
+                append_valid_mask=self.append_valid_mask,
                 augment=augment,
                 **kwargs
             )
         )
 
-    def add_kitti(self, root_dir, split="training", augment=True, **kwargs):
+    def add_Kitti(self, root_dir, split="training", augment=False, **kwargs):
+        """
+        Adds the KITTI dataset to the DataloaderCreator object.
 
-        raise NotImplementedError
+        Parameters
+        ----------
+        root_dir : str
+            path of the root directory for the MPI Sintel dataset
+        split : str, default : "training"
+            specify the training or validation split
+        augment : bool, default : True
+            If True, applies data augmentation
+        **kwargs
+            Arbitrary keyword arguments for augmentation
+            specifying crop_size and the probability of
+            color, eraser and spatial transformation
+        """
 
-    def add_hd1k(self, root_dir, augment=True, **kwargs):
+        self.dataset_list.append(
+            Kitti(
+                root_dir,
+                split=split,
+                init_seed=self.init_seed,
+                is_prediction=self.is_prediction,
+                append_valid_mask=self.append_valid_mask,
+                augment=augment,
+                **kwargs
+            )
+        )
 
-        raise NotImplementedError
+    def add_HD1K(self, root_dir, augment=False, **kwargs):
+        """
+        Adds the HD1K dataset to the DataloaderCreator object.
 
-    def add_autoflow(self, split="training", root_dir=""):
-        raise NotImplementedError
+        Parameters
+        ----------
+        root_dir : str
+            path of the root directory for the MPI Sintel dataset
+        augment : bool, default : True
+            If True, applies data augmentation
+        **kwargs
+            Arbitrary keyword arguments for augmentation
+            specifying crop_size and the probability of
+            color, eraser and spatial transformation
+        """
+        self.dataset_list.append(
+            HD1K(
+                root_dir,
+                init_seed=self.init_seed,
+                is_prediction=self.is_prediction,
+                append_valid_mask=self.append_valid_mask,
+                augment=augment,
+                **kwargs
+            )
+        )
+
+    def add_AutoFlow(self, root_dir, augment=False, **kwargs):
+        """
+        Adds the AutoFLow dataset to the DataloaderCreator object.
+
+        Parameters
+        ----------
+        root_dir : str
+            path of the root directory for the Monkaa dataset in SceneFlow
+        augment : bool, default : True
+            If True, applies data augmentation
+        **kwargs
+            Arbitrary keyword arguments for augmentation
+            specifying crop_size and the probability of
+            color, eraser and spatial transformation
+        """
+
+        self.dataset_list.append(
+            AutoFlow(
+                root_dir,
+                init_seed=self.init_seed,
+                is_prediction=self.is_prediction,
+                append_valid_mask=self.append_valid_mask,
+                augment=augment,
+                **kwargs
+            )
+        )
 
     def get_dataloader(self):
         """
@@ -163,14 +374,33 @@ class DataloaderCreator:
             for i in range(len(self.dataset_list) - 1):
                 dataset += self.dataset_list[i + 1]
 
-        data_loader = DataLoader(
-            dataset,
-            batch_size=self.batch_size,
-            pin_memory=self.pin_memory,
-            shuffle=self.shuffle,
-            num_workers=self.num_workers,
-            drop_last=self.drop_last,
-        )
+        if self.distributed:
+
+            sampler = DistributedSampler(
+                dataset,
+                num_replicas=self.world_size,
+                rank=self.rank,
+                shuffle=self.shuffle,
+                drop_last=self.drop_last,
+            )
+            data_loader = DataLoader(
+                dataset,
+                batch_size=self.batch_size,
+                pin_memory=self.pin_memory,
+                num_workers=self.num_workers,
+                sampler=sampler,
+            )
+
+        else:
+            data_loader = DataLoader(
+                dataset,
+                batch_size=self.batch_size,
+                pin_memory=self.pin_memory,
+                shuffle=self.shuffle,
+                num_workers=self.num_workers,
+                drop_last=self.drop_last,
+            )
 
         print("Total image pairs: %d" % len(dataset))
+
         return data_loader

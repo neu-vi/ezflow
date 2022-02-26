@@ -41,11 +41,11 @@ the pyramid feature encoder from the above example, the following code snippet c
 This function uses the encoder name specified to fetch it from an encoder registry and constructs it using the parameters specified.
 
 While the above examples highlight different ways of accessing component modules present in **EzFlow**, arguably the biggest utility 
-of the library is its ability to make it easy to build custom models using the aforementioned components, registry mechanism, 
+of the library is its ability to make it easy to build custom models using the aforementioned modules, registry mechanism, 
 builder functions, and configuration system.
-To understand how this works, consider the following scenario. Suppose you read the `FlowNet <https://arxiv.org/abs/1504.06852>`_
-`RAFT <https://arxiv.org/abs/2003.12039>`_ and thought it would be interesting to try an ablation analysis of using the residual encoder
-present in **RAFT** with the rest of the **FlowNetSimple** architecture. Let's discuss how this can be achieved with EzFlow.
+To understand how this works, consider the following scenario. Suppose you read the `FlowNet <https://arxiv.org/abs/1504.06852>`_ and
+`RAFT <https://arxiv.org/abs/2003.12039>`_ papers and thought it would be interesting to try an ablation analysis of using the residual encoder
+present in **RAFT** with the rest of the **FlowNetSimple** architecture. Let's discuss how this can be achieved with **EzFlow**.
 
 A simple way without the registry system and builder functions would be to directly import the modules from the library and then make 
 use of them. For example:
@@ -54,15 +54,16 @@ use of them. For example:
 
     from ezflow.encoder import BasicEncoder # RAFT encoder
     from ezflow.decoder import FlowNetConvDecoder # FlowNetS decoder
+    from torch import nn
 
     # Construct model class using the imported modules
 
-    class RAFT_FlowNetS(nn.Module):
+    class MyModel(nn.Module):
         def __init__(self, 
                     encoder_config=[32, 64, 96], 
                     decoder_config=[512, 256, 128, 64]
         ):
-            super(RAFT_FlowNetS, self).__init__()
+            super(MyModel, self).__init__()
 
             self.encoder = BasicEncoder(in_channels=3, layer_config=encoder_config)
             self.decoder = FlowNetConvDecoder(in_channels=encoder_config[-1], config=decoder_config)
@@ -84,10 +85,11 @@ class which takes in a configuration object and register it to a model registry 
     from ezflow.decoder import build_encoder
     from ezflow.encoder import build_encoder
     from ezflow.models import MODEL_REGISTRY
+    from torch import nn
 
-    class RAFT_FlowNetS(nn.Module):
+    class MyModel(nn.Module):
         def __init__(self, cfg):
-            super(RAFT_FlowNetS, self).__init__()
+            super(MyModel, self).__init__()
 
             self.encoder = build_encoder(cfg.ENCODER)
             self.decoder = build_decoder(cfg.DECODER)
@@ -104,23 +106,21 @@ class which takes in a configuration object and register it to a model registry 
 Notice that we have used configuration groups in the configuration object to build the encoder and decoder. Keeping this in mind,
 we now need to write a suitable YAML configuration file which specifies the encoder and decoder configuration groups.
 
-.. configuration-block::
+.. code-block:: yaml
 
-    .. code-block:: yaml
-
-        NAME: RAFT_FlowNetS
-        ENCODER:
-            NAME: ResidualEncoder
-            IN_CHANNELS: 3
-            OUT_CHANNELS: 256
-            LAYER_CONFIG: [32, 64, 96]
-            NORM: instance
-            P_DROPOUT: 0.0
-            INTERMEDIATE_FEATURES: True
-        DECODER:
-            NAME: FlowNetConvDecoder
-            IN_CHANNELS: 1024
-            CONFIG: [512, 256, 128, 64]
+    NAME: MyModel
+    ENCODER:
+        NAME: ResidualEncoder
+        IN_CHANNELS: 3
+        OUT_CHANNELS: 256
+        LAYER_CONFIG: [32, 64, 96]
+        NORM: instance
+        P_DROPOUT: 0.0
+        INTERMEDIATE_FEATURES: True
+    DECODER:
+        NAME: FlowNetConvDecoder
+        IN_CHANNELS: 1024
+        CONFIG: [512, 256, 128, 64]
 
 The model can now be built using the builder function.
 
@@ -128,25 +128,23 @@ The model can now be built using the builder function.
 
     from ezflow.models import build_model
 
-    model = build_model(name="RAFT_FlowNetS", cfg_path="RAFT_FlowNetS.yaml", custom_cfg=True)
+    model = build_model(name="MyModel", cfg_path="MyModel.yaml", custom_cfg=True)
     flow = model(img1, img2)
 
 This whole system can be used to easily mix and match different components. For example, if you wish to use 
 the pyramid feature encoder from **PWC-Net**, you simply need modify the encoder configuration group in the configuration file.
 
-.. configuration-block::
+.. code-block:: yaml
 
-    .. code-block:: yaml
-
-        NAME: RAFT_FlowNetS
-        ENCODER:
-            NAME: PyramidEncoder
-            IN_CHANNELS: 3
-            CONFIG: [16, 32, 64, 96, 128, 196]
-        DECODER:
-            NAME: FlowNetConvDecoder
-            IN_CHANNELS: 1024
-            CONFIG: [512, 256, 128, 64]
+    NAME: MyModel
+    ENCODER:
+        NAME: PyramidEncoder
+        IN_CHANNELS: 3
+        CONFIG: [16, 32, 64, 96, 128, 196]
+    DECODER:
+        NAME: FlowNetConvDecoder
+        IN_CHANNELS: 1024
+        CONFIG: [512, 256, 128, 64]
 
 This way one can easily experiment with different model configurations and easily switch between different components.
 
@@ -157,6 +155,7 @@ You need to perform the following steps to register it to the encoder registry a
 
     from ezflow.config import configurable
     from ezflow.encoder import ENCODER_REGISTRY
+    from torch import nn
 
     @ENCODER_REGISTRY.register()
     class MyEncoder(nn.Module):
@@ -164,7 +163,7 @@ You need to perform the following steps to register it to the encoder registry a
         def __init__(self, param1, param2, param3):
             super(MyEncoder, self).__init__()
 
-        # ...
+            # ...
 
         @classmethod
         def from_config(cls, cfg):
@@ -180,20 +179,18 @@ You need to perform the following steps to register it to the encoder registry a
 
 The YAML configuration file can now be written as follows:
 
-.. configuration-block::
+.. code-block:: yaml
 
-    .. code-block:: yaml
-
-        NAME: RAFT_FlowNetS
-        ENCODER:
-            NAME: MyEncoder
-            PARAM1: <param1>
-            PARAM2: <param2>
-            PARAM3: <param3>
-        DECODER:
-            NAME: FlowNetConvDecoder
-            IN_CHANNELS: 1024
-            CONFIG: [512, 256, 128, 64]
+    NAME: MyModel
+    ENCODER:
+        NAME: MyEncoder
+        PARAM1: <param1>
+        PARAM2: <param2>
+        PARAM3: <param3>
+    DECODER:
+        NAME: FlowNetConvDecoder
+        IN_CHANNELS: 1024
+        CONFIG: [512, 256, 128, 64]
 
 The model can now be similarly built using the builder function as described above.
 

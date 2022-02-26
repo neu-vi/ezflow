@@ -1,20 +1,18 @@
 import os.path as osp
 from glob import glob
 
-from ...functional import SparseFlowAugmentor
+from ...functional import FlowAugmentor
 from .base_dataset import BaseDataset
 
 
-class Kitti(BaseDataset):
+class AutoFlow(BaseDataset):
     """
-    Dataset Class for preparing the Kitti dataset for training and validation.
+    Dataset Class for preparing the AutoFlow Synthetic dataset for training and validation.
 
     Parameters
     ----------
     root_dir : str
-        path of the root directory for the HD1K dataset
-    split : str, default : "training"
-        specify the training or validation split
+        path of the root directory for the Monkaa dataset
     is_prediction : bool, default : False
         If True, only image data are loaded for prediction otherwise both images and flow data are loaded
     init_seed : bool, default : False
@@ -31,13 +29,11 @@ class Kitti(BaseDataset):
         If True, applies data augmentation
     aug_params : :obj:`dict`, optional
         The parameters for data augmentation
-
     """
 
     def __init__(
         self,
         root_dir,
-        split="training",
         is_prediction=False,
         init_seed=False,
         append_valid_mask=False,
@@ -51,7 +47,7 @@ class Kitti(BaseDataset):
             "spatial_aug_params": {"aug_prob": 0.8},
         },
     ):
-        super(Kitti, self).__init__(
+        super(AutoFlow, self).__init__(
             init_seed=init_seed,
             is_prediction=is_prediction,
             append_valid_mask=append_valid_mask,
@@ -60,29 +56,29 @@ class Kitti(BaseDataset):
             crop_type=crop_type,
             augment=augment,
             aug_params=aug_params,
-            sparse_transform=True,
+            sparse_transform=False,
         )
-        assert (
-            split.lower() == "training" or split.lower() == "validation"
-        ), "Incorrect split values. Accepted split values: training, validation"
 
         self.is_prediction = is_prediction
         self.append_valid_mask = append_valid_mask
 
         if augment:
-            self.augmentor = SparseFlowAugmentor(crop_size=crop_size, **aug_params)
+            self.augmentor = FlowAugmentor(crop_size=crop_size, **aug_params)
 
-        split = split.lower()
-        if split == "validation":
-            split = "testing"
-            self.is_prediction = True
+        scenes = [
+            "static_40k_png_1_of_4",
+            "static_40k_png_2_of_4",
+            "static_40k_png_2_of_4",
+            "static_40k_png_2_of_4",
+        ]
 
-        root_dir = osp.join(root_dir, split)
-        images1 = sorted(glob(osp.join(root_dir, "image_2/*_10.png")))
-        images2 = sorted(glob(osp.join(root_dir, "image_2/*_11.png")))
-
-        for img1, img2 in zip(images1, images2):
-            self.image_list += [[img1, img2]]
-
-        if not self.is_prediction:
-            self.flow_list += sorted(glob(osp.join(root_dir, "flow_occ/*_10.png")))
+        for scene in scenes:
+            seqs = glob(osp.join(root_dir, scene, "*"))
+            for s in seqs:
+                images = sorted(glob(osp.join(s, "*.png")))
+                flows = sorted(glob(osp.join(s, "*.flo")))
+                if len(images) == 2:
+                    assert len(flows) == 1
+                    for i in range(len(flows)):
+                        self.flow_list += [flows[i]]
+                        self.image_list += [[images[i], images[i + 1]]]

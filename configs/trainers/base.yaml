@@ -1,14 +1,14 @@
 DATA:
   ROOT_DIR: null
-  BATCH_SIZE: 64
+  BATCH_SIZE: 10
   AUGMENTATION:
     USE: True
     PARAMS: null
   TARGET_SCALE_FACTOR: 1.0 
 OPTIMIZER:
   NAME: Adam
-  PARAMS:
-    lr: 0.001
+  LR: 0.0003
+  PARAMS: #null
     betas: [0.9, 0.999]
     eps: 1.e-08
 SCHEDULER:
@@ -19,13 +19,19 @@ SCHEDULER:
     gamma: 0.1
 CRITERION:
   CUSTOM: True
-  NAME: SequenceLoss
+  NAME: L1Loss
   PARAMS: null
 GRAD_CLIP: 
-  USE: False
+  USE: True
   VALUE: 1.0
 DEVICE: "0"
-DISTRIBUTED: True
+DISTRIBUTED:
+  USE: False
+  WORLD_SIZE: 1
+  RANK: 0
+  BACKEND: nccl
+  MASTER_ADDR: localhost
+  MASTER_PORT: "12355"
 LOG_DIR: "./logs"
 LOG_ITERATIONS_INTERVAL: 1000
 VALIDATE_INTERVAL: 2
@@ -37,4 +43,3 @@ RESUME_TRAINING:
   CONSOLIDATED_CKPT: null
   EPOCHS: null
   START_EPOCH: null
-

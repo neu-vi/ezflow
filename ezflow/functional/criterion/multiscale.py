@@ -57,6 +57,10 @@ class MultiScaleLoss(nn.Module):
 
     def forward(self, pred, label):
 
+        if label.shape[1] == 3:
+            """Ignore valid mask for Multiscale Loss."""
+            label = label[:, :2, :, :]
+
         loss = 0
         h, w = label.size()[-2:]
 

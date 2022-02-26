@@ -1,15 +1,28 @@
 import os
 from copy import deepcopy
 
+import numpy as np
 import torch
+import torch.backends.cudnn as cudnn
+import torch.distributed as dist
+import torch.multiprocessing as mp
 import torch.nn as nn
 from torch.nn.parallel import DistributedDataParallel as DDP
 from torch.utils.tensorboard import SummaryWriter
 
-from ..data import DeviceDataLoader
 from ..functional import FUNCTIONAL_REGISTRY
 from ..utils import AverageMeter, endpointerror
 from .registry import loss_functions, optimizers, schedulers
+
+
+def seed(seed):
+
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+    cudnn.benchmark = False
+    cudnn.deterministic = True
 
 
 class Trainer:
@@ -62,11 +75,15 @@ class Trainer:
             self.model_parallel = True
 
             if device == "all":
+
                 device = torch.device("cuda")
-                if self.cfg.DISTRIBUTED:
-                    model = DDP(model)
+
+                if self.cfg.DISTRIBUTED.USE is True:
+                    self._setup_ddp()
+                    model = DDP(model.cuda(), device_ids=[self.cfg.DISTRIBUTED.RANK])
                 else:
                     model = nn.DataParallel(model)
+
                 print(f"Running on all available CUDA devices\n")
 
             else:
@@ -76,16 +93,32 @@ class Trainer:
 
                 device_ids = device.split(",")
                 device_ids = [int(id) for id in device_ids]
-                cuda_str = "cuda:" + device
-                device = torch.device(cuda_str)
-                if self.cfg.DISTRIBUTED:
-                    model = DDP(model)
+                device = torch.device("cuda")
+
+                if self.cfg.DISTRIBUTED.USE is True:
+                    self._setup_ddp()
+                    model = DDP(model.cuda(), device_ids=[self.cfg.DISTRIBUTED.RANK])
+                    print("Performing distributed training")
                 else:
                     model = nn.DataParallel(model, device_ids=device_ids)
+
                 print(f"Running on CUDA devices {device_ids}\n")
 
         self.device = device
         self.model = model.to(self.device)
+
+    def _setup_ddp(self):
+
+        os.environ["MASTER_ADDR"] = self.cfg.DISTRIBUTED.MASTER_ADDR
+        os.environ["MASTER_PORT"] = self.cfg.DISTRIBUTED.MASTER_PORT
+
+        seed(0)
+
+        dist.init_process_group(
+            backend=self.cfg.DISTRIBUTED.BACKEND,
+            world_size=self.cfg.DISTRIBUTED.WORLD_SIZE,
+            rank=self.cfg.DISTRIBUTED.RANK,
+        )
 
     def _setup_training(self, loss_fn=None, optimizer=None, scheduler=None):
 
@@ -96,7 +129,7 @@ class Trainer:
             else:
                 loss = loss_functions.get(self.cfg.CRITERION.NAME)
 
-            if self.cfg.CRITERION.PARAMS:
+            if self.cfg.CRITERION.PARAMS is not None:
                 loss_params = self.cfg.CRITERION.PARAMS.to_dict()
                 loss_fn = loss(**loss_params)
             else:
@@ -106,18 +139,22 @@ class Trainer:
 
             opt = optimizers.get(self.cfg.OPTIMIZER.NAME)
 
-            if self.cfg.OPTIMIZER.PARAMS:
+            if self.cfg.OPTIMIZER.PARAMS is not None:
                 optimizer_params = self.cfg.OPTIMIZER.PARAMS.to_dict()
-                optimizer = opt(self.model.parameters(), **optimizer_params)
+                optimizer = opt(
+                    self.model.parameters(),
+                    lr=self.cfg.OPTIMIZER.LR,
+                    **optimizer_params,
+                )
             else:
-                optimizer = opt(self.model.parameters())
+                optimizer = opt(self.model.parameters(), lr=self.cfg.OPTIMIZER.LR)
 
         if scheduler is None:
 
             if self.cfg.SCHEDULER.USE:
                 sched = schedulers.get(self.cfg.SCHEDULER.NAME)
 
-                if self.cfg.SCHEDULER.PARAMS:
+                if self.cfg.SCHEDULER.PARAMS is not None:
                     scheduler_params = self.cfg.SCHEDULER.PARAMS.to_dict()
                     scheduler = sched(optimizer, **scheduler_params)
                 else:
@@ -303,7 +340,7 @@ class Trainer:
                 loss_meter.update(loss.item())
 
                 metric = self._calculate_metric(pred, target)
-                metric_meter.update(metric.item())
+                metric_meter.update(metric)
 
         model.train()
 
@@ -364,6 +401,38 @@ class Trainer:
         )
         print("Saved best model!\n")
 
+    def train_distributed(
+        self,
+        loss_fn=None,
+        optimizer=None,
+        scheduler=None,
+        n_epochs=None,
+        start_epoch=None,
+    ):
+        """
+        Method to train the model in a distributed fashion using DDP
+
+        Parameters
+        ----------
+        loss_fn : torch.nn.modules.loss, optional
+            The loss function to be used. Defaults to None (which uses the loss function specified in the config file).
+        optimizer : torch.optim.Optimizer, optional
+            The optimizer to be used. Defaults to None (which uses the optimizer specified in the config file).
+        scheduler : torch.optim.lr_scheduler, optional
+            The learning rate scheduler to be used. Defaults to None (which uses the scheduler specified in the config file).
+        n_epochs : int, optional
+            The number of epochs to train for. Defaults to None (which uses the number of epochs specified in the config file).
+        start_epoch : int, optional
+            The epoch to start training from. Defaults to None (which starts from 0).
+
+        """
+
+        mp.spawn(
+            self.train,
+            args=(loss_fn, optimizer, scheduler, n_epochs, start_epoch),
+            nprocs=self.cfg.DISTRIBUTED.WORLD_SIZE,
+        )
+
     def resume_training(
         self,
         consolidated_ckpt=None,
@@ -405,7 +474,7 @@ class Trainer:
 
         if consolidated_ckpt is not None:
 
-            ckpt = torch.load(consolidated_ckpt)
+            ckpt = torch.load(consolidated_ckpt, map_location=torch.device("cpu"))
 
             model_state_dict = ckpt["model_state_dict"]
             optimizer_state_dict = ckpt["optimizer_state_dict"]
@@ -422,13 +491,21 @@ class Trainer:
                 model_ckpt is not None and optimizer_ckpt is not None
             ), "Must provide a consolidated ckpt or model and optimizer ckpts separately"
 
-            model_state_dict = torch.load(model_ckpt)
-            optimizer_state_dict = torch.load(optimizer_ckpt)
+            model_state_dict = torch.load(model_ckpt, map_location=torch.device("cpu"))
+            optimizer_state_dict = torch.load(
+                optimizer_ckpt, map_location=torch.device("cpu")
+            )
 
             if scheduler_ckpt is not None:
-                scheduler_state_dict = torch.load(scheduler_ckpt)
+                scheduler_state_dict = torch.load(
+                    scheduler_ckpt, map_location=torch.device("cpu")
+                )
 
-        model = self.model.module
+        if self.model_parallel:
+            model = self.model.module
+        else:
+            model = self.model
+
         model.load_state_dict(model_state_dict)
         self._setup_model(model)
 
@@ -444,6 +521,53 @@ class Trainer:
             start_epoch = self.cfg.RESUME_TRAINING.START_EPOCH
 
         self.train(loss_fn, optimizer, scheduler, n_epochs, start_epoch)
+
+    def resume_distributed_training(
+        self,
+        consolidated_ckpt=None,
+        model_ckpt=None,
+        optimizer_ckpt=None,
+        n_epochs=None,
+        start_epoch=None,
+        scheduler_ckpt=None,
+        use_cfg=False,
+    ):
+
+        """
+        Method to resume training of a model in a distributed fashion using DDP
+
+        Parameters
+        ----------
+        consolidated_ckpt : str, optional
+            The path to the consolidated checkpoint file. Defaults to None (which uses the consolidated checkpoint file specified in the config file).
+        model_ckpt : str, optional
+            The path to the model checkpoint file. Defaults to None (which uses the model checkpoint file specified in the config file).
+        optimizer_ckpt : str, optional
+            The path to the optimizer checkpoint file. Defaults to None (which uses the optimizer checkpoint file specified in the config file).
+        n_epochs : int, optional
+            The number of epochs to train for. Defaults to None (which uses the number of epochs specified in the config file).
+        start_epoch : int, optional
+            The epoch to start training from. Defaults to None (which infers the last epoch from the ckpt).
+        scheduler_ckpt : str, optional
+            The path to the scheduler checkpoint file. Defaults to None (which uses the scheduler checkpoint file specified in the config file).
+        use_cfg : bool, optional
+            Whether to use the config file or not. Defaults to False.
+
+        """
+
+        mp.spawn(
+            self.resume_training,
+            args=(
+                consolidated_ckpt,
+                model_ckpt,
+                optimizer_ckpt,
+                n_epochs,
+                start_epoch,
+                scheduler_ckpt,
+                use_cfg,
+            ),
+            nprocs=self.cfg.DISTRIBUTED.WORLD_SIZE,
+        )
 
     def validate(self, model=None):
 

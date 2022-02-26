@@ -5,7 +5,7 @@
 </p>
 
 <h1 align="center">EzFlow</h1>
-<h3 align="center">A PyTorch library for optical flow estimation using neural networks</h3>
+<h3 align="center">A modular PyTorch library for optical flow estimation using neural networks</h3>
 
 <div align='center'>
 
@@ -22,11 +22,21 @@
 
 ## Installation
 
+### From source (recommended)
+
 ```shell
 
 git clone https://github.com/neu-vig/ezflow
 cd ezflow/
 python setup.py install
+
+```
+
+### From PyPI
+
+```shell
+
+pip install ezflow
 
 ```
 
@@ -41,9 +51,15 @@ python setup.py install
 
 ### Datasets supported
 
+- [x] [AutoFlow](https://autoflow-google.github.io/)
 - [x] [FlyingChairs](https://lmb.informatik.uni-freiburg.de/resources/datasets/FlyingChairs.en.html#flyingchairs)
-- [x] [FlyingThings3D](https://lmb.informatik.uni-freiburg.de/resources/datasets/SceneFlowDatasets.en.html)
+- [x] [HD1K](http://hci-benchmark.iwr.uni-heidelberg.de/)
+- [x] [KITTI](http://www.cvlibs.net/datasets/kitti/eval_scene_flow.php?benchmark=flow)
 - [x] [MPI Sintel](http://sintel.is.tue.mpg.de/)
+- [x] [SceneFlow Monkaa](https://lmb.informatik.uni-freiburg.de/resources/datasets/SceneFlowDatasets.en.html)
+- [x] [SceneFlow Driving](https://lmb.informatik.uni-freiburg.de/resources/datasets/SceneFlowDatasets.en.html)
+- [x] [SceneFlow FlyingThings3D](https://lmb.informatik.uni-freiburg.de/resources/datasets/SceneFlowDatasets.en.html)
+- [x] [SceneFlow FlyingThings3D subset](https://lmb.informatik.uni-freiburg.de/resources/datasets/SceneFlowDatasets.en.html)
 
 ### References
 

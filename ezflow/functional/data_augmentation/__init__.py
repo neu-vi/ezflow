@@ -1,2 +1,2 @@
-from .augmentor import FlowAugmentor
+from .augmentor import FlowAugmentor, SparseFlowAugmentor
 from .operations import *

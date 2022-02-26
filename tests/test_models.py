@@ -17,6 +17,10 @@ def test_Predictor():
     flow = predictor(img1, img2)
     assert flow.shape == (2, 2, 224, 224)
 
+    predictor = Predictor("RAFT", "raft.yaml", data_transform=transform, pad_divisor=32)
+    flow = predictor(img1, img2)
+    assert flow.shape == (2, 2, 224, 224)
+
 
 def test_RAFT():
 

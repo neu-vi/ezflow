@@ -32,7 +32,7 @@ class FlowAugmentor:
         self.eraser_aug_params = eraser_aug_params
         self.spatial_aug_params = spatial_aug_params
 
-    def __call__(self, img1, img2, flow):
+    def __call__(self, img1, img2, flow, valid=None):
         """
         Applies the augmentations to the pair of images and the flow field.
 
@@ -44,6 +44,8 @@ class FlowAugmentor:
             Second image
         flow : numpy.ndarray
             Flow field
+        valid : default: None
+            None object
 
         Returns
         -------
@@ -53,6 +55,8 @@ class FlowAugmentor:
             Second image
         flow : numpy.ndarray
             Flow field
+        valid : None
+            None object
         """
 
         img1, img2 = color_transform(img1, img2, **self.color_aug_params)
@@ -65,4 +69,61 @@ class FlowAugmentor:
         img2 = np.ascontiguousarray(img2)
         flow = np.ascontiguousarray(flow)
 
-        return img1, img2, flow
+        return img1, img2, flow, None
+
+
+@FUNCTIONAL_REGISTRY.register()
+class SparseFlowAugmentor(FlowAugmentor):
+    """
+    Class for appyling a series of augmentations to a pair of images, flow field and valid flow field.
+
+    Parameters
+    ----------
+    crop_size : int
+        Size of the crop to be applied to the images.
+    color_aug_params : dict
+        Parameters for the color augmentation.
+    eraser_aug_params : dict
+        Parameters for the eraser augmentation.
+    spatial_aug_params : dict
+        Parameters for the spatial augmentation.
+    """
+
+    def __call__(self, img1, img2, flow, valid):
+        """
+        Applies the augmentations to the pair of images and the flow field.
+
+        Parameters
+        ----------
+        img1 : numpy.ndarray
+            First image
+        img2 : numpy.ndarray
+            Second image
+        flow : numpy.ndarray
+            Flow field
+        valid : numpy.ndarray
+            Valid Flow field
+
+        Returns
+        -------
+        img1 : numpy.ndarray
+            First image
+        img2 : numpy.ndarray
+            Second image
+        flow : numpy.ndarray
+            Flow field
+        valid : numpy.ndarray
+            Valid Flow field
+        """
+        img1, img2 = color_transform(img1, img2, **self.color_aug_params)
+        img1, img2 = eraser_transform(img1, img2, **self.eraser_aug_params)
+        img1, img2, flow, valid = sparse_spatial_transform(
+            img1, img2, flow, valid, self.crop_size, **self.spatial_aug_params
+        )
+
+        img1 = np.ascontiguousarray(img1)
+        img2 = np.ascontiguousarray(img2)
+        flow = np.ascontiguousarray(flow)
+        valid = np.ascontiguousarray(valid)
+
+        return img1, img2, flow, valid
