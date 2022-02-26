@@ -26,22 +26,26 @@ consolidated dataloader for multiple datasets. Let's take a look at how to creat
     train_loader_creator = DataloaderCreator(
         batch_size=16,
         num_workers=1,
-        pin_memory=True
+        pin_memory=True,
+        shuffle=True,
     )
     val_loader_creator = DataloaderCreator(
         batch_size=16,
         num_workers=1,
-        pin_memory=True
+        pin_memory=True,
+        shuffle=False,
     )
 
     # Add dataset(s) to the dataloader creator
 
-    train_loader_creator.add_flying_chairs(
+    train_loader_creator.add_FlyingChairs(
         root_dir="data/FlyingChairs",
         split="training",
+        crop=True,
+        crop_size=(384, 384),
+        crop_type="random",
         augment=True,
         aug_params={
-            "crop_size": (256, 256),
             "color_aug_params": {
                 "aug_prob": 0.3,
                 "contrast": 0.5
@@ -52,11 +56,16 @@ consolidated dataloader for multiple datasets. Let's take a look at how to creat
             }
         }
     ) 
-    val_loader_creator.add_flying_chairs(
+    val_loader_creator.add_FlyingChairs(
         root_dir="data/FlyingChairs",
         split="validation",
+        crop=False,
         augment=False
     ) 
+
+Do note that using the dataloader creator, one can create a dataloader which comprises of multiple datasets.
+
+.. code-block:: python
 
     # Create the dataloaders
 
