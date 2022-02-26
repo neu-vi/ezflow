@@ -33,9 +33,3 @@ jobs:
       run: |
         pre-commit install
         pre-commit run -a
-
-    - name: Check RST syntax
-      run: |
-        pip install rstcheck
-        cd docs/tutorials
-        rstcheck *.rst
