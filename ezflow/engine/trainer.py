@@ -110,7 +110,7 @@ class Trainer:
     def _setup_ddp(self):
 
         os.environ["MASTER_ADDR"] = self.cfg.DISTRIBUTED.MASTER_ADDR
-        os.environ["MASTER_PORT"] = self.cfg.DISTRIBUTED.MASTER_PORT
+        os.environ["MASTER_PORT"] = find_free_port()
 
         seed(0)
 
@@ -592,3 +592,15 @@ class Trainer:
         print(f"Average validation metric = {avg_val_metric}")
 
         return avg_val_loss, avg_val_metric
+
+
+def find_free_port():
+    """ 
+        https://stackoverflow.com/questions/66498045/how-to-solve-dist-init-process-group-from-hanging-or-deadlocks
+        https://stackoverflow.com/questions/1365265/on-localhost-how-do-i-pick-a-free-port-number 
+    """
+
+    with closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as s:
+        s.bind(('', 0))
+        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        return str(s.getsockname()[1])
