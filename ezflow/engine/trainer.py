@@ -1,6 +1,4 @@
 import os
-import socket
-from contextlib import closing
 from copy import deepcopy
 
 import numpy as np
@@ -13,7 +11,7 @@ from torch.nn.parallel import DistributedDataParallel as DDP
 from torch.utils.tensorboard import SummaryWriter
 
 from ..functional import FUNCTIONAL_REGISTRY
-from ..utils import AverageMeter, endpointerror
+from ..utils import AverageMeter, endpointerror, find_free_port
 from .registry import loss_functions, optimizers, schedulers
 
 
@@ -49,7 +47,6 @@ class Trainer:
 
         self.model = model
         self.model_name = model.__class__.__name__.lower()
-        self._setup_model(model)
 
         self.train_loader = train_loader
         self.val_loader = val_loader
@@ -76,32 +73,30 @@ class Trainer:
         else:
             self.model_parallel = True
 
-            if device == "all":
+            device = torch.device("cuda")
 
-                device = torch.device("cuda")
+            if self.cfg.DISTRIBUTED.USE:
+                self._setup_ddp()
+                model = DDP(
+                    model.cuda(self.cfg.DISTRIBUTED.RANK),
+                    device_ids=[self.cfg.DISTRIBUTED.RANK],
+                )
+                print("Performing distributed training")
 
-                if self.cfg.DISTRIBUTED.USE is True:
-                    self._setup_ddp()
-                    model = DDP(model.cuda(), device_ids=[self.cfg.DISTRIBUTED.RANK])
-                else:
+            if self.cfg.DEVICE == "all":
+                if not self.cfg.DISTRIBUTED.USE:
                     model = nn.DataParallel(model)
 
                 print(f"Running on all available CUDA devices\n")
 
             else:
-
                 if type(device) != str:
                     device = str(device)
 
                 device_ids = device.split(",")
                 device_ids = [int(id) for id in device_ids]
-                device = torch.device("cuda")
 
-                if self.cfg.DISTRIBUTED.USE is True:
-                    self._setup_ddp()
-                    model = DDP(model.cuda(), device_ids=[self.cfg.DISTRIBUTED.RANK])
-                    print("Performing distributed training")
-                else:
+                if not self.cfg.DISTRIBUTED.USE:
                     model = nn.DataParallel(model, device_ids=device_ids)
 
                 print(f"Running on CUDA devices {device_ids}\n")
@@ -118,9 +113,14 @@ class Trainer:
 
         dist.init_process_group(
             backend=self.cfg.DISTRIBUTED.BACKEND,
+            init_method="env://",
             world_size=self.cfg.DISTRIBUTED.WORLD_SIZE,
             rank=self.cfg.DISTRIBUTED.RANK,
         )
+        print("Distributed training process group initialized.\n\n")
+
+    def _cleanup(self):
+        dist.destroy_process_group()
 
     def _setup_training(self, loss_fn=None, optimizer=None, scheduler=None):
 
@@ -348,8 +348,9 @@ class Trainer:
 
         return loss_meter.avg, metric_meter.avg
 
-    def train(
+    def _main_worker(
         self,
+        rank=0,
         loss_fn=None,
         optimizer=None,
         scheduler=None,
@@ -361,6 +362,9 @@ class Trainer:
 
         Parameters
         ----------
+        rank : int, default: 0
+            The rank of the process id within the group. This value is passed automatically when multiple processes
+            are spawned for Distributed Training.
         loss_fn : torch.nn.modules.loss, optional
             The loss function to be used. Defaults to None (which uses the loss function specified in the config file).
         optimizer : torch.optim.Optimizer, optional
@@ -373,6 +377,8 @@ class Trainer:
             The epoch to start training from. Defaults to None (which starts from 0).
 
         """
+
+        self._setup_model(self.model)
 
         loss_fn, optimizer, scheduler = self._setup_training(
             loss_fn, optimizer, scheduler
@@ -403,6 +409,43 @@ class Trainer:
         )
         print("Saved best model!\n")
 
+        if self.cfg.DISTRIBUTED.USE:
+            self._cleanup()
+
+    def train(
+        self,
+        loss_fn=None,
+        optimizer=None,
+        scheduler=None,
+        n_epochs=None,
+        start_epoch=None,
+    ):
+        """
+        Method to train the model using a single cpu/gpu device.
+
+        Parameters
+        ----------
+        loss_fn : torch.nn.modules.loss, optional
+            The loss function to be used. Defaults to None (which uses the loss function specified in the config file).
+        optimizer : torch.optim.Optimizer, optional
+            The optimizer to be used. Defaults to None (which uses the optimizer specified in the config file).
+        scheduler : torch.optim.lr_scheduler, optional
+            The learning rate scheduler to be used. Defaults to None (which uses the scheduler specified in the config file).
+        n_epochs : int, optional
+            The number of epochs to train for. Defaults to None (which uses the number of epochs specified in the config file).
+        start_epoch : int, optional
+            The epoch to start training from. Defaults to None (which starts from 0).
+
+        """
+
+        self._main_worker(
+            loss_fn=loss_fn,
+            optimizer=optimizer,
+            scheduler=scheduler,
+            n_epochs=n_epochs,
+            start_epoch=start_epoch,
+        )
+
     def train_distributed(
         self,
         loss_fn=None,
@@ -430,7 +473,7 @@ class Trainer:
         """
 
         mp.spawn(
-            self.train,
+            self._main_worker,
             args=(loss_fn, optimizer, scheduler, n_epochs, start_epoch),
             nprocs=self.cfg.DISTRIBUTED.WORLD_SIZE,
         )
@@ -594,15 +637,3 @@ class Trainer:
         print(f"Average validation metric = {avg_val_metric}")
 
         return avg_val_loss, avg_val_metric
-
-
-def find_free_port():
-    """
-    https://stackoverflow.com/questions/66498045/how-to-solve-dist-init-process-group-from-hanging-or-deadlocks
-    https://stackoverflow.com/questions/1365265/on-localhost-how-do-i-pick-a-free-port-number
-    """
-
-    with closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as s:
-        s.bind(("", 0))
-        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        return str(s.getsockname()[1])
