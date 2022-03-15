@@ -73,8 +73,6 @@ class Trainer:
         else:
             self.model_parallel = True
 
-            device = torch.device("cuda")
-
             if self.cfg.DISTRIBUTED.USE:
                 self._setup_ddp()
                 model = DDP(
@@ -84,6 +82,8 @@ class Trainer:
                 print("Performing distributed training")
 
             if self.cfg.DEVICE == "all":
+                device = torch.device("cuda")
+
                 if not self.cfg.DISTRIBUTED.USE:
                     model = nn.DataParallel(model)
 
@@ -95,6 +95,7 @@ class Trainer:
 
                 device_ids = device.split(",")
                 device_ids = [int(id) for id in device_ids]
+                device = torch.device("cuda")
 
                 if not self.cfg.DISTRIBUTED.USE:
                     model = nn.DataParallel(model, device_ids=device_ids)
