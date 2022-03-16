@@ -35,10 +35,10 @@ class Trainer:
         Configuration object for training
     model : torch.nn.Module
         Model to be trained
-    train_loader : torch.utils.data.DataLoader
-        DataLoader for training
-    val_loader : torch.utils.data.DataLoader
-        DataLoader for validation
+    train_loader : ezflow.DataloaderCreator
+        DataloaderCreator instance for training
+    val_loader : ezflow.DataloaderCreator
+        DataloaderCreator instance for validation
     """
 
     def __init__(self, cfg, model, train_loader, val_loader):
@@ -51,7 +51,7 @@ class Trainer:
         self.train_loader = train_loader
         self.val_loader = val_loader
 
-    def _setup_model(self, model):
+    def _setup_model(self, model, rank):
 
         device = self.cfg.DEVICE
 
@@ -74,15 +74,15 @@ class Trainer:
             self.model_parallel = True
 
             if self.cfg.DISTRIBUTED.USE:
-                self._setup_ddp()
+                self._setup_ddp(rank)
                 model = DDP(
-                    model.cuda(self.cfg.DISTRIBUTED.RANK),
-                    device_ids=[self.cfg.DISTRIBUTED.RANK],
+                    model.cuda(rank),
+                    device_ids=[rank],
                 )
                 print("Performing distributed training")
 
             if self.cfg.DEVICE == "all":
-                device = torch.device("cuda")
+                device = torch.device(rank)
 
                 if not self.cfg.DISTRIBUTED.USE:
                     model = nn.DataParallel(model)
@@ -95,7 +95,7 @@ class Trainer:
 
                 device_ids = device.split(",")
                 device_ids = [int(id) for id in device_ids]
-                device = torch.device("cuda")
+                device = torch.device(rank)
 
                 if not self.cfg.DISTRIBUTED.USE:
                     model = nn.DataParallel(model, device_ids=device_ids)
@@ -105,7 +105,7 @@ class Trainer:
         self.device = device
         self.model = model.to(self.device)
 
-    def _setup_ddp(self):
+    def _setup_ddp(self, rank):
 
         os.environ["MASTER_ADDR"] = self.cfg.DISTRIBUTED.MASTER_ADDR
         os.environ["MASTER_PORT"] = find_free_port()
@@ -116,9 +116,9 @@ class Trainer:
             backend=self.cfg.DISTRIBUTED.BACKEND,
             init_method="env://",
             world_size=self.cfg.DISTRIBUTED.WORLD_SIZE,
-            rank=self.cfg.DISTRIBUTED.RANK,
+            rank=rank,
         )
-        print("Distributed training process group initialized.\n\n")
+        print(f"{rank + 1}/{world_size} process initialized.\n")
 
     def _cleanup(self):
         dist.destroy_process_group()
@@ -364,8 +364,8 @@ class Trainer:
         Parameters
         ----------
         rank : int, default: 0
-            The rank of the process id within the group. This value is passed automatically when multiple processes
-            are spawned for Distributed Training.
+            The process id within a group for Distributed Training. This value is passed automatically when multiple
+            processes are spawned during Distributed Training.
         loss_fn : torch.nn.modules.loss, optional
             The loss function to be used. Defaults to None (which uses the loss function specified in the config file).
         optimizer : torch.optim.Optimizer, optional
@@ -379,7 +379,10 @@ class Trainer:
 
         """
 
-        self._setup_model(self.model)
+        self._setup_model(model=self.model, rank=rank)
+
+        self.train_loader = train_loader.get_dataloader(rank=rank)
+        self.val_loader = val_loader.get_dataloader(rank=rank)
 
         loss_fn, optimizer, scheduler = self._setup_training(
             loss_fn, optimizer, scheduler
