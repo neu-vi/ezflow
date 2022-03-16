@@ -35,21 +35,28 @@ class Trainer:
         Configuration object for training
     model : torch.nn.Module
         Model to be trained
-    train_loader : ezflow.DataloaderCreator
+    train_loader_creator : ezflow.DataloaderCreator
         DataloaderCreator instance for training
-    val_loader : ezflow.DataloaderCreator
+    val_loader_creator : ezflow.DataloaderCreator
         DataloaderCreator instance for validation
     """
 
-    def __init__(self, cfg, model, train_loader, val_loader):
+    def __init__(self, cfg, model, train_loader_creator, val_loader_creator):
 
         self.cfg = cfg
 
         self.model = model
         self.model_name = model.__class__.__name__.lower()
 
-        self.train_loader = train_loader
-        self.val_loader = val_loader
+        self.train_loader_creator = train_loader_creator
+        self.val_loader_creator = val_loader_creator
+
+        self.train_loader = None
+        self.val_loader = None
+
+        self.port = None
+        if self.cfg.DISTRIBUTED.USE:
+            self.port = find_free_port()
 
     def _setup_model(self, model, rank):
 
@@ -79,15 +86,12 @@ class Trainer:
                     model.cuda(rank),
                     device_ids=[rank],
                 )
-                print("Performing distributed training")
 
             if self.cfg.DEVICE == "all":
                 device = torch.device(rank)
 
                 if not self.cfg.DISTRIBUTED.USE:
                     model = nn.DataParallel(model)
-
-                print(f"Running on all available CUDA devices\n")
 
             else:
                 if type(device) != str:
@@ -100,15 +104,13 @@ class Trainer:
                 if not self.cfg.DISTRIBUTED.USE:
                     model = nn.DataParallel(model, device_ids=device_ids)
 
-                print(f"Running on CUDA devices {device_ids}\n")
-
         self.device = device
         self.model = model.to(self.device)
 
     def _setup_ddp(self, rank):
 
         os.environ["MASTER_ADDR"] = self.cfg.DISTRIBUTED.MASTER_ADDR
-        os.environ["MASTER_PORT"] = find_free_port()
+        os.environ["MASTER_PORT"] = self.port
 
         seed(0)
 
@@ -118,7 +120,7 @@ class Trainer:
             world_size=self.cfg.DISTRIBUTED.WORLD_SIZE,
             rank=rank,
         )
-        print(f"{rank + 1}/{world_size} process initialized.\n")
+        print(f"{rank + 1}/{self.cfg.DISTRIBUTED.WORLD_SIZE} process initialized.")
 
     def _cleanup(self):
         dist.destroy_process_group()
@@ -381,8 +383,8 @@ class Trainer:
 
         self._setup_model(model=self.model, rank=rank)
 
-        self.train_loader = train_loader.get_dataloader(rank=rank)
-        self.val_loader = val_loader.get_dataloader(rank=rank)
+        self.train_loader = self.train_loader_creator.get_dataloader(rank=rank)
+        self.val_loader = self.val_loader_creator.get_dataloader(rank=rank)
 
         loss_fn, optimizer, scheduler = self._setup_training(
             loss_fn, optimizer, scheduler
@@ -475,6 +477,7 @@ class Trainer:
             The epoch to start training from. Defaults to None (which starts from 0).
 
         """
+        print("Performing distributed training")
 
         mp.spawn(
             self._main_worker,
