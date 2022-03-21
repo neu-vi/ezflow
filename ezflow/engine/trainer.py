@@ -125,7 +125,7 @@ class Trainer:
 
             if self.cfg.DISTRIBUTED.USE:
 
-                self._setup_ddp(rank, device_ids)
+                self._setup_ddp(rank)
                 model = DDP(
                     model.cuda(rank),
                     device_ids=[rank],
@@ -143,7 +143,7 @@ class Trainer:
         self.device = device
         self.model = model.to(self.device)
 
-    def _setup_ddp(self, rank, device_ids):
+    def _setup_ddp(self, rank):
 
         os.environ["MASTER_ADDR"] = self.cfg.DISTRIBUTED.MASTER_ADDR
         os.environ["MASTER_PORT"] = self.cfg.DISTRIBUTED.MASTER_PORT
