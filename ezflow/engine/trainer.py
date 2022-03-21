@@ -54,6 +54,10 @@ class Trainer:
         self.train_loader = None
         self.val_loader = None
 
+        self._validate_ddp_config()
+
+    def _validate_ddp_config(self):
+
         if self.cfg.DISTRIBUTED.USE:
 
             if self.cfg.DEVICE != "all":
@@ -76,7 +80,7 @@ class Trainer:
                 self.cfg.DISTRIBUTED.WORLD_SIZE <= torch.cuda.device_count()
             ), "WORLD_SIZE cannot be greater than available CUDA devices."
 
-            if not is_port_available(self.cfg.DISTRIBUTED.MASTER_PORT):
+            if not is_port_available(int(self.cfg.DISTRIBUTED.MASTER_PORT)):
 
                 print(
                     f"\nPort: {self.cfg.DISTRIBUTED.MASTER_PORT} is not available to use!"
@@ -382,7 +386,7 @@ class Trainer:
         start_epoch=None,
     ):
         """
-        Method to train the model
+        Method to setup and initialize model training.
 
         Parameters
         ----------

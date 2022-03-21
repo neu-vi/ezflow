@@ -75,7 +75,7 @@ def find_free_port():
 
     Returns
     --------
-    int
+    str
         port number
     """
 
