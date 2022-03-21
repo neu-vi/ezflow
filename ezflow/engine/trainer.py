@@ -55,6 +55,23 @@ class Trainer:
         self.val_loader = None
 
         if self.cfg.DISTRIBUTED.USE:
+
+            assert (
+                self.cfg.DISTRIBUTED.WORLD_SIZE <= torch.cuda.device_count()
+            ), "WORLD_SIZE cannot be greater than available CUDA devices."
+
+            if self.cfg.DEVICE != "all":
+                device = self.cfg.DEVICE
+                if type(device) != str:
+                    device = str(device)
+
+                device_ids = device.split(",")
+                assert (
+                    len(device_ids) <= torch.cuda.device_count()
+                ), "Total devices cannot be greater than available CUDA devices."
+
+                os.environ["CUDA_VISIBLE_DEVICES"] = device
+
             if not is_port_available(self.cfg.DISTRIBUTED.MASTER_PORT):
 
                 print(
@@ -88,8 +105,10 @@ class Trainer:
         else:
             self.model_parallel = True
 
+            device = torch.device(rank)
+
             if self.cfg.DISTRIBUTED.USE:
-                self._setup_ddp(rank)
+                self._setup_ddp(rank, device_ids)
                 model = DDP(
                     model.cuda(rank),
                     device_ids=[rank],
@@ -98,27 +117,13 @@ class Trainer:
                 if self.cfg.DISTRIBUTED.SYNC_BATCH_NORM:
                     model = nn.SyncBatchNorm.convert_sync_batchnorm(model)
 
-            if self.cfg.DEVICE == "all":
-                device = torch.device(rank)
-
-                if not self.cfg.DISTRIBUTED.USE:
-                    model = nn.DataParallel(model)
-
             else:
-                if type(device) != str:
-                    device = str(device)
-
-                device_ids = device.split(",")
-                device_ids = [int(id) for id in device_ids]
-                device = torch.device(rank)
-
-                if not self.cfg.DISTRIBUTED.USE:
-                    model = nn.DataParallel(model, device_ids=device_ids)
+                model = nn.DataParallel(model)
 
         self.device = device
         self.model = model.to(self.device)
 
-    def _setup_ddp(self, rank):
+    def _setup_ddp(self, rank, device_ids):
 
         os.environ["MASTER_ADDR"] = self.cfg.DISTRIBUTED.MASTER_ADDR
         os.environ["MASTER_PORT"] = self.cfg.DISTRIBUTED.MASTER_PORT
