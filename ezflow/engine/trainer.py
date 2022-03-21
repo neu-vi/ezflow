@@ -517,9 +517,7 @@ class Trainer:
         print("Training config:\n")
         print(self.cfg)
         print("-" * 80)
-
         print("\nPerforming distributed training\n")
-
         print("-" * 80)
 
         mp.spawn(
@@ -528,7 +526,7 @@ class Trainer:
             nprocs=self.cfg.DISTRIBUTED.WORLD_SIZE,
         )
 
-    def resume_training(
+    def _reload_trainer_states(
         self,
         consolidated_ckpt=None,
         model_ckpt=None,
@@ -538,29 +536,6 @@ class Trainer:
         scheduler_ckpt=None,
         use_cfg=False,
     ):
-
-        """
-        Method to resume training of a model
-
-        Parameters
-        ----------
-        consolidated_ckpt : str, optional
-            The path to the consolidated checkpoint file. Defaults to None (which uses the consolidated checkpoint file specified in the config file).
-        model_ckpt : str, optional
-            The path to the model checkpoint file. Defaults to None (which uses the model checkpoint file specified in the config file).
-        optimizer_ckpt : str, optional
-            The path to the optimizer checkpoint file. Defaults to None (which uses the optimizer checkpoint file specified in the config file).
-        n_epochs : int, optional
-            The number of epochs to train for. Defaults to None (which uses the number of epochs specified in the config file).
-        start_epoch : int, optional
-            The epoch to start training from. Defaults to None (which infers the last epoch from the ckpt).
-        scheduler_ckpt : str, optional
-            The path to the scheduler checkpoint file. Defaults to None (which uses the scheduler checkpoint file specified in the config file).
-        use_cfg : bool, optional
-            Whether to use the config file or not. Defaults to False.
-
-        """
-
         consolidated_ckpt = (
             self.cfg.RESUME_TRAINING.CONSOLIDATED_CKPT
             if use_cfg is True
@@ -615,7 +590,64 @@ class Trainer:
         if start_epoch is None and use_cfg:
             start_epoch = self.cfg.RESUME_TRAINING.START_EPOCH
 
-        self.train(loss_fn, optimizer, scheduler, n_epochs, start_epoch)
+        return (loss_fn, optimizer, scheduler, n_epochs, start_epoch)
+
+    def resume_training(
+        self,
+        consolidated_ckpt=None,
+        model_ckpt=None,
+        optimizer_ckpt=None,
+        n_epochs=None,
+        start_epoch=None,
+        scheduler_ckpt=None,
+        use_cfg=False,
+    ):
+
+        """
+        Method to resume training of a model
+
+        Parameters
+        ----------
+        consolidated_ckpt : str, optional
+            The path to the consolidated checkpoint file. Defaults to None (which uses the consolidated checkpoint file specified in the config file).
+        model_ckpt : str, optional
+            The path to the model checkpoint file. Defaults to None (which uses the model checkpoint file specified in the config file).
+        optimizer_ckpt : str, optional
+            The path to the optimizer checkpoint file. Defaults to None (which uses the optimizer checkpoint file specified in the config file).
+        n_epochs : int, optional
+            The number of epochs to train for. Defaults to None (which uses the number of epochs specified in the config file).
+        start_epoch : int, optional
+            The epoch to start training from. Defaults to None (which infers the last epoch from the ckpt).
+        scheduler_ckpt : str, optional
+            The path to the scheduler checkpoint file. Defaults to None (which uses the scheduler checkpoint file specified in the config file).
+        use_cfg : bool, optional
+            Whether to use the config file or not. Defaults to False.
+
+        """
+
+        (
+            loss_fn,
+            optimizer,
+            scheduler,
+            n_epochs,
+            start_epoch,
+        ) = self._reload_trainer_states(
+            consolidated_ckpt=consolidated_ckpt,
+            model_ckpt=model_ckpt,
+            optimizer_ckpt=optimizer_ckpt,
+            n_epochs=n_epochs,
+            start_epoch=start_epoch,
+            scheduler_ckpt=scheduler_ckpt,
+            use_cfg=use_cfg,
+        )
+
+        print("Training config:\n")
+        print(self.cfg)
+        print("-" * 80)
+        print("\Resuming training\n")
+        print("-" * 80)
+
+        self._main_worker(loss_fn, optimizer, scheduler, n_epochs, start_epoch)
 
     def resume_distributed_training(
         self,
@@ -650,17 +682,31 @@ class Trainer:
 
         """
 
+        (
+            loss_fn,
+            optimizer,
+            scheduler,
+            n_epochs,
+            start_epoch,
+        ) = self._reload_trainer_states(
+            consolidated_ckpt=consolidated_ckpt,
+            model_ckpt=model_ckpt,
+            optimizer_ckpt=optimizer_ckpt,
+            n_epochs=n_epochs,
+            start_epoch=start_epoch,
+            scheduler_ckpt=scheduler_ckpt,
+            use_cfg=use_cfg,
+        )
+
+        print("Training config:\n")
+        print(self.cfg)
+        print("-" * 80)
+        print("\Resuming distributed training\n")
+        print("-" * 80)
+
         mp.spawn(
-            self.resume_training,
-            args=(
-                consolidated_ckpt,
-                model_ckpt,
-                optimizer_ckpt,
-                n_epochs,
-                start_epoch,
-                scheduler_ckpt,
-                use_cfg,
-            ),
+            self._main_worker,
+            args=(loss_fn, optimizer, scheduler, n_epochs, start_epoch),
             nprocs=self.cfg.DISTRIBUTED.WORLD_SIZE,
         )
 
