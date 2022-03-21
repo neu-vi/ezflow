@@ -83,7 +83,7 @@ class Trainer:
 
             assert (
                 self.cfg.DISTRIBUTED.WORLD_SIZE <= torch.cuda.device_count()
-            ), "WORLD_SIZE cannot be greater than available CUDA devices."
+            ), f"WORLD_SIZE cannot be greater than available CUDA devices. Given WORLD_SIZE:{self.cfg.DISTRIBUTED.WORLD_SIZE} but total cuda devices:{torch.cuda.device_count()}"
 
             if not is_port_available(int(self.cfg.DISTRIBUTED.MASTER_PORT)):
 
