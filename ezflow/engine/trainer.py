@@ -54,6 +54,8 @@ class Trainer:
         self.train_loader = None
         self.val_loader = None
 
+        self.device_ids = None
+
         self._validate_ddp_config()
 
     def _validate_ddp_config(self):
@@ -72,9 +74,12 @@ class Trainer:
                 os.environ["CUDA_VISIBLE_DEVICES"] = device
 
                 device_ids = device.split(",")
+                device_ids = [int(id) for id in device_ids]
                 assert (
                     len(device_ids) <= torch.cuda.device_count()
                 ), "Total devices cannot be greater than available CUDA devices."
+
+                self.device_ids = device_ids
 
             assert (
                 self.cfg.DISTRIBUTED.WORLD_SIZE <= torch.cuda.device_count()
@@ -110,6 +115,9 @@ class Trainer:
             device = torch.device("cpu")
             print("CUDA device(s) not available. Running on CPU\n")
 
+        elif torch.cuda.device_count() == 1:
+            device = torch.device("cuda")
+
         else:
             self.model_parallel = True
 
@@ -127,7 +135,10 @@ class Trainer:
                     model = nn.SyncBatchNorm.convert_sync_batchnorm(model)
 
             else:
-                model = nn.DataParallel(model)
+                if self.cfg.DEVICE == "all":
+                    model = nn.DataParallel(model)
+                else:
+                    model = nn.DataParallel(model, device_ids=self.device_ids)
 
         self.device = device
         self.model = model.to(self.device)
