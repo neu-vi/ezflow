@@ -11,7 +11,7 @@ from torch.nn.parallel import DistributedDataParallel as DDP
 from torch.utils.tensorboard import SummaryWriter
 
 from ..functional import FUNCTIONAL_REGISTRY
-from ..utils import AverageMeter, endpointerror, find_free_port
+from ..utils import AverageMeter, endpointerror, find_free_port, is_port_available
 from .registry import loss_functions, optimizers, schedulers
 
 
@@ -54,9 +54,17 @@ class Trainer:
         self.train_loader = None
         self.val_loader = None
 
-        self.port = None
         if self.cfg.DISTRIBUTED.USE:
-            self.port = find_free_port()
+            if not is_port_available(self.cfg.DISTRIBUTED.MASTER_PORT):
+
+                print(
+                    f"\nPort: {self.cfg.DISTRIBUTED.MASTER_PORT} is not available to use!"
+                )
+
+                free_port = find_free_port()
+                print(f"Assigning free port: {free_port}\n")
+
+                self.cfg.DISTRIBUTED.MASTER_PORT = free_port
 
     def _setup_model(self, model, rank):
 
@@ -110,7 +118,7 @@ class Trainer:
     def _setup_ddp(self, rank):
 
         os.environ["MASTER_ADDR"] = self.cfg.DISTRIBUTED.MASTER_ADDR
-        os.environ["MASTER_PORT"] = self.port
+        os.environ["MASTER_PORT"] = self.cfg.DISTRIBUTED.MASTER_PORT
 
         seed(0)
 
