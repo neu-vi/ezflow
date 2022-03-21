@@ -81,9 +81,11 @@ class Trainer:
 
                 self.device_ids = device_ids
 
-            assert (
-                self.cfg.DISTRIBUTED.WORLD_SIZE <= torch.cuda.device_count()
-            ), f"WORLD_SIZE cannot be greater than available CUDA devices. Given WORLD_SIZE:{self.cfg.DISTRIBUTED.WORLD_SIZE} but total cuda devices:{torch.cuda.device_count()}"
+            assert self.cfg.DISTRIBUTED.WORLD_SIZE <= torch.cuda.device_count(), (
+                "WORLD_SIZE cannot be greater than available CUDA devices. "
+                f"Given WORLD_SIZE: {self.cfg.DISTRIBUTED.WORLD_SIZE} "
+                f"but total CUDA devices available: {torch.cuda.device_count()}"
+            )
 
             if not is_port_available(int(self.cfg.DISTRIBUTED.MASTER_PORT)):
 
@@ -432,10 +434,6 @@ class Trainer:
         os.makedirs(self.cfg.CKPT_DIR, exist_ok=True)
         os.makedirs(self.cfg.LOG_DIR, exist_ok=True)
 
-        print("Training config:\n")
-        print(self.cfg)
-        print("-" * 80)
-
         print(f"Training {self.model_name.upper()} for {n_epochs} epochs\n")
         best_model = self._train_model(
             loss_fn, optimizer, scheduler, n_epochs, start_epoch
@@ -479,6 +477,9 @@ class Trainer:
             The epoch to start training from. Defaults to None (which starts from 0).
 
         """
+        print("Training config:\n")
+        print(self.cfg)
+        print("-" * 80)
 
         self._main_worker(
             loss_fn=loss_fn,
@@ -513,7 +514,13 @@ class Trainer:
             The epoch to start training from. Defaults to None (which starts from 0).
 
         """
-        print("Performing distributed training")
+        print("Training config:\n")
+        print(self.cfg)
+        print("-" * 80)
+
+        print("\nPerforming distributed training\n")
+
+        print("-" * 80)
 
         mp.spawn(
             self._main_worker,
