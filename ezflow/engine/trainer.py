@@ -56,21 +56,25 @@ class Trainer:
 
         if self.cfg.DISTRIBUTED.USE:
 
-            assert (
-                self.cfg.DISTRIBUTED.WORLD_SIZE <= torch.cuda.device_count()
-            ), "WORLD_SIZE cannot be greater than available CUDA devices."
-
             if self.cfg.DEVICE != "all":
+                """
+                Set CUDA_VISIBLE_DEVICES before performing any torch.cuda operations.
+                """
+
                 device = self.cfg.DEVICE
                 if type(device) != str:
                     device = str(device)
+
+                os.environ["CUDA_VISIBLE_DEVICES"] = device
 
                 device_ids = device.split(",")
                 assert (
                     len(device_ids) <= torch.cuda.device_count()
                 ), "Total devices cannot be greater than available CUDA devices."
 
-                os.environ["CUDA_VISIBLE_DEVICES"] = device
+            assert (
+                self.cfg.DISTRIBUTED.WORLD_SIZE <= torch.cuda.device_count()
+            ), "WORLD_SIZE cannot be greater than available CUDA devices."
 
             if not is_port_available(self.cfg.DISTRIBUTED.MASTER_PORT):
 
@@ -108,6 +112,7 @@ class Trainer:
             device = torch.device(rank)
 
             if self.cfg.DISTRIBUTED.USE:
+
                 self._setup_ddp(rank, device_ids)
                 model = DDP(
                     model.cuda(rank),
