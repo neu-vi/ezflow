@@ -95,6 +95,9 @@ class Trainer:
                     device_ids=[rank],
                 )
 
+                if self.cfg.DISTRIBUTED.SYNC_BATCH_NORM:
+                    model = nn.SyncBatchNorm.convert_sync_batchnorm(model)
+
             if self.cfg.DEVICE == "all":
                 device = torch.device(rank)
 
