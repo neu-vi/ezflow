@@ -18,170 +18,158 @@ def main(args):
     if cfg.DATA.AUGMENTATION.USE and cfg.DATA.AUGMENTATION.PARAMS:
         aug_params = cfg.DATA.AUGMENTATION.PARAMS.to_dict()
 
-    if training_cfg.DISTRIBUTED.USE is True:
+    if cfg.DISTRIBUTED.USE is True:
         train_loader_creator = DataloaderCreator(
-            batch_size=training_cfg.DATA.BATCH_SIZE,
-            num_workers=training_cfg.DATA.NUM_WORKERS,
-            pin_memory=training_cfg.DATA.PIN_MEMORY,
+            batch_size=cfg.DATA.BATCH_SIZE,
+            num_workers=cfg.DATA.NUM_WORKERS,
+            pin_memory=cfg.DATA.PIN_MEMORY,
             distributed=True,
-            world_size=training_cfg.DISTRIBUTED.WORLD_SIZE,
-            append_valid_mask=training_cfg.DATA.APPEND_VALID_MASK,
+            world_size=cfg.DISTRIBUTED.WORLD_SIZE,
+            append_valid_mask=cfg.DATA.APPEND_VALID_MASK,
         )
 
         val_loader_creator = DataloaderCreator(
-            batch_size=training_cfg.DATA.BATCH_SIZE,
-            num_workers=training_cfg.DATA.NUM_WORKERS,
-            pin_memory=training_cfg.DATA.PIN_MEMORY,
+            batch_size=cfg.DATA.BATCH_SIZE,
+            num_workers=cfg.DATA.NUM_WORKERS,
+            pin_memory=cfg.DATA.PIN_MEMORY,
             distributed=True,
-            world_size=training_cfg.DISTRIBUTED.WORLD_SIZE,
-            append_valid_mask=training_cfg.DATA.APPEND_VALID_MASK,
+            world_size=cfg.DISTRIBUTED.WORLD_SIZE,
+            append_valid_mask=cfg.DATA.APPEND_VALID_MASK,
         )
     else:
         train_loader_creator = DataloaderCreator(
-            batch_size=training_cfg.DATA.BATCH_SIZE,
-            num_workers=training_cfg.DATA.NUM_WORKERS,
-            pin_memory=training_cfg.DATA.PIN_MEMORY,
-            append_valid_mask=training_cfg.DATA.APPEND_VALID_MASK,
+            batch_size=cfg.DATA.BATCH_SIZE,
+            num_workers=cfg.DATA.NUM_WORKERS,
+            pin_memory=cfg.DATA.PIN_MEMORY,
+            append_valid_mask=cfg.DATA.APPEND_VALID_MASK,
         )
 
         val_loader_creator = DataloaderCreator(
-            batch_size=training_cfg.DATA.BATCH_SIZE,
-            num_workers=training_cfg.DATA.NUM_WORKERS,
-            pin_memory=training_cfg.DATA.PIN_MEMORY,
-            append_valid_mask=training_cfg.DATA.APPEND_VALID_MASK,
+            batch_size=cfg.DATA.BATCH_SIZE,
+            num_workers=cfg.DATA.NUM_WORKERS,
+            pin_memory=cfg.DATA.PIN_MEMORY,
+            append_valid_mask=cfg.DATA.APPEND_VALID_MASK,
         )
 
     # Add Training Dataset
 
-    if training_cfg.DATA.TRAIN_DATASET.NAME.lower() == "flyingchairs":
+    if cfg.DATA.TRAIN_DATASET.NAME.lower() == "flyingchairs":
         train_loader_creator.add_FlyingChairs(
-            root_dir=training_cfg.DATA.TRAIN_DATASET.ROOT_DIR,
+            root_dir=cfg.DATA.TRAIN_DATASET.ROOT_DIR,
             crop=True,
             crop_type="center",
-            crop_size=training_cfg.DATA.TRAIN_CROP_SIZE,
-            augment=training_cfg.DATA.AUGMENTATION.USE,
-            aug_params={
-                "spatial_aug_params": training_cfg.DATA.AUGMENTATION.PARAMS.TRAINING.SPATIAL_AUG_PARAMS,
-            },
+            crop_size=cfg.DATA.TRAIN_CROP_SIZE,
+            augment=cfg.DATA.AUGMENTATION.USE,
+            aug_params=aug_params,
         )
 
-    if training_cfg.DATA.TRAIN_DATASET.NAME.lower() == "flyingthings3d":
+    if cfg.DATA.TRAIN_DATASET.NAME.lower() == "flyingthings3d":
         train_loader_creator.add_FlyingThings3D(
-            root_dir=training_cfg.DATA.TRAIN_DATASET.ROOT_DIR,
+            root_dir=cfg.DATA.TRAIN_DATASET.ROOT_DIR,
             crop=True,
             crop_type="center",
-            crop_size=training_cfg.DATA.TRAIN_CROP_SIZE,
-            augment=training_cfg.DATA.AUGMENTATION.USE,
-            aug_params={
-                "spatial_aug_params": training_cfg.DATA.AUGMENTATION.PARAMS.TRAINING.SPATIAL_AUG_PARAMS,
-            },
+            crop_size=cfg.DATA.TRAIN_CROP_SIZE,
+            augment=cfg.DATA.AUGMENTATION.USE,
+            aug_params=aug_params,
         )
 
-    if training_cfg.DATA.TRAIN_DATASET.NAME.lower() == "sceneflow":
+    if cfg.DATA.TRAIN_DATASET.NAME.lower() == "sceneflow":
         train_loader_creator.add_SceneFlow(
-            root_dir=training_cfg.DATA.TRAIN_DATASET.ROOT_DIR,
+            root_dir=cfg.DATA.TRAIN_DATASET.ROOT_DIR,
             crop=True,
             crop_type="center",
-            crop_size=training_cfg.DATA.TRAIN_CROP_SIZE,
-            augment=training_cfg.DATA.AUGMENTATION.USE,
-            aug_params={
-                "spatial_aug_params": training_cfg.DATA.AUGMENTATION.PARAMS.TRAINING.SPATIAL_AUG_PARAMS,
-            },
+            crop_size=cfg.DATA.TRAIN_CROP_SIZE,
+            augment=cfg.DATA.AUGMENTATION.USE,
+            aug_params=aug_params,
         )
 
-    if training_cfg.DATA.TRAIN_DATASET.NAME.lower() == "mpisintel":
+    if cfg.DATA.TRAIN_DATASET.NAME.lower() == "mpisintel":
         train_loader_creator.add_MPISintel(
-            root_dir=training_cfg.DATA.TRAIN_DATASET.ROOT_DIR,
+            root_dir=cfg.DATA.TRAIN_DATASET.ROOT_DIR,
             crop=True,
             crop_type="center",
-            crop_size=training_cfg.DATA.TRAIN_CROP_SIZE,
-            augment=training_cfg.DATA.AUGMENTATION.USE,
-            aug_params={
-                "spatial_aug_params": training_cfg.DATA.AUGMENTATION.PARAMS.TRAINING.SPATIAL_AUG_PARAMS,
-            },
+            crop_size=cfg.DATA.TRAIN_CROP_SIZE,
+            augment=cfg.DATA.AUGMENTATION.USE,
+            aug_params=aug_params,
         )
 
-    if training_cfg.DATA.TRAIN_DATASET.NAME.lower() == "kitti":
+    if cfg.DATA.TRAIN_DATASET.NAME.lower() == "kitti":
         train_loader_creator.add_Kitti(
-            root_dir=training_cfg.DATA.TRAIN_DATASET.ROOT_DIR,
+            root_dir=cfg.DATA.TRAIN_DATASET.ROOT_DIR,
             crop=True,
             crop_type="center",
-            crop_size=training_cfg.DATA.TRAIN_CROP_SIZE,
-            augment=training_cfg.DATA.AUGMENTATION.USE,
-            aug_params={
-                "spatial_aug_params": training_cfg.DATA.AUGMENTATION.PARAMS.TRAINING.SPATIAL_AUG_PARAMS,
-            },
+            crop_size=cfg.DATA.TRAIN_CROP_SIZE,
+            augment=cfg.DATA.AUGMENTATION.USE,
+            aug_params=aug_params,
         )
 
-    if training_cfg.DATA.TRAIN_DATASET.NAME.lower() == "autoflow":
+    if cfg.DATA.TRAIN_DATASET.NAME.lower() == "autoflow":
         train_loader_creator.add_AutoFlow(
-            root_dir=training_cfg.DATA.TRAIN_DATASET.ROOT_DIR,
+            root_dir=cfg.DATA.TRAIN_DATASET.ROOT_DIR,
             crop=True,
             crop_type="center",
-            crop_size=training_cfg.DATA.TRAIN_CROP_SIZE,
-            augment=training_cfg.DATA.AUGMENTATION.USE,
-            aug_params={
-                "spatial_aug_params": training_cfg.DATA.AUGMENTATION.PARAMS.TRAINING.SPATIAL_AUG_PARAMS,
-            },
+            crop_size=cfg.DATA.TRAIN_CROP_SIZE,
+            augment=cfg.DATA.AUGMENTATION.USE,
+            aug_params=aug_params,
         )
 
     # Add Validation Dataset
 
-    if training_cfg.DATA.VAL_DATASET.NAME.lower() == "flyingchairs":
+    if cfg.DATA.VAL_DATASET.NAME.lower() == "flyingchairs":
         val_loader_creator.add_FlyingChairs(
-            root_dir=training_cfg.DATA.VAL_DATASET.ROOT_DIR,
+            root_dir=cfg.DATA.VAL_DATASET.ROOT_DIR,
             split="validation",
             crop=True,
             crop_type="center",
-            crop_size=training_cfg.DATA.VAL_CROP_SIZE,
+            crop_size=cfg.DATA.VAL_CROP_SIZE,
             augment=False,
         )
 
-    if training_cfg.DATA.VAL_DATASET.NAME.lower() == "flyingthings3d":
+    if cfg.DATA.VAL_DATASET.NAME.lower() == "flyingthings3d":
         val_loader_creator.add_FlyingThings3D(
-            root_dir=training_cfg.DATA.VAL_DATASET.ROOT_DIR,
+            root_dir=cfg.DATA.VAL_DATASET.ROOT_DIR,
             split="validation",
             crop=True,
             crop_type="center",
-            crop_size=training_cfg.DATA.VAL_CROP_SIZE,
+            crop_size=cfg.DATA.VAL_CROP_SIZE,
             augment=False,
         )
 
-    if training_cfg.DATA.VAL_DATASET.NAME.lower() == "sceneflow":
+    if cfg.DATA.VAL_DATASET.NAME.lower() == "sceneflow":
         val_loader_creator.add_SceneFlow(
-            root_dir=training_cfg.DATA.VAL_DATASET.ROOT_DIR,
+            root_dir=cfg.DATA.VAL_DATASET.ROOT_DIR,
             crop=True,
             crop_type="center",
-            crop_size=training_cfg.DATA.VAL_CROP_SIZE,
+            crop_size=cfg.DATA.VAL_CROP_SIZE,
             augment=False,
         )
 
-    if training_cfg.DATA.VAL_DATASET.NAME.lower() == "mpisintel":
+    if cfg.DATA.VAL_DATASET.NAME.lower() == "mpisintel":
         val_loader_creator.add_MPISintel(
-            root_dir=training_cfg.DATA.VAL_DATASET.ROOT_DIR,
+            root_dir=cfg.DATA.VAL_DATASET.ROOT_DIR,
             split="training",
             dstype="clean",
             crop=True,
             crop_type="center",
-            crop_size=training_cfg.DATA.VAL_CROP_SIZE,
+            crop_size=cfg.DATA.VAL_CROP_SIZE,
             augment=False,
         )
 
-    if training_cfg.DATA.VAL_DATASET.NAME.lower() == "kitti":
+    if cfg.DATA.VAL_DATASET.NAME.lower() == "kitti":
         val_loader_creator.add_Kitti(
-            root_dir=training_cfg.DATA.VAL_DATASET.ROOT_DIR,
+            root_dir=cfg.DATA.VAL_DATASET.ROOT_DIR,
             crop=True,
             crop_type="center",
-            crop_size=training_cfg.DATA.VAL_CROP_SIZE,
+            crop_size=cfg.DATA.VAL_CROP_SIZE,
             augment=False,
         )
 
-    if training_cfg.DATA.VAL_DATASET.NAME.lower() == "autoflow":
+    if cfg.DATA.VAL_DATASET.NAME.lower() == "autoflow":
         val_loader_creator.add_AutoFlow(
-            root_dir=training_cfg.DATA.VAL_DATASET.ROOT_DIR,
+            root_dir=cfg.DATA.VAL_DATASET.ROOT_DIR,
             crop=True,
             crop_type="center",
-            crop_size=training_cfg.DATA.VAL_CROP_SIZE,
+            crop_size=cfg.DATA.VAL_CROP_SIZE,
             augment=False,
         )
 
