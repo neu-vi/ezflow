@@ -442,14 +442,15 @@ class Trainer:
         )
         print("Training complete!")
 
-        if self.model_parallel:
-            best_model = best_model.module
+        if rank == 0:
+            if self.model_parallel:
+                best_model = best_model.module
 
-        torch.save(
-            best_model.state_dict(),
-            os.path.join(self.cfg.CKPT_DIR, self.model_name + "_best_final.pth"),
-        )
-        print("Saved best model!\n")
+            torch.save(
+                best_model.state_dict(),
+                os.path.join(self.cfg.CKPT_DIR, self.model_name + "_best_final.pth"),
+            )
+            print("Saved best model!\n")
 
         if self.cfg.DISTRIBUTED.USE:
             self._cleanup()
