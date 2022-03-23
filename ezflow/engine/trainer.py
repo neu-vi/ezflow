@@ -7,6 +7,7 @@ import torch.backends.cudnn as cudnn
 import torch.distributed as dist
 import torch.multiprocessing as mp
 import torch.nn as nn
+from torch.cuda.amp import GradScaler, autocast
 from torch.nn.parallel import DistributedDataParallel as DDP
 from torch.utils.tensorboard import SummaryWriter
 
@@ -111,10 +112,12 @@ class Trainer:
 
         if device == "-1" or device == -1 or device == "cpu":
             device = torch.device("cpu")
+            self.cfg.MIXED_PRECISION = False
             print("Running on CPU\n")
 
         elif not torch.cuda.is_available():
             device = torch.device("cpu")
+            self.cfg.MIXED_PRECISION = False
             print("CUDA device(s) not available. Running on CPU\n")
 
         elif torch.cuda.device_count() == 1:
@@ -215,6 +218,8 @@ class Trainer:
 
         writer = SummaryWriter(log_dir=self.cfg.LOG_DIR)
 
+        scaler = GradScaler(enabled=self.cfg.MIXED_PRECISION)
+
         model = self.model
         best_model = deepcopy(model)
         model.train()
@@ -246,22 +251,27 @@ class Trainer:
                 )
                 target = target / self.cfg.DATA.TARGET_SCALE_FACTOR
 
-                pred = model(img1, img2)
+                with autocast(enabled=self.cfg.MIXED_PRECISION):
+                    pred = model(img1, img2)
 
-                loss = loss_fn(pred, target)
+                    loss = loss_fn(pred, target)
 
                 optimizer.zero_grad()
-                loss.backward()
+
+                scaler.scale(loss).backward()
+                scaler.unscale_(optimizer)
 
                 if self.cfg.GRAD_CLIP.USE is True:
                     nn.utils.clip_grad_norm_(
                         model.parameters(), self.cfg.GRAD_CLIP.VALUE
                     )
 
-                optimizer.step()
+                scaler.step(optimizer)
 
                 if scheduler is not None:
                     scheduler.step()
+
+                scaler.update()
 
                 epoch_loss.update(loss.item())
 
@@ -330,7 +340,7 @@ class Trainer:
                         )
                         print(f"Saved new best model at epoch {epochs+1}!")
 
-            if epochs % self.cfg.CKPT_INTERVAL == 0:
+            if epochs % self.cfg.CKPT_INTERVAL == 0 and rank == 0:
 
                 if self.model_parallel:
                     save_model = model.module
