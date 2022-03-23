@@ -209,7 +209,9 @@ class Trainer:
 
         return endpointerror(pred, target)
 
-    def _train_model(self, loss_fn, optimizer, scheduler, n_epochs, start_epoch=None):
+    def _train_model(
+        self, loss_fn, optimizer, scheduler, n_epochs, start_epoch=None, rank=0
+    ):
 
         writer = SummaryWriter(log_dir=self.cfg.LOG_DIR)
 
@@ -278,7 +280,7 @@ class Trainer:
             print(f"\nEpoch {epochs+1}: Training loss = {epoch_loss.sum}")
             writer.add_scalar("epochs_training_loss", epoch_loss.sum, epochs + 1)
 
-            if epochs % self.cfg.VALIDATE_INTERVAL == 0:
+            if epochs % self.cfg.VALIDATE_INTERVAL == 0 and rank == 0:
 
                 new_avg_val_loss, new_avg_val_metric = self._validate_model(model)
 
@@ -404,7 +406,7 @@ class Trainer:
         Parameters
         ----------
         rank : int, default: 0
-            The process id within a group for Distributed Training. This value is passed automatically when multiple
+            The cuda device id for Distributed Training. This value is passed automatically when multiple
             processes are spawned during Distributed Training.
         loss_fn : torch.nn.modules.loss, optional
             The loss function to be used. Defaults to None (which uses the loss function specified in the config file).
@@ -436,7 +438,7 @@ class Trainer:
 
         print(f"Training {self.model_name.upper()} for {n_epochs} epochs\n")
         best_model = self._train_model(
-            loss_fn, optimizer, scheduler, n_epochs, start_epoch
+            loss_fn, optimizer, scheduler, n_epochs, start_epoch, rank
         )
         print("Training complete!")
 
