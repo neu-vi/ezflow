@@ -1,10 +1,26 @@
 DATA:
-  ROOT_DIR: null
+  TRAIN_DATASET:
+    NAME: "flyingchairs"
+    ROOT_DIR: ""
+  VAL_DATASET:
+    NAME: "flyingchairs"
+    ROOT_DIR: "" 
   BATCH_SIZE: 10
+  NUM_WORKERS: 1
+  PIN_MEMORY: True
+  APPEND_VALID_MASK: True
+  TARGET_SCALE_FACTOR: 1
+  TRAIN_CROP_SIZE: [256, 256]
+  VAL_CROP_SIZE: [256, 256]
   AUGMENTATION:
     USE: True
-    PARAMS: null
-  TARGET_SCALE_FACTOR: 1.0 
+    PARAMS:
+      TRAINING:
+        SPATIAL_AUG_PARAMS: {"min_scale": -0.1, "max_scale": 1.0, "flip": True}
+      VALIDATION:
+        SPATIAL_AUG_PARAMS: {"aug_prob": 0.0}
+        COLOR_AUG_PARAMS: {"aug_prob": 0.0}
+        ERASER_AUG_PARAMS: {"aug_prob": 0.0}
 OPTIMIZER:
   NAME: Adam
   LR: 0.0003
@@ -27,11 +43,11 @@ GRAD_CLIP:
 DEVICE: "0"
 DISTRIBUTED:
   USE: False
-  WORLD_SIZE: 1
-  RANK: 0
+  WORLD_SIZE: 2
   BACKEND: nccl
   MASTER_ADDR: localhost
   MASTER_PORT: "12355"
+  SYNC_BATCH_NORM: True
 LOG_DIR: "./logs"
 LOG_ITERATIONS_INTERVAL: 1000
 VALIDATE_INTERVAL: 2

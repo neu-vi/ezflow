@@ -18,20 +18,172 @@ def main(args):
     if cfg.DATA.AUGMENTATION.USE and cfg.DATA.AUGMENTATION.PARAMS:
         aug_params = cfg.DATA.AUGMENTATION.PARAMS.to_dict()
 
-    train_loader = DataloaderCreator(cfg.DATA.BATCH_SIZE, num_workers=cfg.NUM_WORKERS)
-    train_loader.add_FlyingChairs(
-        root_dir=args.data_dir, augment=cfg.DATA.AUGMENTATION.USE, aug_params=aug_params
-    )
-    train_loader = train_loader.get_dataloader()
+    if training_cfg.DISTRIBUTED.USE is True:
+        train_loader_creator = DataloaderCreator(
+            batch_size=training_cfg.DATA.BATCH_SIZE,
+            num_workers=training_cfg.DATA.NUM_WORKERS,
+            pin_memory=training_cfg.DATA.PIN_MEMORY,
+            distributed=True,
+            world_size=training_cfg.DISTRIBUTED.WORLD_SIZE,
+            append_valid_mask=training_cfg.DATA.APPEND_VALID_MASK,
+        )
 
-    val_loader = DataloaderCreator(cfg.DATA.BATCH_SIZE, num_workers=cfg.NUM_WORKERS)
-    val_loader.add_FlyingChairs(
-        root_dir=args.data_dir,
-        split="validation",
-        augment=cfg.DATA.AUGMENTATION.USE,
-        aug_params=aug_params,
-    )
-    val_loader = val_loader.get_dataloader()
+        val_loader_creator = DataloaderCreator(
+            batch_size=training_cfg.DATA.BATCH_SIZE,
+            num_workers=training_cfg.DATA.NUM_WORKERS,
+            pin_memory=training_cfg.DATA.PIN_MEMORY,
+            distributed=True,
+            world_size=training_cfg.DISTRIBUTED.WORLD_SIZE,
+            append_valid_mask=training_cfg.DATA.APPEND_VALID_MASK,
+        )
+    else:
+        train_loader_creator = DataloaderCreator(
+            batch_size=training_cfg.DATA.BATCH_SIZE,
+            num_workers=training_cfg.DATA.NUM_WORKERS,
+            pin_memory=training_cfg.DATA.PIN_MEMORY,
+            append_valid_mask=training_cfg.DATA.APPEND_VALID_MASK,
+        )
+
+        val_loader_creator = DataloaderCreator(
+            batch_size=training_cfg.DATA.BATCH_SIZE,
+            num_workers=training_cfg.DATA.NUM_WORKERS,
+            pin_memory=training_cfg.DATA.PIN_MEMORY,
+            append_valid_mask=training_cfg.DATA.APPEND_VALID_MASK,
+        )
+
+    # Add Training Dataset
+
+    if training_cfg.DATA.TRAIN_DATASET.NAME.lower() == "flyingchairs":
+        train_loader_creator.add_FlyingChairs(
+            root_dir=training_cfg.DATA.TRAIN_DATASET.ROOT_DIR,
+            crop=True,
+            crop_type="center",
+            crop_size=training_cfg.DATA.TRAIN_CROP_SIZE,
+            augment=training_cfg.DATA.AUGMENTATION.USE,
+            aug_params={
+                "spatial_aug_params": training_cfg.DATA.AUGMENTATION.PARAMS.TRAINING.SPATIAL_AUG_PARAMS,
+            },
+        )
+
+    if training_cfg.DATA.TRAIN_DATASET.NAME.lower() == "flyingthings3d":
+        train_loader_creator.add_FlyingThings3D(
+            root_dir=training_cfg.DATA.TRAIN_DATASET.ROOT_DIR,
+            crop=True,
+            crop_type="center",
+            crop_size=training_cfg.DATA.TRAIN_CROP_SIZE,
+            augment=training_cfg.DATA.AUGMENTATION.USE,
+            aug_params={
+                "spatial_aug_params": training_cfg.DATA.AUGMENTATION.PARAMS.TRAINING.SPATIAL_AUG_PARAMS,
+            },
+        )
+
+    if training_cfg.DATA.TRAIN_DATASET.NAME.lower() == "sceneflow":
+        train_loader_creator.add_SceneFlow(
+            root_dir=training_cfg.DATA.TRAIN_DATASET.ROOT_DIR,
+            crop=True,
+            crop_type="center",
+            crop_size=training_cfg.DATA.TRAIN_CROP_SIZE,
+            augment=training_cfg.DATA.AUGMENTATION.USE,
+            aug_params={
+                "spatial_aug_params": training_cfg.DATA.AUGMENTATION.PARAMS.TRAINING.SPATIAL_AUG_PARAMS,
+            },
+        )
+
+    if training_cfg.DATA.TRAIN_DATASET.NAME.lower() == "mpisintel":
+        train_loader_creator.add_MPISintel(
+            root_dir=training_cfg.DATA.TRAIN_DATASET.ROOT_DIR,
+            crop=True,
+            crop_type="center",
+            crop_size=training_cfg.DATA.TRAIN_CROP_SIZE,
+            augment=training_cfg.DATA.AUGMENTATION.USE,
+            aug_params={
+                "spatial_aug_params": training_cfg.DATA.AUGMENTATION.PARAMS.TRAINING.SPATIAL_AUG_PARAMS,
+            },
+        )
+
+    if training_cfg.DATA.TRAIN_DATASET.NAME.lower() == "kitti":
+        train_loader_creator.add_Kitti(
+            root_dir=training_cfg.DATA.TRAIN_DATASET.ROOT_DIR,
+            crop=True,
+            crop_type="center",
+            crop_size=training_cfg.DATA.TRAIN_CROP_SIZE,
+            augment=training_cfg.DATA.AUGMENTATION.USE,
+            aug_params={
+                "spatial_aug_params": training_cfg.DATA.AUGMENTATION.PARAMS.TRAINING.SPATIAL_AUG_PARAMS,
+            },
+        )
+
+    if training_cfg.DATA.TRAIN_DATASET.NAME.lower() == "autoflow":
+        train_loader_creator.add_AutoFlow(
+            root_dir=training_cfg.DATA.TRAIN_DATASET.ROOT_DIR,
+            crop=True,
+            crop_type="center",
+            crop_size=training_cfg.DATA.TRAIN_CROP_SIZE,
+            augment=training_cfg.DATA.AUGMENTATION.USE,
+            aug_params={
+                "spatial_aug_params": training_cfg.DATA.AUGMENTATION.PARAMS.TRAINING.SPATIAL_AUG_PARAMS,
+            },
+        )
+
+    # Add Validation Dataset
+
+    if training_cfg.DATA.VAL_DATASET.NAME.lower() == "flyingchairs":
+        val_loader_creator.add_FlyingChairs(
+            root_dir=training_cfg.DATA.VAL_DATASET.ROOT_DIR,
+            split="validation",
+            crop=True,
+            crop_type="center",
+            crop_size=training_cfg.DATA.VAL_CROP_SIZE,
+            augment=False,
+        )
+
+    if training_cfg.DATA.VAL_DATASET.NAME.lower() == "flyingthings3d":
+        val_loader_creator.add_FlyingThings3D(
+            root_dir=training_cfg.DATA.VAL_DATASET.ROOT_DIR,
+            split="validation",
+            crop=True,
+            crop_type="center",
+            crop_size=training_cfg.DATA.VAL_CROP_SIZE,
+            augment=False,
+        )
+
+    if training_cfg.DATA.VAL_DATASET.NAME.lower() == "sceneflow":
+        val_loader_creator.add_SceneFlow(
+            root_dir=training_cfg.DATA.VAL_DATASET.ROOT_DIR,
+            crop=True,
+            crop_type="center",
+            crop_size=training_cfg.DATA.VAL_CROP_SIZE,
+            augment=False,
+        )
+
+    if training_cfg.DATA.VAL_DATASET.NAME.lower() == "mpisintel":
+        val_loader_creator.add_MPISintel(
+            root_dir=training_cfg.DATA.VAL_DATASET.ROOT_DIR,
+            split="training",
+            dstype="clean",
+            crop=True,
+            crop_type="center",
+            crop_size=training_cfg.DATA.VAL_CROP_SIZE,
+            augment=False,
+        )
+
+    if training_cfg.DATA.VAL_DATASET.NAME.lower() == "kitti":
+        val_loader_creator.add_Kitti(
+            root_dir=training_cfg.DATA.VAL_DATASET.ROOT_DIR,
+            crop=True,
+            crop_type="center",
+            crop_size=training_cfg.DATA.VAL_CROP_SIZE,
+            augment=False,
+        )
+
+    if training_cfg.DATA.VAL_DATASET.NAME.lower() == "autoflow":
+        val_loader_creator.add_AutoFlow(
+            root_dir=training_cfg.DATA.VAL_DATASET.ROOT_DIR,
+            crop=True,
+            crop_type="center",
+            crop_size=training_cfg.DATA.VAL_CROP_SIZE,
+            augment=False,
+        )
 
     # Build model
 
@@ -39,7 +191,7 @@ def main(args):
 
     # Create trainer
 
-    trainer = Trainer(cfg, model, train_loader, val_loader)
+    trainer = Trainer(cfg, model, train_loader_creator, val_loader_creator)
 
     # Train model
 
