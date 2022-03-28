@@ -224,6 +224,9 @@ class Trainer:
         best_model = deepcopy(model)
         model.train()
 
+        if self.cfg.FREEZE_BATCH_NORM:
+            model.module.freeze_bn()
+
         self.loss_fn = loss_fn
 
         epoch_loss = AverageMeter()
@@ -398,6 +401,8 @@ class Trainer:
                 metric_meter.update(metric)
 
         model.train()
+        if self.cfg.FREEZE_BATCH_NORM:
+            model.module.freeze_bn()
 
         return loss_meter.avg, metric_meter.avg
 

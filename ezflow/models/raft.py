@@ -79,6 +79,15 @@ class RAFT(nn.Module):
 
         return up_flow.reshape(N, 2, 8 * H, 8 * W)
 
+    def freeze_bn(self):
+        """
+        Sets batch norm layers to eval() state.
+
+        """
+        for m in self.modules():
+            if isinstance(m, nn.BatchNorm2d):
+                m.eval()
+
     def forward(
         self,
         img1,
