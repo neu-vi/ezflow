@@ -700,6 +700,8 @@ class Trainer:
 
         """
 
+        self.model_parallel = True
+
         (
             loss_fn,
             optimizer,
