@@ -589,19 +589,19 @@ class Trainer:
                     scheduler_ckpt, map_location=torch.device("cpu")
                 )
 
-        if self.model_parallel:
-            model = self.model.module
-        else:
-            model = self.model
-
-        model.load_state_dict(model_state_dict)
-        self._setup_model(model)
+        self.model.load_state_dict(model_state_dict)
 
         loss_fn, optimizer, scheduler = self._setup_training()
-        optimizer.load_state_dict(optimizer_state_dict)
 
-        if scheduler is not None:
+        if self.cfg.OPTIMIZER.RESTORE_STATE:
+            optimizer.load_state_dict(optimizer_state_dict)
+        else:
+            optimizer = None
+
+        if self.cfg.SCHEDULER.RESTORE_STATE and scheduler is not None:
             scheduler.load_state_dict(scheduler_state_dict)
+        else:
+            scheduler = None
 
         if n_epochs is None and use_cfg:
             n_epochs = self.cfg.RESUME_TRAINING.EPOCHS
@@ -662,7 +662,7 @@ class Trainer:
         print("Training config:\n")
         print(self.cfg)
         print("-" * 80)
-        print("\Resuming training\n")
+        print("\nResuming training\n")
         print("-" * 80)
 
         self._main_worker(loss_fn, optimizer, scheduler, n_epochs, start_epoch)
@@ -700,8 +700,6 @@ class Trainer:
 
         """
 
-        self.model_parallel = True
-
         (
             loss_fn,
             optimizer,
@@ -721,7 +719,7 @@ class Trainer:
         print("Training config:\n")
         print(self.cfg)
         print("-" * 80)
-        print("\Resuming distributed training\n")
+        print("\nResuming distributed training\n")
         print("-" * 80)
 
         mp.spawn(
@@ -753,3 +751,18 @@ class Trainer:
         print(f"Average validation metric = {avg_val_metric}")
 
         return avg_val_loss, avg_val_metric
+
+
+def to_device(module, device=0):
+    for param in module.state.values():
+        # Not sure there are any global tensors in the state dict
+        if isinstance(param, torch.Tensor):
+            param.data = param.data.to(device)
+            if param._grad is not None:
+                param._grad.data = param._grad.data.to(device)
+        elif isinstance(param, dict):
+            for subparam in param.values():
+                if isinstance(subparam, torch.Tensor):
+                    subparam.data = subparam.data.to(device)
+                    if subparam._grad is not None:
+                        subparam._grad.data = subparam._grad.data.to(device)
