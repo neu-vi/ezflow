@@ -54,7 +54,7 @@ class MutliScalePairwise4DCorr:
             dy = torch.linspace(-r, r, 2 * r + 1)
             delta = torch.stack(torch.meshgrid(dy, dx), axis=-1).to(coords.device)
 
-            centroid_lvl = coords.reshape(batch * h1 * w1, 1, 1, 2) / 2 ** i
+            centroid_lvl = coords.reshape(batch * h1 * w1, 1, 1, 2) / 2**i
             delta_lvl = delta.view(1, 2 * r + 1, 2 * r + 1, 2)
             coords_lvl = centroid_lvl + delta_lvl
 
