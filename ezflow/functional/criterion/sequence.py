@@ -41,7 +41,7 @@ class SequenceLoss(nn.Module):
         flow, valid = label[:, :2, :, :], label[:, 2:, :, :]
         valid = torch.squeeze(valid, dim=1)
 
-        mag = torch.sqrt(torch.sum(flow ** 2, dim=1))
+        mag = torch.sqrt(torch.sum(flow**2, dim=1))
         valid = (valid >= 0.5) & (mag < self.max_flow)
 
         for i in range(n_preds):
