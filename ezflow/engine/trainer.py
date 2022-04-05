@@ -7,6 +7,7 @@ import torch.backends.cudnn as cudnn
 import torch.distributed as dist
 import torch.multiprocessing as mp
 import torch.nn as nn
+from torch.cuda.amp import GradScaler, autocast
 from torch.nn.parallel import DistributedDataParallel as DDP
 from torch.utils.tensorboard import SummaryWriter
 
@@ -27,9 +28,54 @@ def seed(seed):
 
 class BaseTrainer:
     def __init__(self):
+        self.cfg = None
+        self.model = None
+        self.train_loader = None
+        self.val_loader = None
+        self.device_ids = None
+        self.device = None
+        self.trainer_strategy = None
+
+    def _setup_model(self, model, rank=0):
         pass
 
-    def _main_worker(self):
+    def _setup_training(self):
+        pass
+
+    def _main_worker(self, rank=0):
+        pass
+
+    def _train_model(self):
+        pass
+
+    def _validate_model(self):
+        pass
+
+    def _setup_trainer_strategy(self):
+        pass
+
+    def _epoch_trainer(self):
+        pass
+
+    def _calculate_metric(self):
+        pass
+
+    def _save_checkpoints(self):
+        pass
+
+    def _save_best_models(self):
+        pass
+
+    def _step_trainer(self):
+        pass
+
+    def _run_step(self):
+        pass
+
+    def _log_step(self):
+        pass
+
+    def _reload_trainer_state(self):
         pass
 
 
@@ -619,4 +665,13 @@ class DistributedTrainer(BaseTrainer):
     """
 
     def __init__(self):
+        pass
+
+    def _validate_ddp_config(self):
+        pass
+
+    def _setup_ddp(self):
+        pass
+
+    def _cleanup(self):
         pass
