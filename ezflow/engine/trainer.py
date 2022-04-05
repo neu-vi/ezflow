@@ -25,6 +25,14 @@ def seed(seed):
     cudnn.deterministic = True
 
 
+class BaseTrainer:
+    def __init__(self):
+        pass
+
+    def _main_worker(self):
+        pass
+
+
 class Trainer:
     """Trainer class for training and evaluating models
 
@@ -592,3 +600,23 @@ class Trainer:
         print(f"Average validation metric = {avg_val_metric}")
 
         return avg_val_loss, avg_val_metric
+
+
+class DistributedTrainer(BaseTrainer):
+    """Trainer class for distributed training and evaluating models
+
+    Parameters
+    ----------
+
+    cfg : CfgNode
+        Configuration object for training
+    model : torch.nn.Module
+        Model to be trained
+    train_loader_creator : ezflow.DataloaderCreator
+        DataloaderCreator instance for training
+    val_loader_creator : ezflow.DataloaderCreator
+        DataloaderCreator instance for validation
+    """
+
+    def __init__(self):
+        pass
