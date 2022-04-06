@@ -142,7 +142,7 @@ class BaseTrainer:
             self.writer.add_scalar("epochs_training_loss", loss_meter.sum, epoch + 1)
 
             if epoch % self.cfg.VALIDATE_INTERVAL == 0 and self.device == 0:
-                self._validate_model(epoch)
+                new_avg_val_loss, new_avg_val_metric = self._validate_model(epoch)
 
                 self.writer.add_scalar(
                     "avg_validation_loss", new_avg_val_loss, epoch + 1
