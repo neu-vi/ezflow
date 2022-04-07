@@ -101,7 +101,7 @@ class BaseTrainer:
         self.scaler = GradScaler(enabled=self.cfg.MIXED_PRECISION)
 
         self._trainer = self._epoch_trainer
-        if self.cfg.num_steps is not None:
+        if self.cfg.NUM_STEPS is not None:
             self._trainer = self._step_trainer
 
         self.min_avg_val_loss = float("inf")
@@ -142,7 +142,7 @@ class BaseTrainer:
             self.writer.add_scalar("epochs_training_loss", loss_meter.sum, epoch + 1)
 
             if epoch % self.cfg.VALIDATE_INTERVAL == 0 and self.device == 0:
-                new_avg_val_loss, new_avg_val_metric = self._validate_model(epoch)
+                new_avg_val_loss, new_avg_val_metric = self._validate_model()
 
                 self.writer.add_scalar(
                     "avg_validation_loss", new_avg_val_loss, epoch + 1
@@ -161,11 +161,65 @@ class BaseTrainer:
             if epoch % self.cfg.CKPT_INTERVAL == 0 and self.device == 0:
                 self._save_checkpoints()
 
-        writer.close()
+        self.writer.close()
         return best_model
 
     def _step_trainer(self, start_step=0):
-        pass
+        best_model = deepcopy(self.model)
+        self.model.train()
+
+        loss_meter = AverageMeter()
+
+        # TODO: add timer metric
+
+        total_steps = 0
+        n_steps = self.cfg.NUM_STEPS
+
+        if start_step != 0:
+            print(f"Resuming training from step {start_step+1}\n")
+            total_steps = start_step
+            n_step += start_step
+
+        while total_steps < n_steps:
+            print(f"Starting step {total_steps + 1} of {n_step}")
+            print("-" * 80)
+            loss_meter.reset()
+            for iteration, (inp, target) in enumerate(self.train_loader):
+
+                loss = self._run_step(inp, target)
+
+                loss_meter.update(loss.item())
+
+                total_steps += 1
+                self._log_step(iteration, total_steps, loss_meter)
+
+            print(f"\Iteration {total_steps}: Training loss = {loss_meter.sum}")
+            self.writer.add_scalar("steps_training_loss", loss_meter.sum, total_steps)
+
+            if total_steps % self.cfg.VALIDATE_INTERVAL == 0 and self.device == 0:
+                new_avg_val_loss, new_avg_val_metric = self._validate_model()
+
+                self.writer.add_scalar(
+                    "avg_validation_loss", new_avg_val_loss, total_steps
+                )
+                print(
+                    f"Iteration {total_steps}: Average validation loss = {new_avg_val_loss}"
+                )
+
+                self.writer.add_scalar(
+                    "avg_validation_metric", new_avg_val_metric, total_steps
+                )
+                print(
+                    f"Iteration {total_steps}: Average validation metric = {new_avg_val_metric}"
+                )
+
+                best_model = self._save_best_model(new_avg_val_loss, new_avg_val_metric)
+
+            if total_steps % self.cfg.CKPT_INTERVAL == 0 and self.device == 0:
+                self._save_checkpoints()
+
+        self.writer.close()
+        return best_model
 
     def _run_step(self, inp, target):
         img1, img2 = inp
@@ -210,7 +264,7 @@ class BaseTrainer:
                 f"Epoch iterations: {iteration}, Total iterations: {total_iters}, Average batch training loss: {loss_meter.avg}"
             )
 
-    def _validate_model(self, total_iters):
+    def _validate_model(self):
 
         self.model.eval()
 
