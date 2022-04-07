@@ -1,11 +1,11 @@
 import torch
 
 from ezflow.utils import (
+    AverageMeter,
+    coords_grid,
     endpointerror,
     forward_interpolate,
     upflow,
-    coords_grid,
-    AverageMeter,
 )
 
 

@@ -1,5 +1,3 @@
-from tkinter import HIDDEN
-
 import torch
 
 from ezflow.modules import MODULE_REGISTRY
