@@ -28,6 +28,10 @@ class DataloaderCreator:
         If True, appends the valid flow mask to the original flow mask at dim=0
     is_prediction : bool, default : False
         If True, only image data are loaded for prediction otherwise both images and flow data are loaded
+    distributed : bool, default : False
+        If True, initializes DistributedSampler for Distributed Training
+    world_size : int, default : None
+        The total number of GPU devices per node for Distributed Training
     """
 
     def __init__(
@@ -42,7 +46,6 @@ class DataloaderCreator:
         is_prediction=False,
         distributed=False,
         world_size=None,
-        rank=None,
     ):
         self.dataset_list = []
         self.batch_size = batch_size
@@ -56,12 +59,11 @@ class DataloaderCreator:
 
         if distributed:
             assert (
-                world_size is not None and rank is not None
-            ), "world_size and rank must be set to perform distributed training"
+                world_size is not None
+            ), "world_size must be set to perform distributed training"
 
         self.distributed = distributed
         self.world_size = world_size
-        self.rank = rank
 
     def add_FlyingChairs(self, root_dir, split="training", augment=False, **kwargs):
         """
@@ -357,9 +359,14 @@ class DataloaderCreator:
             )
         )
 
-    def get_dataloader(self):
+    def get_dataloader(self, rank=0):
         """
         Gets the Dataloader for the added datasets.
+
+        Params
+        ------
+        rank : int, default : 0
+            The process id within a group for Distributed Training
 
         Returns
         -------
@@ -378,8 +385,8 @@ class DataloaderCreator:
 
             sampler = DistributedSampler(
                 dataset,
+                rank=rank,
                 num_replicas=self.world_size,
-                rank=self.rank,
                 shuffle=self.shuffle,
                 drop_last=self.drop_last,
             )

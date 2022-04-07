@@ -110,18 +110,18 @@ class BaseTrainer:
     def _main_worker(self):
         pass
 
-    def _epoch_trainer(self):
+    def _epoch_trainer(self, start_epoch=0):
 
         best_model = deepcopy(self.model)
         self.model.train()
 
         loss_meter = AverageMeter()
 
+        # TODO: add timer metric
+
         n_epochs = self.cfg.EPOCHS
-        if start_epoch is not None:
+        if start_epoch != 0:
             print(f"Resuming training from epoch {start_epoch+1}\n")
-        else:
-            start_epoch = 0
 
         for epoch in range(start_epoch, start_epoch + n_epochs):
 
@@ -164,7 +164,7 @@ class BaseTrainer:
         writer.close()
         return best_model
 
-    def _step_trainer(self):
+    def _step_trainer(self, start_step=0):
         pass
 
     def _run_step(self, inp, target):
@@ -327,7 +327,7 @@ class Trainer(BaseTrainer):
     def __init__(self, cfg, model, train_loader, val_loader):
         self.cfg = cfg
         self.model_name = model.__class__.__name__.lower()
-        self._setup_model(model)
+        self.model = model
 
         self.train_loader = train_loader
         self.val_loader = val_loader
@@ -353,9 +353,22 @@ class Trainer(BaseTrainer):
     def _setup_model(self):
         self.model = self.model.to(self.device)
 
-    def _main_worker(
-        self, loss_fn=None, optimizer=None, scheduler=None, start_epoch=None
-    ):
+    def train(self, loss_fn=None, optimizer=None, scheduler=None, resume_step_count=0):
+        """
+        Method to train the model using a single cpu/gpu device.
+
+        Parameters
+        ----------
+        loss_fn : torch.nn.modules.loss, optional
+            The loss function to be used. Defaults to None (which uses the loss function specified in the config file).
+        optimizer : torch.optim.Optimizer, optional
+            The optimizer to be used. Defaults to None (which uses the optimizer specified in the config file).
+        scheduler : torch.optim.lr_scheduler, optional
+            The learning rate scheduler to be used. Defaults to None (which uses the scheduler specified in the config file).
+        resume_step_count : int, optional
+            The epoch or step number to resume training from. Defaults to 0.
+
+        """
         self._setup_device()
         self._setup_model()
         self._setup_training()
@@ -363,10 +376,20 @@ class Trainer(BaseTrainer):
         os.makedirs(self.cfg.CKPT_DIR, exist_ok=True)
         os.makedirs(self.cfg.LOG_DIR, exist_ok=True)
 
-        best_model = self._trainer()
+        print("Training config:\n")
+        print(self.cfg)
+        print("-" * 80)
 
-    def train(self):
-        pass
+        best_model = self._trainer(resume_step_count)
+
+        print("Training complete!")
+
+        torch.save(
+            best_model.state_dict(),
+            os.path.join(self.cfg.CKPT_DIR, self.model_name + "_best_final.pth"),
+        )
+
+        print("Saved best model!\n")
 
 
 class DistributedTrainer(BaseTrainer):
@@ -387,7 +410,15 @@ class DistributedTrainer(BaseTrainer):
         DataloaderCreator instance for validation
     """
 
-    def __init__(self):
+    def __init__(self, model, train_loader_creator, val_loader_creator):
+
+        self.model_parallel = True
+        self.cfg = cfg
+        self.model_name = model.__class__.__name__.lower()
+        self.model = model
+
+        self.train_loader = train_loader_creator
+        self.val_loader = val_loader_creator
 
         self._validate_ddp_config()
 
@@ -411,18 +442,17 @@ class DistributedTrainer(BaseTrainer):
                     len(device_ids) <= torch.cuda.device_count()
                 ), "Total devices cannot be greater than available CUDA devices."
 
-    def _setup_device(self, rank=0):
+    def _setup_device(self, rank):
         assert (
             torch.cuda.is_available()
-        ), "CUDA devices not available. Use ezflow.Trainer for single device training."
+        ), "CUDA devices are not available. Use ezflow.Trainer for single device training."
         self.device = torch.device(rank)
 
-    def _setup_ddp(self):
+    def _setup_ddp(self, rank):
         os.environ["MASTER_ADDR"] = self.cfg.DISTRIBUTED.MASTER_ADDR
         os.environ["MASTER_PORT"] = self.cfg.DISTRIBUTED.MASTER_PORT
 
         seed(0)
-        rank = self.device
 
         dist.init_process_group(
             backend=self.cfg.DISTRIBUTED.BACKEND,
@@ -432,11 +462,11 @@ class DistributedTrainer(BaseTrainer):
         )
         print(f"{rank + 1}/{self.cfg.DISTRIBUTED.WORLD_SIZE} process initialized.")
 
-    def _setup_model(self):
+    def _setup_model(self, rank):
 
         self.model = DDP(
-            self.model.cuda(self.device),
-            device_ids=[self.device],
+            self.model.cuda(rank),
+            device_ids=[rank],
         )
 
         if self.cfg.DISTRIBUTED.SYNC_BATCH_NORM:
@@ -446,3 +476,65 @@ class DistributedTrainer(BaseTrainer):
 
     def _cleanup(self):
         dist.destroy_process_group()
+
+    def _main_worker(
+        self, rank, loss_fn=None, optimizer=None, scheduler=None, resume_step_count=0
+    ):
+        self._setup_device(rank)
+        self._setup_ddp(rank)
+        self._setup_model(rank)
+        self._setup_training()
+
+        self.train_loader = self.train_loader.get_dataloader(rank=rank)
+        self.val_loader = self.val_loader.get_dataloader(rank=rank)
+
+        os.makedirs(self.cfg.CKPT_DIR, exist_ok=True)
+        os.makedirs(self.cfg.LOG_DIR, exist_ok=True)
+
+        best_model = self._trainer(resume_step_count)
+
+        if rank == 0:
+            if self.model_parallel:
+                best_model = best_model.module
+
+            torch.save(
+                best_model.state_dict(),
+                os.path.join(self.cfg.CKPT_DIR, self.model_name + "_best_final.pth"),
+            )
+            print("Saved best model!\n")
+
+        self._cleanup()
+
+    def train(
+        self,
+        loss_fn=None,
+        optimizer=None,
+        scheduler=None,
+        resume_step_count=0,
+    ):
+        """
+        Method to train the model in a distributed fashion using DDP
+
+        Parameters
+        ----------
+        loss_fn : torch.nn.modules.loss, optional
+            The loss function to be used. Defaults to None (which uses the loss function specified in the config file).
+        optimizer : torch.optim.Optimizer, optional
+            The optimizer to be used. Defaults to None (which uses the optimizer specified in the config file).
+        scheduler : torch.optim.lr_scheduler, optional
+            The learning rate scheduler to be used. Defaults to None (which uses the scheduler specified in the config file).
+        resume_step_count : int, optional
+            The epoch or step number to resume training from. Defaults to 0.
+
+        """
+        print("Training config:\n")
+        print(self.cfg)
+        print("-" * 80)
+        print("\nPerforming distributed training\n")
+        print("-" * 80)
+
+        mp.spawn(
+            self._main_worker,
+            args=(loss_fn, optimizer, scheduler, resume_step_count),
+            nprocs=self.cfg.DISTRIBUTED.WORLD_SIZE,
+        )
