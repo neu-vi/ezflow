@@ -104,7 +104,7 @@ def upflow(flow, scale=8, mode="bilinear"):
         Interpolated flow field
     """
 
-    new_size = (scale * flow.shape[2], scale * flow.shape[3])
+    new_size = (scale * flow.shape[-2], scale * flow.shape[-1])
 
     return scale * F.interpolate(flow, size=new_size, mode=mode, align_corners=True)
 
