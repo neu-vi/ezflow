@@ -3,10 +3,10 @@ from torch.utils.data import DataLoader
 
 
 from ezflow.engine import (
-    prune_l1_structured,
-    prune_l1_unstructured,
     Trainer,
     get_training_cfg,
+    prune_l1_structured,
+    prune_l1_unstructured,
 )
 from .utils import MockOpticalFlowDataset, MockOpticalFlowModel
 
