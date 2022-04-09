@@ -159,7 +159,7 @@ class BaseTrainer:
                 best_model = self._save_best_model(new_avg_val_loss, new_avg_val_metric)
 
             if epoch % self.cfg.CKPT_INTERVAL == 0 and self.device == 0:
-                self._save_checkpoints()
+                self._save_checkpoints("epoch", epoch)
 
         self.writer.close()
         return best_model
@@ -178,25 +178,34 @@ class BaseTrainer:
         if start_step != 0:
             print(f"Resuming training from step {start_step+1}\n")
             total_steps = start_step
-            n_step += start_step
+            n_steps += start_step
 
-        while total_steps < n_steps:
-            print(f"Starting step {total_steps + 1} of {n_step}")
+        train_iter = iter(self.train_loader)
+
+        for step in range(start_step, n_steps):
+            print(f"Starting step {total_steps + 1} of {n_steps}")
             print("-" * 80)
             loss_meter.reset()
-            for iteration, (inp, target) in enumerate(self.train_loader):
 
-                loss = self._run_step(inp, target)
+            try:
+                inp, target = next(train_iter)
+            except:
+                # Handle exception if there is no data
+                # left in train iterator to continue training.
+                train_iter = iter(self.train_loader)
+                inp, target = next(train_iter)
 
-                loss_meter.update(loss.item())
+            loss = self._run_step(inp, target)
 
-                total_steps += 1
-                self._log_step(iteration, total_steps, loss_meter)
+            loss_meter.update(loss.item())
+
+            total_steps += 1
+            self._log_step(step, total_steps, loss_meter)
 
             print(f"\Iteration {total_steps}: Training loss = {loss_meter.sum}")
             self.writer.add_scalar("steps_training_loss", loss_meter.sum, total_steps)
 
-            if total_steps % self.cfg.VALIDATE_INTERVAL == 0 and self.device == 0:
+            if step % self.cfg.VALIDATE_INTERVAL == 0 and self.device == 0:
                 new_avg_val_loss, new_avg_val_metric = self._validate_model()
 
                 self.writer.add_scalar(
@@ -215,8 +224,8 @@ class BaseTrainer:
 
                 best_model = self._save_best_model(new_avg_val_loss, new_avg_val_metric)
 
-            if total_steps % self.cfg.CKPT_INTERVAL == 0 and self.device == 0:
-                self._save_checkpoints()
+            if step % self.cfg.CKPT_INTERVAL == 0 and self.device == 0:
+                self._save_checkpoints("step", total_steps)
 
         self.writer.close()
         return best_model
@@ -261,7 +270,7 @@ class BaseTrainer:
                 total_iters,
             )
             print(
-                f"Epoch iterations: {iteration}, Total iterations: {total_iters}, Average batch training loss: {loss_meter.avg}"
+                f"Iterations: {iteration}, Total iterations: {total_iters}, Average batch training loss: {loss_meter.avg}"
             )
 
     def _validate_model(self):
@@ -297,7 +306,7 @@ class BaseTrainer:
     def _calculate_metric(self, pred, target):
         return endpointerror(pred, target)
 
-    def _save_checkpoints(self):
+    def _save_checkpoints(self, ckpt_type, ckpt_number):
         if self.model_parallel:
             save_model = self.model.module
         else:
@@ -306,16 +315,16 @@ class BaseTrainer:
         consolidated_save_dict = {
             "model_state_dict": save_model.state_dict(),
             "optimizer_state_dict": self.optimizer.state_dict(),
-            "epochs": self.epochs,
+            ckpt_type: ckpt_number,
         }
-        if scheduler is not None:
+        if self.scheduler is not None:
             consolidated_save_dict["scheduler_state_dict"] = self.scheduler.state_dict()
 
         torch.save(
             consolidated_save_dict,
             os.path.join(
                 self.cfg.CKPT_DIR,
-                self.model_name + "_epochs" + str(epochs + 1) + ".pth",
+                self.model_name + "_" + ckpt_type + str(ckpt_number + 1) + ".pth",
             ),
         )
 
@@ -464,7 +473,7 @@ class DistributedTrainer(BaseTrainer):
         DataloaderCreator instance for validation
     """
 
-    def __init__(self, model, train_loader_creator, val_loader_creator):
+    def __init__(self, cfg, model, train_loader_creator, val_loader_creator):
 
         self.model_parallel = True
         self.cfg = cfg
