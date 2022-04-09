@@ -3,6 +3,7 @@ from torch.utils.data import DataLoader
 
 from ezflow.engine import (
     Trainer,
+    eval_model,
     get_training_cfg,
     prune_l1_structured,
     prune_l1_unstructured,
@@ -35,6 +36,11 @@ def test_Trainer():
         consolidated_ckpt=f"./ckpts/{mock_model.__class__.__name__.lower()}_epochs1.pth",
         n_epochs=1,
     )
+
+
+def test_eval_model():
+
+    _ = eval_model(mock_model, mock_dataloader, device="cpu")
 
 
 def test_l1_pruning():
