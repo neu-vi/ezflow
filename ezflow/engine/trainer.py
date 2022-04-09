@@ -12,7 +12,7 @@ from torch.nn.parallel import DistributedDataParallel as DDP
 from torch.utils.tensorboard import SummaryWriter
 
 from ..functional import FUNCTIONAL_REGISTRY
-from ..utils import AverageMeter, endpointerror
+from ..utils import AverageMeter, endpointerror, find_free_port, is_port_available
 from .registry import loss_functions, optimizers, schedulers
 
 
@@ -480,30 +480,49 @@ class DistributedTrainer(BaseTrainer):
         self.model_name = model.__class__.__name__.lower()
         self.model = model
 
+        self.device_ids = None
+
         self.train_loader = train_loader_creator
         self.val_loader = val_loader_creator
 
         self._validate_ddp_config()
 
     def _validate_ddp_config(self):
-        if self.cfg.DISTRIBUTED.USE:
 
-            if self.cfg.DEVICE != "all":
-                """
-                Set CUDA_VISIBLE_DEVICES before performing any torch.cuda operations.
-                """
+        if self.cfg.DEVICE != "all":
+            """
+            Set CUDA_VISIBLE_DEVICES before performing any torch.cuda operations.
+            """
 
-                device = self.cfg.DEVICE
-                if type(device) != str:
-                    device = str(device)
+            device = self.cfg.DEVICE
+            if type(device) != str:
+                device = str(device)
 
-                os.environ["CUDA_VISIBLE_DEVICES"] = device
+            os.environ["CUDA_VISIBLE_DEVICES"] = device
 
-                device_ids = device.split(",")
-                device_ids = [int(id) for id in device_ids]
-                assert (
-                    len(device_ids) <= torch.cuda.device_count()
-                ), "Total devices cannot be greater than available CUDA devices."
+            device_ids = device.split(",")
+            device_ids = [int(id) for id in device_ids]
+            assert (
+                len(device_ids) <= torch.cuda.device_count()
+            ), "Total devices cannot be greater than available CUDA devices."
+            self.device_ids = device_ids
+
+        assert self.cfg.DISTRIBUTED.WORLD_SIZE <= torch.cuda.device_count(), (
+            "WORLD_SIZE cannot be greater than available CUDA devices. "
+            f"Given WORLD_SIZE: {self.cfg.DISTRIBUTED.WORLD_SIZE} "
+            f"but total CUDA devices available: {torch.cuda.device_count()}"
+        )
+
+        if not is_port_available(int(self.cfg.DISTRIBUTED.MASTER_PORT)):
+
+            print(
+                f"\nPort: {self.cfg.DISTRIBUTED.MASTER_PORT} is not available to use!"
+            )
+
+            free_port = find_free_port()
+            print(f"Assigning free port: {free_port}\n")
+
+            self.cfg.DISTRIBUTED.MASTER_PORT = free_port
 
     def _setup_device(self, rank):
         assert (

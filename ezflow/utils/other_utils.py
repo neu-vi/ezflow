@@ -1,3 +1,6 @@
+import socket
+from contextlib import closing
+
 import torch
 
 
@@ -61,3 +64,43 @@ class AverageMeter:
         self.sum += val * n
         self.count += n
         self.avg = self.sum / self.count
+
+
+def find_free_port():
+    """
+    Find an available free ports in the host machine.
+    https://stackoverflow.com/questions/66498045/how-to-solve-dist-init-process-group-from-hanging-or-deadlocks
+    https://stackoverflow.com/questions/1365265/on-localhost-how-do-i-pick-a-free-port-number
+
+    Returns
+    --------
+    str
+        port number
+    """
+
+    with closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as s:
+        s.bind(("", 0))
+        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        return str(s.getsockname()[1])
+
+
+def is_port_available(port):
+    """
+    Check if the provided port is free in the host machine.
+    https://stackoverflow.com/questions/2470971/fast-way-to-test-if-a-port-is-in-use-using-python
+
+    Params
+    ------
+    port : int
+        Port number of the host.
+
+    Returns
+    --------
+    boolean
+        Return True is the port is free otherwise False.
+    """
+
+    assert isinstance(port, int), "Incorrect type. Correct type for port is int"
+
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        return s.connect_ex(("localhost", port)) != 0
