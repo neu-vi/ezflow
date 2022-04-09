@@ -32,7 +32,7 @@ def test_Trainer():
     trainer = Trainer(training_cfg, mock_model, train_loader, val_loader)
     trainer.train(n_epochs=1)
     trainer.resume_training(
-        consolidated_ckpt=f"./ckpts/{mock_model.__class__.__name__}_epochs1.pth",
+        consolidated_ckpt=f"./ckpts/{mock_model.__class__.__name__.lower()}_epochs1.pth",
         n_epochs=1,
     )
 
