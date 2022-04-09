@@ -25,7 +25,7 @@ mock_model = MockOpticalFlowModel(img_channels=img_channels)
 def test_Trainer():
 
     training_cfg = get_training_cfg(
-        cfg_path="./configs/base_trainer_test.yaml", custom=True
+        cfg_path="./tests/configs/base_trainer_test.yaml", custom=True
     )
     train_loader = val_loader = mock_dataloader
 
