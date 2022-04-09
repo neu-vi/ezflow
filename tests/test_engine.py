@@ -8,7 +8,7 @@ from ezflow.engine import (
     Trainer,
     get_training_cfg,
 )
-from utils import MockOpticalFlowDataset, MockOpticalFlowModel
+from .utils import MockOpticalFlowDataset, MockOpticalFlowModel
 
 
 img_size = (64, 64)
