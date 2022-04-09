@@ -1,4 +1,5 @@
 import os
+import time
 from copy import deepcopy
 
 import numpy as np
@@ -46,12 +47,16 @@ class BaseTrainer:
         self.model_parallel = False
 
         self.writer = None
+        self.times = []
 
     def _setup_device(self):
         pass
 
     def _setup_model(self):
         pass
+
+    def _is_main_process(self):
+        return self.device == 0
 
     def _setup_training(self, loss_fn=None, optimizer=None, scheduler=None):
         if loss_fn is None:
@@ -141,7 +146,7 @@ class BaseTrainer:
             print(f"\nEpoch {epoch+1}: Training loss = {loss_meter.sum}")
             self.writer.add_scalar("epochs_training_loss", loss_meter.sum, epoch + 1)
 
-            if epoch % self.cfg.VALIDATE_INTERVAL == 0 and self.device == 0:
+            if epoch % self.cfg.VALIDATE_INTERVAL == 0 and self._is_main_process():
                 new_avg_val_loss, new_avg_val_metric = self._validate_model()
 
                 self.writer.add_scalar(
@@ -158,7 +163,7 @@ class BaseTrainer:
 
                 best_model = self._save_best_model(new_avg_val_loss, new_avg_val_metric)
 
-            if epoch % self.cfg.CKPT_INTERVAL == 0 and self.device == 0:
+            if epoch % self.cfg.CKPT_INTERVAL == 0 and self._is_main_process():
                 self._save_checkpoints("epoch", epoch)
 
         self.writer.close()
@@ -205,7 +210,7 @@ class BaseTrainer:
             print(f"\Iteration {total_steps}: Training loss = {loss_meter.sum}")
             self.writer.add_scalar("steps_training_loss", loss_meter.sum, total_steps)
 
-            if step % self.cfg.VALIDATE_INTERVAL == 0 and self.device == 0:
+            if step % self.cfg.VALIDATE_INTERVAL == 0 and self._is_main_process():
                 new_avg_val_loss, new_avg_val_metric = self._validate_model()
 
                 self.writer.add_scalar(
@@ -224,7 +229,7 @@ class BaseTrainer:
 
                 best_model = self._save_best_model(new_avg_val_loss, new_avg_val_metric)
 
-            if step % self.cfg.CKPT_INTERVAL == 0 and self.device == 0:
+            if step % self.cfg.CKPT_INTERVAL == 0 and self._is_main_process():
                 self._save_checkpoints("step", total_steps)
 
         self.writer.close()
@@ -238,6 +243,11 @@ class BaseTrainer:
             target.to(self.device),
         )
         target = target / self.cfg.DATA.TARGET_SCALE_FACTOR
+
+        if torch.cuda.is_available():
+            torch.cuda.synchronize()
+
+        start_time = time.time()
 
         with autocast(enabled=self.cfg.MIXED_PRECISION):
             pred = self.model(img1, img2)
@@ -258,6 +268,12 @@ class BaseTrainer:
             self.scheduler.step()
 
         self.scaler.update()
+
+        if torch.cuda.is_available():
+            torch.cuda.synchronize()
+
+        if self._is_main_process():
+            self.times.append(time.time() - start_time)
 
         return loss
 
@@ -446,6 +462,8 @@ class Trainer(BaseTrainer):
         best_model = self._trainer(resume_step_count)
 
         print("Training complete!")
+        print(f"Average training time: {sum(self.times)/len(self.times)}")
+        print(f"Total training time: {sum(self.times)}")
 
         torch.save(
             best_model.state_dict(),
@@ -575,7 +593,11 @@ class DistributedTrainer(BaseTrainer):
 
         best_model = self._trainer(resume_step_count)
 
-        if rank == 0:
+        if self._is_main_process():
+            print("Training complete!")
+            print(f"Average training time: {sum(self.times)/len(self.times)}")
+            print(f"Total training time: {sum(self.times)}")
+
             if self.model_parallel:
                 best_model = best_model.module
 
