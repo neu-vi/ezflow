@@ -84,7 +84,7 @@ class MultiScaleLoss(nn.Module):
 
             elif self.norm == "robust":
                 loss_value = (real_flow - label).abs().sum(dim=1) + 1e-8
-                loss_value = loss_value**0.4
+                loss_value = loss_value ** 0.4
 
             elif self.norm == "l1":
                 loss_value = (real_flow - label).abs().sum(dim=1)
