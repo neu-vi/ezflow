@@ -7,7 +7,7 @@ class MockOpticalFlowDataset(Dataset):
 
         self.length = length
 
-        if not isinstance(size, list) or isinstance(size, tuple):
+        if not isinstance(size, list) or not isinstance(size, tuple):
             size = (size, size)
 
         self.imgs = torch.randn(length, channels, *size)
