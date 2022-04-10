@@ -13,6 +13,5 @@ comment:
 
 ignore:
   - "ezflow/data"
-  - "ezflow/engine"
   - "ezflow/config"
   - "ezflow/model_zoo" 
