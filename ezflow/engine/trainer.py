@@ -605,7 +605,6 @@ class DistributedTrainer(BaseTrainer):
 
     Parameters
     ----------
-
     cfg : CfgNode
         Configuration object for training
     model : torch.nn.Module
