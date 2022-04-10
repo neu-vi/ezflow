@@ -1,5 +1,5 @@
 from ezflow.data import DataloaderCreator
-from ezflow.engine import Trainer, get_training_cfg
+from ezflow.engine import DistributedTrainer, Trainer, get_training_cfg
 from ezflow.models import build_model
 
 
@@ -18,20 +18,22 @@ def main(args):
     if cfg.DATA.AUGMENTATION.USE and cfg.DATA.AUGMENTATION.PARAMS:
         aug_params = cfg.DATA.AUGMENTATION.PARAMS.to_dict()
 
-    train_loader = DataloaderCreator(cfg.DATA.BATCH_SIZE, num_workers=cfg.NUM_WORKERS)
-    train_loader.add_FlyingChairs(
+    train_loader_creator = DataloaderCreator(
+        cfg.DATA.BATCH_SIZE, num_workers=cfg.NUM_WORKERS
+    )
+    train_loader_creator.add_FlyingChairs(
         root_dir=args.data_dir, augment=cfg.DATA.AUGMENTATION.USE, aug_params=aug_params
     )
-    train_loader = train_loader.get_dataloader()
 
-    val_loader = DataloaderCreator(cfg.DATA.BATCH_SIZE, num_workers=cfg.NUM_WORKERS)
-    val_loader.add_FlyingChairs(
+    val_loader_creator = DataloaderCreator(
+        cfg.DATA.BATCH_SIZE, num_workers=cfg.NUM_WORKERS
+    )
+    val_loader_creator.add_FlyingChairs(
         root_dir=args.data_dir,
         split="validation",
         augment=cfg.DATA.AUGMENTATION.USE,
         aug_params=aug_params,
     )
-    val_loader = val_loader.get_dataloader()
 
     # Build model
 
@@ -39,15 +41,23 @@ def main(args):
 
     # Create trainer
 
-    trainer = Trainer(cfg, model, train_loader, val_loader)
+    if training_cfg.DISTRIBUTED.USE is True:
+        trainer = DistributedTrainer(
+            cfg,
+            model,
+            train_loader_creator=train_loader_creator,
+            val_loader_creator=val_loader_creator,
+        )
+    else:
+        trainer = Trainer(
+            cfg,
+            model,
+            train_loader=train_loader_creator.get_dataloader(),
+            val_loader=val_loader_creator.get_dataloader(),
+        )
 
     # Train model
-
-    n_epochs = None
-    if args.n_epochs:
-        n_epochs = args.n_epochs
-
-    trainer.train(n_epochs=n_epochs)
+    trainer.train()
 
 
 if __name__ == "__main__":
