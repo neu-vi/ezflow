@@ -72,7 +72,7 @@ class BaseTrainer:
             else:
                 loss_fn = loss()
 
-        if optimizer is None:
+        if self.optimizer is None:
 
             opt = optimizers.get(self.cfg.OPTIMIZER.NAME)
 
@@ -93,9 +93,9 @@ class BaseTrainer:
 
                 if self.cfg.SCHEDULER.PARAMS is not None:
                     scheduler_params = self.cfg.SCHEDULER.PARAMS.to_dict()
-                    scheduler = sched(optimizer, **scheduler_params)
+                    scheduler = sched(self.optimizer, **scheduler_params)
                 else:
-                    scheduler = sched(optimizer)
+                    scheduler = sched(self.optimizer)
 
         self.loss_fn = loss_fn
         self.optimizer = optimizer
@@ -105,9 +105,11 @@ class BaseTrainer:
 
         self.scaler = GradScaler(enabled=self.cfg.MIXED_PRECISION)
 
-        self._trainer = self._epoch_trainer
-        if self.cfg.NUM_STEPS is not None:
-            self._trainer = self._step_trainer
+        self._trainer = (
+            self._step_trainer
+            if self.cfg.NUM_STEPS is not None
+            else self._epoch_trainer
+        )
 
         self.min_avg_val_loss = float("inf")
         self.min_avg_val_metric = float("inf")
@@ -115,18 +117,20 @@ class BaseTrainer:
     def _main_worker(self):
         pass
 
-    def _epoch_trainer(self, start_epoch=0):
+    def _epoch_trainer(self, n_epochs=None, start_epoch=None):
 
         best_model = deepcopy(self.model)
         self.model.train()
 
         loss_meter = AverageMeter()
 
-        # TODO: add timer metric
+        if n_epochs is None:
+            n_epochs = self.cfg.EPOCHS
 
-        n_epochs = self.cfg.EPOCHS
-        if start_epoch != 0:
+        if start_epoch is not None:
             print(f"Resuming training from epoch {start_epoch+1}\n")
+        else:
+            start_epoch = 0
 
         for epoch in range(start_epoch, start_epoch + n_epochs):
 
@@ -169,21 +173,23 @@ class BaseTrainer:
         self.writer.close()
         return best_model
 
-    def _step_trainer(self, start_step=0):
+    def _step_trainer(self, n_steps=None, start_step=None):
         best_model = deepcopy(self.model)
         self.model.train()
 
         loss_meter = AverageMeter()
 
-        # TODO: add timer metric
-
         total_steps = 0
-        n_steps = self.cfg.NUM_STEPS
 
-        if start_step != 0:
+        if n_steps is None:
+            n_steps = self.cfg.NUM_STEPS
+
+        if start_step is not None:
             print(f"Resuming training from step {start_step+1}\n")
             total_steps = start_step
             n_steps += start_step
+        else:
+            start_step = 0
 
         train_iter = iter(self.train_loader)
 
@@ -381,8 +387,118 @@ class BaseTrainer:
 
             return best_model
 
-    def _reload_trainer_state(self):
-        pass
+    def _reload_trainer_state(
+        self,
+        consolidated_ckpt=None,
+        model_ckpt=None,
+        optimizer_ckpt=None,
+        total_iterations=None,
+        start_iteration=None,
+        scheduler_ckpt=None,
+        use_cfg=False,
+    ):
+        consolidated_ckpt = (
+            self.cfg.RESUME_TRAINING.CONSOLIDATED_CKPT
+            if use_cfg is True
+            else consolidated_ckpt
+        )
+
+        if consolidated_ckpt is not None:
+
+            ckpt = torch.load(consolidated_ckpt, map_location=torch.device("cpu"))
+
+            model_state_dict = ckpt["model_state_dict"]
+            optimizer_state_dict = ckpt["optimizer_state_dict"]
+
+            if "scheduler_state_dict" in ckpt.keys():
+                scheduler_state_dict = ckpt["scheduler_state_dict"]
+
+            if "epochs" in ckpt.keys():
+                start_epoch = ckpt["epochs"] + 1
+
+        else:
+
+            assert (
+                model_ckpt is not None and optimizer_ckpt is not None
+            ), "Must provide a consolidated ckpt or model and optimizer ckpts separately"
+
+            model_state_dict = torch.load(model_ckpt, map_location=torch.device("cpu"))
+            optimizer_state_dict = torch.load(
+                optimizer_ckpt, map_location=torch.device("cpu")
+            )
+
+            if scheduler_ckpt is not None:
+                scheduler_state_dict = torch.load(
+                    scheduler_ckpt, map_location=torch.device("cpu")
+                )
+
+        self.model.load_state_dict(model_state_dict)
+
+        self._setup_training()
+
+        self.optimizer.load_state_dict(optimizer_state_dict)
+
+        if self.scheduler is not None:
+            self.scheduler.load_state_dict(scheduler_state_dict)
+
+        if total_iterations is None and use_cfg:
+            total_iterations = (
+                self.cfg.RESUME_TRAINING.NUM_STEPS
+                if self.cfg.RESUME_TRAINING.NUM_STEPS is not None
+                else self.cfg.RESUME_TRAINING.EPOCHS
+            )
+
+        if start_iteration is None and use_cfg:
+            start_iteration = (
+                self.cfg.RESUME_TRAINING.START_STEP
+                if self.cfg.RESUME_TRAINING.START_STEP is not None
+                else self.cfg.RESUME_TRAINING.START_EPOCH
+            )
+
+        return (total_iterations, start_iteration)
+
+    def resume_training(
+        self,
+        consolidated_ckpt=None,
+        model_ckpt=None,
+        optimizer_ckpt=None,
+        total_iterations=None,
+        start_iteration=None,
+        scheduler_ckpt=None,
+        use_cfg=False,
+    ):
+
+        """
+        Method to resume training of a model
+        Parameters
+        ----------
+        consolidated_ckpt : str, optional
+            The path to the consolidated checkpoint file. Defaults to None (which uses the consolidated checkpoint file specified in the config file).
+        model_ckpt : str, optional
+            The path to the model checkpoint file. Defaults to None (which uses the model checkpoint file specified in the config file).
+        optimizer_ckpt : str, optional
+            The path to the optimizer checkpoint file. Defaults to None (which uses the optimizer checkpoint file specified in the config file).
+        total_iterations : int, optional
+            The number of epochs or steps to train for. Defaults to None (which uses the number of epochs specified in the config file)
+        start_iteration : int, optional
+            The epoch or step number to resume training from. Defaults to None (which starts from 0).
+        scheduler_ckpt : str, optional
+            The path to the scheduler checkpoint file. Defaults to None (which uses the scheduler checkpoint file specified in the config file).
+        use_cfg : bool, optional
+            Whether to use the config file or not. Defaults to False.
+        """
+
+        total_iterations, start_iteration = self._reload_trainer_states(
+            consolidated_ckpt=consolidated_ckpt,
+            model_ckpt=model_ckpt,
+            optimizer_ckpt=optimizer_ckpt,
+            total_iterations=total_iterations,
+            start_iteration=start_iteration,
+            scheduler_ckpt=scheduler_ckpt,
+            use_cfg=use_cfg,
+        )
+
+        self.train(total_iterations=total_iterations, start_iteration=start_iteration)
 
 
 class Trainer(BaseTrainer):
@@ -432,7 +548,14 @@ class Trainer(BaseTrainer):
     def _setup_model(self):
         self.model = self.model.to(self.device)
 
-    def train(self, loss_fn=None, optimizer=None, scheduler=None, resume_step_count=0):
+    def train(
+        self,
+        loss_fn=None,
+        optimizer=None,
+        scheduler=None,
+        total_iterations=None,
+        start_iteration=None,
+    ):
         """
         Method to train the model using a single cpu/gpu device.
 
@@ -444,13 +567,15 @@ class Trainer(BaseTrainer):
             The optimizer to be used. Defaults to None (which uses the optimizer specified in the config file).
         scheduler : torch.optim.lr_scheduler, optional
             The learning rate scheduler to be used. Defaults to None (which uses the scheduler specified in the config file).
-        resume_step_count : int, optional
-            The epoch or step number to resume training from. Defaults to 0.
+        total_iterations : int, optional
+            The number of epochs or steps to train for. Defaults to None (which uses the number of epochs specified in the config file)
+        start_iteration : int, optional
+            The epoch or step number to resume training from. Defaults to None (which starts from 0).
 
         """
         self._setup_device()
         self._setup_model()
-        self._setup_training()
+        self._setup_training(loss_fn, optimizer, scheduler)
 
         os.makedirs(self.cfg.CKPT_DIR, exist_ok=True)
         os.makedirs(self.cfg.LOG_DIR, exist_ok=True)
@@ -459,7 +584,7 @@ class Trainer(BaseTrainer):
         print(self.cfg)
         print("-" * 80)
 
-        best_model = self._trainer(resume_step_count)
+        best_model = self._trainer(total_iterations, start_iteration)
 
         print("Training complete!")
         print(f"Average training time: {sum(self.times)/len(self.times)}")
@@ -578,12 +703,18 @@ class DistributedTrainer(BaseTrainer):
         dist.destroy_process_group()
 
     def _main_worker(
-        self, rank, loss_fn=None, optimizer=None, scheduler=None, resume_step_count=0
+        self,
+        rank,
+        loss_fn=None,
+        optimizer=None,
+        scheduler=None,
+        total_iterations=None,
+        start_iteration=None,
     ):
         self._setup_device(rank)
         self._setup_ddp(rank)
         self._setup_model(rank)
-        self._setup_training()
+        self._setup_training(loss_fn, optimizer, scheduler)
 
         self.train_loader = self.train_loader.get_dataloader(rank=rank)
         self.val_loader = self.val_loader.get_dataloader(rank=rank)
@@ -591,7 +722,7 @@ class DistributedTrainer(BaseTrainer):
         os.makedirs(self.cfg.CKPT_DIR, exist_ok=True)
         os.makedirs(self.cfg.LOG_DIR, exist_ok=True)
 
-        best_model = self._trainer(resume_step_count)
+        best_model = self._trainer(total_iterations, start_iteration)
 
         if self._is_main_process():
             print("Training complete!")
@@ -614,7 +745,8 @@ class DistributedTrainer(BaseTrainer):
         loss_fn=None,
         optimizer=None,
         scheduler=None,
-        resume_step_count=0,
+        total_iterations=None,
+        start_iteration=None,
     ):
         """
         Method to train the model in a distributed fashion using DDP
@@ -627,8 +759,10 @@ class DistributedTrainer(BaseTrainer):
             The optimizer to be used. Defaults to None (which uses the optimizer specified in the config file).
         scheduler : torch.optim.lr_scheduler, optional
             The learning rate scheduler to be used. Defaults to None (which uses the scheduler specified in the config file).
-        resume_step_count : int, optional
-            The epoch or step number to resume training from. Defaults to 0.
+        total_iterations : int, optional
+            The number of epochs or steps to train for. Defaults to None (which uses the number of epochs specified in the config file)
+        start_iteration : int, optional
+            The epoch or step number to resume training from. Defaults to None (which starts from 0).
 
         """
         print("Training config:\n")
@@ -639,6 +773,6 @@ class DistributedTrainer(BaseTrainer):
 
         mp.spawn(
             self._main_worker,
-            args=(loss_fn, optimizer, scheduler, resume_step_count),
+            args=(loss_fn, optimizer, scheduler, total_iterations, start_iteration),
             nprocs=self.cfg.DISTRIBUTED.WORLD_SIZE,
         )
