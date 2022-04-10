@@ -137,7 +137,7 @@ class BaseTrainer:
 
         for epoch in range(start_epoch, start_epoch + n_epochs):
 
-            print(f"Epoch {epoch+1} of {start_epoch+n_epochs}")
+            print(f"\nEpoch {epoch+1} of {start_epoch+n_epochs}")
             print("-" * 80)
 
             loss_meter.reset()
@@ -155,7 +155,7 @@ class BaseTrainer:
 
             if epoch % self.cfg.VALIDATE_INTERVAL == 0 and self._is_main_process():
                 new_avg_val_loss, new_avg_val_metric = self._validate_model()
-
+                print("-" * 80)
                 self.writer.add_scalar(
                     "avg_validation_loss", new_avg_val_loss, epoch + 1
                 )
@@ -167,9 +167,9 @@ class BaseTrainer:
                     "avg_validation_metric", new_avg_val_metric, epoch + 1
                 )
                 print(
-                    f"Epoch {epoch+1}: Average validation metric = {new_avg_val_metric}"
+                    f"Epoch {epoch+1}: Average validation metric = {new_avg_val_metric}\n"
                 )
-
+                print("-" * 80)
                 best_model = self._save_best_model(
                     best_model, new_avg_val_loss, new_avg_val_metric
                 )
@@ -200,7 +200,7 @@ class BaseTrainer:
 
         train_iter = iter(self.train_loader)
 
-        print(f"Starting step {total_steps + 1} of {n_steps}")
+        print(f"\nStarting step {total_steps + 1} of {n_steps}")
         print("-" * 80)
 
         for step in range(start_step, n_steps):
@@ -220,13 +220,13 @@ class BaseTrainer:
             loss_meter.update(loss.item())
 
             total_steps += 1
-            self._log_step(step, total_steps, loss_meter)
+            self._log_step(step, total_steps - 1, loss_meter)
 
             self.writer.add_scalar("steps_training_loss", loss_meter.sum, total_steps)
 
             if step % self.cfg.VALIDATE_INTERVAL == 0 and self._is_main_process():
                 new_avg_val_loss, new_avg_val_metric = self._validate_model()
-
+                print("-" * 80)
                 self.writer.add_scalar(
                     "avg_validation_loss", new_avg_val_loss, total_steps
                 )
@@ -238,9 +238,9 @@ class BaseTrainer:
                     "avg_validation_metric", new_avg_val_metric, total_steps
                 )
                 print(
-                    f"Iteration {total_steps}: Average validation metric = {new_avg_val_metric}"
+                    f"Iteration {total_steps}: Average validation metric = {new_avg_val_metric}\n"
                 )
-
+                print("-" * 80)
                 best_model = self._save_best_model(
                     best_model, new_avg_val_loss, new_avg_val_metric
                 )
@@ -663,6 +663,7 @@ class DistributedTrainer(BaseTrainer):
                 len(device_ids) <= torch.cuda.device_count()
             ), "Total devices cannot be greater than available CUDA devices."
             self.device_ids = device_ids
+            print(f"\nRunning on devices: {self.device_ids}\n")
 
         assert self.cfg.DISTRIBUTED.WORLD_SIZE <= torch.cuda.device_count(), (
             "WORLD_SIZE cannot be greater than available CUDA devices. "
@@ -702,7 +703,7 @@ class DistributedTrainer(BaseTrainer):
         print(f"{rank + 1}/{self.cfg.DISTRIBUTED.WORLD_SIZE} process initialized.")
 
     def _is_main_process(self):
-        return dist.get_rank == 0
+        return dist.get_rank() == 0
 
     def _setup_model(self, rank):
 
