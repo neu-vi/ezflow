@@ -1,4 +1,4 @@
-import os
+cd ..import os
 from copy import deepcopy
 
 import numpy as np
