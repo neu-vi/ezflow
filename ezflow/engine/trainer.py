@@ -56,7 +56,7 @@ class BaseTrainer:
         pass
 
     def _is_main_process(self):
-        return self.device == 0
+        pass
 
     def _setup_training(self, loss_fn=None, optimizer=None, scheduler=None):
         if loss_fn is None:
@@ -72,7 +72,7 @@ class BaseTrainer:
             else:
                 loss_fn = loss()
 
-        if self.optimizer is None:
+        if optimizer is None:
 
             opt = optimizers.get(self.cfg.OPTIMIZER.NAME)
 
@@ -93,9 +93,12 @@ class BaseTrainer:
 
                 if self.cfg.SCHEDULER.PARAMS is not None:
                     scheduler_params = self.cfg.SCHEDULER.PARAMS.to_dict()
-                    scheduler = sched(self.optimizer, **scheduler_params)
+                    if "epochs" in scheduler_params:
+                        scheduler_params["steps_per_epoch"] = len(self.train_loader)
+
+                    scheduler = sched(optimizer, **scheduler_params)
                 else:
-                    scheduler = sched(self.optimizer)
+                    scheduler = sched(optimizer)
 
         self.loss_fn = loss_fn
         self.optimizer = optimizer
@@ -156,7 +159,9 @@ class BaseTrainer:
                 self.writer.add_scalar(
                     "avg_validation_loss", new_avg_val_loss, epoch + 1
                 )
-                print(f"Epoch {epoch+1}: Average validation loss = {new_avg_val_loss}")
+                print(
+                    f"\nEpoch {epoch+1}: Average validation loss = {new_avg_val_loss}"
+                )
 
                 self.writer.add_scalar(
                     "avg_validation_metric", new_avg_val_metric, epoch + 1
@@ -165,7 +170,9 @@ class BaseTrainer:
                     f"Epoch {epoch+1}: Average validation metric = {new_avg_val_metric}"
                 )
 
-                best_model = self._save_best_model(new_avg_val_loss, new_avg_val_metric)
+                best_model = self._save_best_model(
+                    best_model, new_avg_val_loss, new_avg_val_metric
+                )
 
             if epoch % self.cfg.CKPT_INTERVAL == 0 and self._is_main_process():
                 self._save_checkpoints("epoch", epoch)
@@ -193,9 +200,11 @@ class BaseTrainer:
 
         train_iter = iter(self.train_loader)
 
+        print(f"Starting step {total_steps + 1} of {n_steps}")
+        print("-" * 80)
+
         for step in range(start_step, n_steps):
-            print(f"Starting step {total_steps + 1} of {n_steps}")
-            print("-" * 80)
+
             loss_meter.reset()
 
             try:
@@ -213,7 +222,6 @@ class BaseTrainer:
             total_steps += 1
             self._log_step(step, total_steps, loss_meter)
 
-            print(f"\Iteration {total_steps}: Training loss = {loss_meter.sum}")
             self.writer.add_scalar("steps_training_loss", loss_meter.sum, total_steps)
 
             if step % self.cfg.VALIDATE_INTERVAL == 0 and self._is_main_process():
@@ -223,7 +231,7 @@ class BaseTrainer:
                     "avg_validation_loss", new_avg_val_loss, total_steps
                 )
                 print(
-                    f"Iteration {total_steps}: Average validation loss = {new_avg_val_loss}"
+                    f"\nIteration {total_steps}: Average validation loss = {new_avg_val_loss}"
                 )
 
                 self.writer.add_scalar(
@@ -233,7 +241,9 @@ class BaseTrainer:
                     f"Iteration {total_steps}: Average validation metric = {new_avg_val_metric}"
                 )
 
-                best_model = self._save_best_model(new_avg_val_loss, new_avg_val_metric)
+                best_model = self._save_best_model(
+                    best_model, new_avg_val_loss, new_avg_val_metric
+                )
 
             if step % self.cfg.CKPT_INTERVAL == 0 and self._is_main_process():
                 self._save_checkpoints("step", total_steps)
@@ -350,7 +360,7 @@ class BaseTrainer:
             ),
         )
 
-    def _save_best_model(self, new_avg_val_loss, new_avg_val_metric):
+    def _save_best_model(self, best_model, new_avg_val_loss, new_avg_val_metric):
         if new_avg_val_loss < self.min_avg_val_loss:
 
             self.min_avg_val_loss = new_avg_val_loss
@@ -520,6 +530,8 @@ class Trainer(BaseTrainer):
     """
 
     def __init__(self, cfg, model, train_loader, val_loader):
+        super(Trainer, self).__init__()
+
         self.cfg = cfg
         self.model_name = model.__class__.__name__.lower()
         self.model = model
@@ -547,6 +559,9 @@ class Trainer(BaseTrainer):
 
     def _setup_model(self):
         self.model = self.model.to(self.device)
+
+    def _is_main_process(self):
+        return True
 
     def train(
         self,
@@ -616,7 +631,7 @@ class DistributedTrainer(BaseTrainer):
     """
 
     def __init__(self, cfg, model, train_loader_creator, val_loader_creator):
-
+        super(DistributedTrainer, self).__init__()
         self.model_parallel = True
         self.cfg = cfg
         self.model_name = model.__class__.__name__.lower()
@@ -686,6 +701,9 @@ class DistributedTrainer(BaseTrainer):
         )
         print(f"{rank + 1}/{self.cfg.DISTRIBUTED.WORLD_SIZE} process initialized.")
 
+    def _is_main_process(self):
+        return dist.get_rank == 0
+
     def _setup_model(self, rank):
 
         self.model = DDP(
@@ -713,10 +731,9 @@ class DistributedTrainer(BaseTrainer):
         self._setup_device(rank)
         self._setup_ddp(rank)
         self._setup_model(rank)
-        self._setup_training(loss_fn, optimizer, scheduler)
-
         self.train_loader = self.train_loader.get_dataloader(rank=rank)
         self.val_loader = self.val_loader.get_dataloader(rank=rank)
+        self._setup_training(loss_fn, optimizer, scheduler)
 
         os.makedirs(self.cfg.CKPT_DIR, exist_ok=True)
         os.makedirs(self.cfg.LOG_DIR, exist_ok=True)
@@ -724,7 +741,7 @@ class DistributedTrainer(BaseTrainer):
         best_model = self._trainer(total_iterations, start_iteration)
 
         if self._is_main_process():
-            print("Training complete!")
+            print("\nTraining complete!")
             print(f"Average training time: {sum(self.times)/len(self.times)}")
             print(f"Total training time: {sum(self.times)}")
 
