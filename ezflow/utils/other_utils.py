@@ -69,8 +69,6 @@ class AverageMeter:
 def find_free_port():
     """
     Find an available free ports in the host machine.
-    https://stackoverflow.com/questions/66498045/how-to-solve-dist-init-process-group-from-hanging-or-deadlocks
-    https://stackoverflow.com/questions/1365265/on-localhost-how-do-i-pick-a-free-port-number
 
     Returns
     --------
@@ -87,7 +85,6 @@ def find_free_port():
 def is_port_available(port):
     """
     Check if the provided port is free in the host machine.
-    https://stackoverflow.com/questions/2470971/fast-way-to-test-if-a-port-is-in-use-using-python
 
     Params
     ------
