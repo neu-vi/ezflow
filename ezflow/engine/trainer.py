@@ -50,13 +50,13 @@ class BaseTrainer:
         self.times = []
 
     def _setup_device(self):
-        pass
+        raise NotImplementedError
 
     def _setup_model(self):
-        pass
+        raise NotImplementedError
 
     def _is_main_process(self):
-        pass
+        raise NotImplementedError
 
     def _setup_training(self, loss_fn=None, optimizer=None, scheduler=None):
         if loss_fn is None:
@@ -116,9 +116,6 @@ class BaseTrainer:
 
         self.min_avg_val_loss = float("inf")
         self.min_avg_val_metric = float("inf")
-
-    def _main_worker(self):
-        pass
 
     def _epoch_trainer(self, n_epochs=None, start_epoch=None):
 
