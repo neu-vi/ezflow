@@ -23,7 +23,7 @@ mock_dataloader = DataLoader(
 mock_model = MockOpticalFlowModel(img_channels=img_channels)
 
 
-def test_Trainer():
+def test_epoch_trainer():
 
     training_cfg = get_training_cfg(
         cfg_path="./tests/configs/base_trainer_test.yaml", custom=True
@@ -36,6 +36,17 @@ def test_Trainer():
         consolidated_ckpt=f"./ckpts/{mock_model.__class__.__name__.lower()}_epoch1.pth",
         total_iterations=1,
     )
+
+
+def test_step_trainer():
+
+    training_cfg = get_training_cfg(
+        cfg_path="./tests/configs/step_trainer_test.yaml", custom=True
+    )
+    train_loader = val_loader = mock_dataloader
+
+    trainer = Trainer(training_cfg, mock_model, train_loader, val_loader)
+    trainer.train(total_iterations=1)
 
 
 def test_eval_model():

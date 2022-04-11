@@ -1,0 +1,29 @@
+OPTIMIZER:
+  NAME: Adam
+  LR: 0.0003
+  PARAMS: 
+    betas: [0.9, 0.999]
+    eps: 1.e-08
+SCHEDULER:
+  USE: True
+  NAME: StepLR
+  PARAMS:
+    step_size: 10
+    gamma: 0.1
+CRITERION:
+  CUSTOM: False
+  NAME: L1Loss
+  PARAMS: null
+GRAD_CLIP: 
+  USE: True
+  VALUE: 1.0
+TARGET_SCALE_FACTOR: 1
+DEVICE: "cpu"
+LOG_DIR: "./logs"
+LOG_ITERATIONS_INTERVAL: 1
+VALIDATE_INTERVAL: 1
+VALIDATE_ON: loss
+CKPT_DIR: "./ckpts"
+CKPT_INTERVAL: 1
+EPOCHS: 1
+NUM_STEPS: 1
