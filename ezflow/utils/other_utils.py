@@ -1,3 +1,6 @@
+import socket
+from contextlib import closing
+
 import torch
 
 
@@ -61,3 +64,40 @@ class AverageMeter:
         self.sum += val * n
         self.count += n
         self.avg = self.sum / self.count
+
+
+def find_free_port():
+    """
+    Find an available free ports in the host machine.
+
+    Returns
+    --------
+    str
+        port number
+    """
+
+    with closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as s:
+        s.bind(("", 0))
+        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        return str(s.getsockname()[1])
+
+
+def is_port_available(port):
+    """
+    Check if the provided port is free in the host machine.
+
+    Params
+    ------
+    port : int
+        Port number of the host.
+
+    Returns
+    --------
+    boolean
+        Return True is the port is free otherwise False.
+    """
+
+    port = int(port)
+
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        return s.connect_ex(("localhost", port)) != 0

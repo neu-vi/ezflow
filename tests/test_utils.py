@@ -1,10 +1,14 @@
+from gettext import find
+
 import torch
 
 from ezflow.utils import (
     AverageMeter,
     coords_grid,
     endpointerror,
+    find_free_port,
     forward_interpolate,
+    is_port_available,
     upflow,
 )
 
@@ -49,3 +53,12 @@ def test_AverageMeter():
 
     meter.reset()
     assert meter.avg == 0
+
+
+def test_find_free_port():
+    assert len(find_free_port()) == 5
+
+
+def test_is_port_available():
+    port = find_free_port()
+    assert is_port_available(int(port)) is True
