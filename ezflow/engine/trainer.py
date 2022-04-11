@@ -258,7 +258,7 @@ class BaseTrainer:
             img2.to(self.device),
             target.to(self.device),
         )
-        target = target / self.cfg.DATA.TARGET_SCALE_FACTOR
+        target = target / self.cfg.TARGET_SCALE_FACTOR
 
         if torch.cuda.is_available():
             torch.cuda.synchronize()
