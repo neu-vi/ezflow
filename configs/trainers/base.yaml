@@ -18,12 +18,13 @@ SCHEDULER:
     step_size: 10
     gamma: 0.1
 CRITERION:
-  CUSTOM: True
+  CUSTOM: False
   NAME: L1Loss
   PARAMS: null
 GRAD_CLIP: 
   USE: True
   VALUE: 1.0
+TARGET_SCALE_FACTOR: 1
 DEVICE: "0"
 DISTRIBUTED:
   USE: False
