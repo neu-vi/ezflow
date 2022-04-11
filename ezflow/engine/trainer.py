@@ -216,8 +216,7 @@ class BaseTrainer:
 
             loss_meter.update(loss.item())
 
-            total_steps += 1
-            self._log_step(step, total_steps - 1, loss_meter)
+            self._log_step(step, total_steps, loss_meter)
 
             self.writer.add_scalar("steps_training_loss", loss_meter.sum, total_steps)
 
@@ -244,6 +243,8 @@ class BaseTrainer:
 
             if step % self.cfg.CKPT_INTERVAL == 0 and self._is_main_process():
                 self._save_checkpoints("step", total_steps)
+
+            total_steps += 1
 
         self.writer.close()
         return best_model
@@ -352,7 +353,7 @@ class BaseTrainer:
             consolidated_save_dict,
             os.path.join(
                 self.cfg.CKPT_DIR,
-                self.model_name + "_" + ckpt_type + str(ckpt_number + 1) + ".pth",
+                self.model_name + "_" + ckpt_type + str(ckpt_number) + ".pth",
             ),
         )
 
