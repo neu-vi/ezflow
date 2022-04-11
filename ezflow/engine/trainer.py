@@ -285,8 +285,7 @@ class BaseTrainer:
         if torch.cuda.is_available():
             torch.cuda.synchronize()
 
-        if self._is_main_process():
-            self.times.append(time.time() - start_time)
+        self.times.append(time.time() - start_time)
 
         return loss
 
@@ -394,7 +393,7 @@ class BaseTrainer:
 
             return best_model
 
-    def _reload_trainer_state(
+    def _reload_trainer_states(
         self,
         consolidated_ckpt=None,
         model_ckpt=None,
@@ -538,10 +537,10 @@ class Trainer(BaseTrainer):
 
     def _setup_device(self):
         assert (
-            len(self.cfg.DEVICE) == 1
+            len(self.cfg.DEVICE) == 1 or self.cfg.DEVICE == "cpu"
         ), "Multiple devices not supported. Use ezflow.DistributedTrainer for multi-gpu training."
 
-        if int(self.cfg.DEVICE) == -1 or self.cfg.DEVICE == "cpu":
+        if self.cfg.DEVICE.lower() == "cpu" or int(self.cfg.DEVICE) == -1:
             self.device = torch.device("cpu")
             self.cfg.MIXED_PRECISION = False
             print("Running on CPU\n")

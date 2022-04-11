@@ -59,6 +59,6 @@ def test_find_free_port():
     assert len(find_free_port()) == 5
 
 
-def tes_is_port_available():
+def test_is_port_available():
     port = find_free_port()
     assert is_port_available(int(port)) is True

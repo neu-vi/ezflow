@@ -31,10 +31,10 @@ def test_Trainer():
     train_loader = val_loader = mock_dataloader
 
     trainer = Trainer(training_cfg, mock_model, train_loader, val_loader)
-    trainer.train(n_epochs=1)
+    trainer.train(total_iterations=1)
     trainer.resume_training(
-        consolidated_ckpt=f"./ckpts/{mock_model.__class__.__name__.lower()}_epochs1.pth",
-        n_epochs=1,
+        consolidated_ckpt=f"./ckpts/{mock_model.__class__.__name__.lower()}_epoch1.pth",
+        total_iterations=1,
     )
 
 

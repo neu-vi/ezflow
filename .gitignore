@@ -107,3 +107,7 @@ ENV/
 
 # model_zoo
 ezflow/model_zoo/configs
+
+# unit test outputs
+ckpts/
+logs/

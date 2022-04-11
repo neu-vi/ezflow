@@ -110,7 +110,10 @@ def run_inference(model, dataloader, device, metric_fn, flow_scale=1.0, pad_divi
     avg_inference_time /= batch_size  # Average inference time per sample
 
     print("=" * 100)
-    print(f"Average inference time: {avg_inference_time}, FPS: {1/avg_inference_time}")
+    if avg_inference_time != 0:
+        print(
+            f"Average inference time: {avg_inference_time}, FPS: {1/avg_inference_time}"
+        )
 
     return metric_meter, avg_inference_time
 

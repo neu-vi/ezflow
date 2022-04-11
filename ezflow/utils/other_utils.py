@@ -97,7 +97,7 @@ def is_port_available(port):
         Return True is the port is free otherwise False.
     """
 
-    assert isinstance(port, int), "Incorrect type. Correct type for port is int"
+    port = int(port)
 
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         return s.connect_ex(("localhost", port)) != 0
