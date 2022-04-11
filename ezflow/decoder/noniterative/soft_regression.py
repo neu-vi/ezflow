@@ -203,7 +203,7 @@ class Soft4DFlowRegression(nn.Module):
 
             idx = x.argmax(1)[:, np.newaxis]
 
-            mask = torch.FloatTensor(B, U * V, H, W).fill_(0)
+            mask = torch.FloatTensor(B, U * V, H, W).fill_(0).to(x.device)
             mask.scatter_(1, idx, 1)
             mask = mask.view(B, 1, U, V, -1)
             mask = self.pool3d(mask)[:, 0].view(B, U, V, H, W)
