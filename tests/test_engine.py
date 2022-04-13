@@ -31,7 +31,7 @@ def test_epoch_trainer():
     train_loader = val_loader = mock_dataloader
 
     trainer = Trainer(training_cfg, mock_model, train_loader, val_loader)
-    trainer.train(total_iterations=1)
+    trainer.train()
     trainer.resume_training(
         consolidated_ckpt=f"./ckpts/{mock_model.__class__.__name__.lower()}_epoch0.pth",
         total_iterations=1,
