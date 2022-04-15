@@ -222,7 +222,7 @@ class BaseTrainer:
 
             if step % self.cfg.VALIDATE_INTERVAL == 0 and self._is_main_process():
                 new_avg_val_loss, new_avg_val_metric = self._validate_model()
-                print("-" * 80)
+                print("\n", "-" * 80)
                 self.writer.add_scalar(
                     "avg_validation_loss", new_avg_val_loss, total_steps
                 )
@@ -236,7 +236,7 @@ class BaseTrainer:
                 print(
                     f"Iteration {total_steps}: Average validation metric = {new_avg_val_metric}\n"
                 )
-                print("-" * 80)
+                print("-" * 80, "\n")
                 best_model = self._save_best_model(
                     best_model, new_avg_val_loss, new_avg_val_metric
                 )
