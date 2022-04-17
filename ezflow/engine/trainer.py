@@ -1,6 +1,7 @@
 import os
 import time
 from copy import deepcopy
+from datetime import timedelta
 
 import numpy as np
 import torch
@@ -286,7 +287,8 @@ class BaseTrainer:
         if torch.cuda.is_available():
             torch.cuda.synchronize()
 
-        self.times.append(time.time() - start_time)
+        if self._is_main_process():
+            self.times.append(time.time() - start_time)
 
         return loss
 
@@ -601,7 +603,7 @@ class Trainer(BaseTrainer):
 
         print("Training complete!")
         print(f"Average training time: {sum(self.times)/len(self.times)}")
-        print(f"Total training time: {sum(self.times)}")
+        print(f"Total training time: {str(timedelta(seconds=sum(self.times)))}")
 
         torch.save(
             best_model.state_dict(),
@@ -744,7 +746,7 @@ class DistributedTrainer(BaseTrainer):
         if self._is_main_process():
             print("\nTraining complete!")
             print(f"Average training time: {sum(self.times)/len(self.times)}")
-            print(f"Total training time: {sum(self.times)}")
+            print(f"Total training time: {str(timedelta(seconds=sum(self.times)))}")
 
             if self.model_parallel:
                 best_model = best_model.module
