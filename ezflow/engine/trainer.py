@@ -152,22 +152,10 @@ class BaseTrainer:
             self.writer.add_scalar("epochs_training_loss", loss_meter.sum, epoch + 1)
 
             if epoch % self.cfg.VALIDATE_INTERVAL == 0 and self._is_main_process():
-                new_avg_val_loss, new_avg_val_metric = self._validate_model()
-                print("\n", "-" * 80)
-                self.writer.add_scalar(
-                    "avg_validation_loss", new_avg_val_loss, epoch + 1
-                )
-                print(
-                    f"\nEpoch {epoch+1}: Average validation loss = {new_avg_val_loss}"
+                new_avg_val_loss, new_avg_val_metric = self._validate_model(
+                    "Epoch", epoch + 1
                 )
 
-                self.writer.add_scalar(
-                    "avg_validation_metric", new_avg_val_metric, epoch + 1
-                )
-                print(
-                    f"Epoch {epoch+1}: Average validation metric = {new_avg_val_metric}\n"
-                )
-                print("-" * 80, "\n")
                 best_model = self._save_best_model(
                     best_model, new_avg_val_loss, new_avg_val_metric
                 )
@@ -222,22 +210,9 @@ class BaseTrainer:
             self.writer.add_scalar("steps_training_loss", loss_meter.sum, total_steps)
 
             if step % self.cfg.VALIDATE_INTERVAL == 0 and self._is_main_process():
-                new_avg_val_loss, new_avg_val_metric = self._validate_model()
-                print("\n", "-" * 80)
-                self.writer.add_scalar(
-                    "avg_validation_loss", new_avg_val_loss, total_steps
+                new_avg_val_loss, new_avg_val_metric = self._validate_model(
+                    "Iteration", total_steps
                 )
-                print(
-                    f"\nIteration {total_steps}: Average validation loss = {new_avg_val_loss}"
-                )
-
-                self.writer.add_scalar(
-                    "avg_validation_metric", new_avg_val_metric, total_steps
-                )
-                print(
-                    f"Iteration {total_steps}: Average validation metric = {new_avg_val_metric}\n"
-                )
-                print("-" * 80, "\n")
                 best_model = self._save_best_model(
                     best_model, new_avg_val_loss, new_avg_val_metric
                 )
@@ -259,7 +234,7 @@ class BaseTrainer:
         )
         target = target / self.cfg.TARGET_SCALE_FACTOR
 
-        if torch.cuda.is_available():
+        if self._is_main_process() and torch.cuda.is_available():
             torch.cuda.synchronize()
 
         start_time = time.time()
@@ -284,10 +259,8 @@ class BaseTrainer:
 
         self.scaler.update()
 
-        if torch.cuda.is_available():
+        if self._is_main_process() and torch.cuda.is_available():
             torch.cuda.synchronize()
-
-        if self._is_main_process():
             self.times.append(time.time() - start_time)
 
         return loss
@@ -304,7 +277,7 @@ class BaseTrainer:
                 f"Iterations: {iteration}, Total iterations: {total_iters}, Average batch training loss: {loss_meter.avg}"
             )
 
-    def _validate_model(self):
+    def _validate_model(self, iter_type, iteration):
 
         self.model.eval()
 
@@ -330,9 +303,22 @@ class BaseTrainer:
                 metric = self._calculate_metric(pred, target)
                 metric_meter.update(metric)
 
+        new_avg_val_loss, new_avg_val_metric = loss_meter.avg, metric_meter.avg
+        print("\n", "-" * 80)
+        self.writer.add_scalar("avg_validation_loss", new_avg_val_loss, iteration)
+        print(
+            f"\n{iter_type} {iteration}: Average validation loss = {new_avg_val_loss}"
+        )
+
+        self.writer.add_scalar("avg_validation_metric", new_avg_val_metric, iteration)
+        print(
+            f"{iter_type} {iteration}: Average validation metric = {new_avg_val_metric}\n"
+        )
+        print("-" * 80, "\n")
+
         self.model.train()
 
-        return loss_meter.avg, metric_meter.avg
+        return new_avg_val_loss, new_avg_val_metric
 
     def _calculate_metric(self, pred, target):
         return endpointerror(pred, target)
@@ -640,8 +626,11 @@ class DistributedTrainer(BaseTrainer):
         self.local_rank = None
         self.device_ids = None
 
-        self.train_loader = train_loader_creator
-        self.val_loader = val_loader_creator
+        self.train_loader = None
+        self.val_loader = None
+
+        self.train_loader_creator = train_loader_creator
+        self.val_loader_creator = val_loader_creator
 
         self._validate_ddp_config()
 
@@ -734,8 +723,8 @@ class DistributedTrainer(BaseTrainer):
         self._setup_device(rank)
         self._setup_ddp(rank)
         self._setup_model(rank)
-        self.train_loader = self.train_loader.get_dataloader(rank=rank)
-        self.val_loader = self.val_loader.get_dataloader(rank=rank)
+        self.train_loader = self.train_loader_creator.get_dataloader(rank=rank)
+        self.val_loader = self.val_loader_creator.get_dataloader(rank=rank)
         self._setup_training(loss_fn, optimizer, scheduler)
 
         os.makedirs(self.cfg.CKPT_DIR, exist_ok=True)
