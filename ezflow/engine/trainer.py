@@ -119,8 +119,6 @@ class BaseTrainer:
         self.min_avg_val_metric = float("inf")
 
     def _epoch_trainer(self, n_epochs=None, start_epoch=None):
-
-        best_model = deepcopy(self.model)
         self.model.train()
 
         loss_meter = AverageMeter()
@@ -152,22 +150,14 @@ class BaseTrainer:
             self.writer.add_scalar("epochs_training_loss", loss_meter.sum, epoch + 1)
 
             if epoch % self.cfg.VALIDATE_INTERVAL == 0 and self._is_main_process():
-                new_avg_val_loss, new_avg_val_metric = self._validate_model(
-                    "Epoch", epoch + 1
-                )
-
-                best_model = self._save_best_model(
-                    best_model, new_avg_val_loss, new_avg_val_metric
-                )
+                self._validate_model(iter_type="Epoch", iterations=epoch + 1)
 
             if epoch % self.cfg.CKPT_INTERVAL == 0 and self._is_main_process():
                 self._save_checkpoints("epoch", epoch)
 
         self.writer.close()
-        return best_model
 
     def _step_trainer(self, n_steps=None, start_step=None):
-        best_model = deepcopy(self.model)
         self.model.train()
 
         loss_meter = AverageMeter()
@@ -210,12 +200,7 @@ class BaseTrainer:
             self.writer.add_scalar("steps_training_loss", loss_meter.sum, total_steps)
 
             if step % self.cfg.VALIDATE_INTERVAL == 0 and self._is_main_process():
-                new_avg_val_loss, new_avg_val_metric = self._validate_model(
-                    "Iteration", total_steps
-                )
-                best_model = self._save_best_model(
-                    best_model, new_avg_val_loss, new_avg_val_metric
-                )
+                self._validate_model(iter_type="Iteration", iterations=total_steps)
 
             if step % self.cfg.CKPT_INTERVAL == 0 and self._is_main_process():
                 self._save_checkpoints("step", total_steps)
@@ -223,7 +208,6 @@ class BaseTrainer:
             total_steps += 1
 
         self.writer.close()
-        return best_model
 
     def _run_step(self, inp, target):
         img1, img2 = inp
@@ -277,7 +261,7 @@ class BaseTrainer:
                 f"Iterations: {iteration}, Total iterations: {total_iters}, Average batch training loss: {loss_meter.avg}"
             )
 
-    def _validate_model(self, iter_type, iteration):
+    def _validate_model(self, iter_type, iterations):
 
         self.model.eval()
 
@@ -304,21 +288,22 @@ class BaseTrainer:
                 metric_meter.update(metric)
 
         new_avg_val_loss, new_avg_val_metric = loss_meter.avg, metric_meter.avg
+
         print("\n", "-" * 80)
-        self.writer.add_scalar("avg_validation_loss", new_avg_val_loss, iteration)
+        self.writer.add_scalar("avg_validation_loss", new_avg_val_loss, iterations)
         print(
-            f"\n{iter_type} {iteration}: Average validation loss = {new_avg_val_loss}"
+            f"\n{iter_type} {iterations}: Average validation loss = {new_avg_val_loss}"
         )
 
-        self.writer.add_scalar("avg_validation_metric", new_avg_val_metric, iteration)
+        self.writer.add_scalar("avg_validation_metric", new_avg_val_metric, iterations)
         print(
-            f"{iter_type} {iteration}: Average validation metric = {new_avg_val_metric}\n"
+            f"{iter_type} {iterations}: Average validation metric = {new_avg_val_metric}\n"
         )
         print("-" * 80, "\n")
 
-        self.model.train()
+        self._save_best_model(new_avg_val_loss, new_avg_val_metric)
 
-        return new_avg_val_loss, new_avg_val_metric
+        self.model.train()
 
     def _calculate_metric(self, pred, target):
         return endpointerror(pred, target)
@@ -345,7 +330,7 @@ class BaseTrainer:
             ),
         )
 
-    def _save_best_model(self, best_model, new_avg_val_loss, new_avg_val_metric):
+    def _save_best_model(self, new_avg_val_loss, new_avg_val_metric):
         if new_avg_val_loss < self.min_avg_val_loss:
 
             self.min_avg_val_loss = new_avg_val_loss
@@ -362,8 +347,6 @@ class BaseTrainer:
                 )
                 print(f"Saved new best model!\n")
 
-                return best_model
-
         if new_avg_val_metric < self.min_avg_val_metric:
 
             self.min_avg_val_metric = new_avg_val_metric
@@ -379,9 +362,6 @@ class BaseTrainer:
                     os.path.join(self.cfg.CKPT_DIR, self.model_name + "_best.pth"),
                 )
                 print(f"Saved new best model!\n")
-                return best_model
-
-        return best_model
 
     def _reload_trainer_states(
         self,
@@ -585,18 +565,11 @@ class Trainer(BaseTrainer):
         print(self.cfg)
         print("-" * 80)
 
-        best_model = self._trainer(total_iterations, start_iteration)
+        self._trainer(total_iterations, start_iteration)
 
         print("Training complete!")
         print(f"Average training time: {sum(self.times)/len(self.times)}")
         print(f"Total training time: {str(timedelta(seconds=sum(self.times)))}")
-
-        torch.save(
-            best_model.state_dict(),
-            os.path.join(self.cfg.CKPT_DIR, self.model_name + "_best_final.pth"),
-        )
-
-        print("Saved best model!\n")
 
 
 class DistributedTrainer(BaseTrainer):
@@ -730,21 +703,12 @@ class DistributedTrainer(BaseTrainer):
         os.makedirs(self.cfg.CKPT_DIR, exist_ok=True)
         os.makedirs(self.cfg.LOG_DIR, exist_ok=True)
 
-        best_model = self._trainer(total_iterations, start_iteration)
+        self._trainer(total_iterations, start_iteration)
 
         if self._is_main_process():
             print("\nTraining complete!")
             print(f"Average training time: {sum(self.times)/len(self.times)}")
             print(f"Total training time: {str(timedelta(seconds=sum(self.times)))}")
-
-            if self.model_parallel:
-                best_model = best_model.module
-
-            torch.save(
-                best_model.state_dict(),
-                os.path.join(self.cfg.CKPT_DIR, self.model_name + "_best_final.pth"),
-            )
-            print("Saved best model!\n")
 
         self._cleanup()
 
