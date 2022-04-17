@@ -374,7 +374,7 @@ class BaseTrainer:
                 )
                 print(f"Saved new best model!\n")
 
-            return best_model
+                return best_model
 
         if new_avg_val_metric < self.min_avg_val_metric:
 
@@ -391,8 +391,9 @@ class BaseTrainer:
                     os.path.join(self.cfg.CKPT_DIR, self.model_name + "_best.pth"),
                 )
                 print(f"Saved new best model!\n")
+                return best_model
 
-            return best_model
+        return best_model
 
     def _reload_trainer_states(
         self,
