@@ -153,7 +153,7 @@ class BaseTrainer:
                 self._validate_model(iter_type="Epoch", iterations=epoch + 1)
 
             if epoch % self.cfg.CKPT_INTERVAL == 0 and self._is_main_process():
-                self._save_checkpoints("epoch", epoch)
+                self._save_checkpoints(ckpt_type="epoch", ckpt_number=epoch + 1)
 
         self.writer.close()
 
@@ -203,7 +203,7 @@ class BaseTrainer:
                 self._validate_model(iter_type="Iteration", iterations=total_steps)
 
             if step % self.cfg.CKPT_INTERVAL == 0 and self._is_main_process():
-                self._save_checkpoints("step", total_steps)
+                self._save_checkpoints(ckpt_type="step", ckpt_number=total_steps)
 
             total_steps += 1
 
