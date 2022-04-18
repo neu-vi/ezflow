@@ -4,6 +4,7 @@ import torch.nn.functional as F
 
 from ..decoder import build_decoder
 from ..encoder import build_encoder
+from ..modules import BaseModule
 from ..similarity import build_similarity
 from ..utils import coords_grid, upflow
 from .build import MODEL_REGISTRY
@@ -24,7 +25,7 @@ except:
 
 
 @MODEL_REGISTRY.register()
-class RAFT(nn.Module):
+class RAFT(BaseModule):
     """
     Implementation of the paper
     `RAFT: Recurrent All-Pairs Field Transforms for Optical Flow <https://arxiv.org/abs/2003.12039>`_
