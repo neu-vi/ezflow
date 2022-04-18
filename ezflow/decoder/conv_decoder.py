@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 
 from ..config import configurable
+from ..modules import BaseModule
 from .build import DECODER_REGISTRY
 
 
@@ -66,7 +67,7 @@ def deconv(in_channels, out_channels):
 
 
 @DECODER_REGISTRY.register()
-class ConvDecoder(nn.Module):
+class ConvDecoder(BaseModule):
     """
     Applies a 2D Convolutional decoder to the input feature map.
     Used in **PWCNet** (https://arxiv.org/abs/1709.02371)
@@ -164,7 +165,7 @@ class ConvDecoder(nn.Module):
 
 
 @DECODER_REGISTRY.register()
-class FlowNetConvDecoder(nn.Module):
+class FlowNetConvDecoder(BaseModule):
     """
     Applies a 2D Convolutional decoder to regress the optical flow
     from the intermediate outputs convolutions of the encoder.

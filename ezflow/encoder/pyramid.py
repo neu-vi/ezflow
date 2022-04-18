@@ -1,12 +1,12 @@
 import torch.nn as nn
 
 from ..config import configurable
-from ..modules import conv
+from ..modules import BaseModule, conv
 from .build import ENCODER_REGISTRY
 
 
 @ENCODER_REGISTRY.register()
-class PyramidEncoder(nn.Module):
+class PyramidEncoder(BaseModule):
     """
     Pyramid encoder which returns a hierarchy of features
     Used in **PWC-Net: CNNs for Optical Flow Using Pyramid, Warping, and Cost Volume** (https://arxiv.org/abs/1709.02371)

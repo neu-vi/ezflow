@@ -4,11 +4,12 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from ...config import configurable
+from ...modules import BaseModule
 from ..build import DECODER_REGISTRY
 
 
 @DECODER_REGISTRY.register()
-class SoftArg2DFlowRegression(nn.Module):
+class SoftArg2DFlowRegression(BaseModule):
     """
     Applies 2D soft argmin/argmax operation to regress flow.
     Used in **DICL** (https://arxiv.org/abs/2010.14851)
@@ -100,7 +101,7 @@ class SoftArg2DFlowRegression(nn.Module):
 
 
 @DECODER_REGISTRY.register()
-class Soft4DFlowRegression(nn.Module):
+class Soft4DFlowRegression(BaseModule):
     """
     Applies 4D soft argmax operation to regress flow.
 

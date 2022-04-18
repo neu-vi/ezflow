@@ -2,6 +2,7 @@ import torch.nn.functional as F
 from torch import nn
 
 from ..config import configurable
+from ..modules import BaseModule
 from .build import DECODER_REGISTRY
 
 
@@ -56,7 +57,7 @@ class FeatureProjection4D(nn.Module):
 
 
 @DECODER_REGISTRY.register()
-class SeparableConv4D(nn.Module):
+class SeparableConv4D(BaseModule):
     """
     Applies two 3D convolution followed by an
     optional 2D convolution to the input feature map.
@@ -289,7 +290,7 @@ class SeparableConv4DBlock(nn.Module):
 
 
 @DECODER_REGISTRY.register()
-class Butterfly4D(nn.Module):
+class Butterfly4D(BaseModule):
     """
     Applies a FeatureProjection4D followed by
     five SeperableConv4d convolutions to the input feature map.

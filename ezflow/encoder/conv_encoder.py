@@ -2,12 +2,12 @@ import torch
 import torch.nn as nn
 
 from ..config import configurable
-from ..modules import conv
+from ..modules import BaseModule, conv
 from .build import ENCODER_REGISTRY
 
 
 @ENCODER_REGISTRY.register()
-class BasicConvEncoder(nn.Module):
+class BasicConvEncoder(BaseModule):
     """
     A Basic Convolution Encoder with a fixed size kernel = 3, padding=1 and dilation = 1.
     Every alternate layer has stride = 1 followed by stride = 2.

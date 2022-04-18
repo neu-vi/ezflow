@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from ...config import configurable
-from ...modules import ConvGRU
+from ...modules import BaseModule, ConvGRU
 from ..build import DECODER_REGISTRY
 
 
@@ -213,7 +213,7 @@ class MotionEncoder(nn.Module):
 
 
 @DECODER_REGISTRY.register()
-class SmallRecurrentLookupUpdateBlock(nn.Module):
+class SmallRecurrentLookupUpdateBlock(BaseModule):
     """
     Applies an iterative lookup update on all levels of the correlation
     pyramid to estimate flow with a sequence of GRU cells.
@@ -282,7 +282,7 @@ class SmallRecurrentLookupUpdateBlock(nn.Module):
 
 
 @DECODER_REGISTRY.register()
-class RecurrentLookupUpdateBlock(nn.Module):
+class RecurrentLookupUpdateBlock(BaseModule):
     """
     Applies an iterative lookup update on all levels of the correlation
     pyramid to estimate flow with a sequence of GRU cells.

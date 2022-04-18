@@ -2,12 +2,12 @@ import torch
 import torch.nn as nn
 
 from ..config import configurable
-from ..modules import Conv2x, ConvNormRelu
+from ..modules import BaseModule, Conv2x, ConvNormRelu
 from .build import ENCODER_REGISTRY
 
 
 @ENCODER_REGISTRY.register()
-class GANetBackbone(nn.Module):
+class GANetBackbone(BaseModule):
     """
     Feature extractor backbone used in **GA-Net: Guided Aggregation Net for End-to-end Stereo Matching** (https://arxiv.org/abs/1904.06587)
 

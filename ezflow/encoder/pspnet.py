@@ -5,7 +5,7 @@ import torch.nn.functional as F
 from torch import nn
 
 from ..config import configurable
-from ..modules import ConvNormRelu
+from ..modules import BaseModule, ConvNormRelu
 from .build import ENCODER_REGISTRY
 
 
@@ -137,7 +137,7 @@ class PyramidPooling(nn.Module):
 
 
 @ENCODER_REGISTRY.register()
-class PSPNetBackbone(nn.Module):
+class PSPNetBackbone(BaseModule):
     """
     PSPNet feature extractor backbone (https://arxiv.org/abs/1612.01105)
     Used in **Volumetric Correspondence Networks for Optical Flow** (https://papers.nips.cc/paper/2019/hash/bbf94b34eb32268ada57a3be5062fe7d-Abstract.html)

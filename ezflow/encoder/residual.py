@@ -2,12 +2,12 @@ import torch
 import torch.nn as nn
 
 from ..config import configurable
-from ..modules import BasicBlock, BottleneckBlock
+from ..modules import BaseModule, BasicBlock, BottleneckBlock
 from .build import ENCODER_REGISTRY
 
 
 @ENCODER_REGISTRY.register()
-class BasicEncoder(nn.Module):
+class BasicEncoder(BaseModule):
     """
     ResNet-style encoder with basic residual blocks
 
@@ -153,7 +153,7 @@ class BasicEncoder(nn.Module):
 
 
 @ENCODER_REGISTRY.register()
-class BottleneckEncoder(nn.Module):
+class BottleneckEncoder(BaseModule):
     """
     ResNet-style encoder with bottleneck residual blocks
 
