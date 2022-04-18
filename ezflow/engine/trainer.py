@@ -568,7 +568,6 @@ class Trainer(BaseTrainer):
         self._trainer(total_iterations, start_iteration)
 
         print("Training complete!")
-        print(f"Average training time: {sum(self.times)/len(self.times)}")
         print(f"Total training time: {str(timedelta(seconds=sum(self.times)))}")
 
 
@@ -707,7 +706,6 @@ class DistributedTrainer(BaseTrainer):
 
         if self._is_main_process():
             print("\nTraining complete!")
-            print(f"Average training time: {sum(self.times)/len(self.times)}")
             print(f"Total training time: {str(timedelta(seconds=sum(self.times)))}")
 
         self._cleanup()
