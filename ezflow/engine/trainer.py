@@ -118,8 +118,16 @@ class BaseTrainer:
         self.min_avg_val_loss = float("inf")
         self.min_avg_val_metric = float("inf")
 
+    def _freeze_bn(self):
+        if self.cfg.FREEZE_BATCH_NORM is not None and self.cfg.FREEZE_BATCH_NORM:
+            if self.model_parallel:
+                self.model.module.freeze_batch_norm()
+            else:
+                self.model.freeze_batch_norm()
+
     def _epoch_trainer(self, n_epochs=None, start_epoch=None):
         self.model.train()
+        self._freeze_bn()
 
         loss_meter = AverageMeter()
 
@@ -159,6 +167,7 @@ class BaseTrainer:
 
     def _step_trainer(self, n_steps=None, start_step=None):
         self.model.train()
+        self._freeze_bn()
 
         loss_meter = AverageMeter()
 
@@ -304,6 +313,7 @@ class BaseTrainer:
         self._save_best_model(new_avg_val_loss, new_avg_val_metric)
 
         self.model.train()
+        self._freeze_bn()
 
     def _calculate_metric(self, pred, target):
         return endpointerror(pred, target)
