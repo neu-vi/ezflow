@@ -530,6 +530,7 @@ class Trainer(BaseTrainer):
 
         else:
             self.device = torch.device(int(self.cfg.DEVICE))
+            torch.cuda.empty_cache()
 
     def _setup_model(self):
         self.model = self.model.to(self.device)
@@ -658,6 +659,7 @@ class DistributedTrainer(BaseTrainer):
         ), "CUDA devices are not available. Use ezflow.Trainer for single device training."
         self.device = torch.device(rank)
         self.local_rank = rank
+        torch.cuda.empty_cache()
 
     def _setup_ddp(self, rank):
         os.environ["MASTER_ADDR"] = self.cfg.DISTRIBUTED.MASTER_ADDR
