@@ -188,33 +188,31 @@ class BaseTrainer:
         print(f"\nStarting step {total_steps + 1} of {n_steps}")
         print("-" * 80)
 
-        for step in range(start_step, n_steps):
+        keep_training = True
+        while keep_training:
 
             loss_meter.reset()
+            for step, (inp, target) in enumerate(self.train_loader):
 
-            try:
-                inp, target = next(train_iter)
-            except:
-                # Handle exception if there is no data
-                # left in train iterator to continue training.
-                train_iter = iter(self.train_loader)
-                inp, target = next(train_iter)
+                loss = self._run_step(inp, target)
+                loss_meter.update(loss.item())
 
-            loss = self._run_step(inp, target)
+                self._log_step(step, total_steps, loss_meter)
 
-            loss_meter.update(loss.item())
+                self.writer.add_scalar(
+                    "steps_training_loss", loss_meter.sum, total_steps
+                )
 
-            self._log_step(step, total_steps, loss_meter)
+                if step % self.cfg.VALIDATE_INTERVAL == 0 and self._is_main_process():
+                    self._validate_model(iter_type="Iteration", iterations=total_steps)
 
-            self.writer.add_scalar("steps_training_loss", loss_meter.sum, total_steps)
+                if step % self.cfg.CKPT_INTERVAL == 0 and self._is_main_process():
+                    self._save_checkpoints(ckpt_type="step", ckpt_number=total_steps)
 
-            if step % self.cfg.VALIDATE_INTERVAL == 0 and self._is_main_process():
-                self._validate_model(iter_type="Iteration", iterations=total_steps)
-
-            if step % self.cfg.CKPT_INTERVAL == 0 and self._is_main_process():
-                self._save_checkpoints(ckpt_type="step", ckpt_number=total_steps)
-
-            total_steps += 1
+                total_steps += 1
+                if total_steps > n_steps:
+                    keep_training = False
+                    break
 
         self.writer.close()
 
