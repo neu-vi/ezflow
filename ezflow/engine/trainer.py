@@ -119,7 +119,7 @@ class BaseTrainer:
         self.min_avg_val_metric = float("inf")
 
     def _freeze_bn(self):
-        if self.cfg.FREEZE_BATCH_NORM is not None and self.cfg.FREEZE_BATCH_NORM:
+        if self.cfg.FREEZE_BATCH_NORM:
             if self.model_parallel:
                 self.model.module.freeze_batch_norm()
             else:

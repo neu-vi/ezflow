@@ -1,8 +1,10 @@
 import torch
 from torch import nn
 
+from ezflow.modules import BaseModule
 
-class MockOpticalFlowModel(nn.Module):
+
+class MockOpticalFlowModel(BaseModule):
     def __init__(self, img_channels):
         super().__init__()
 
