@@ -157,7 +157,7 @@ class BaseTrainer:
             print(f"\nEpoch {epoch+1}: Training loss = {loss_meter.sum}")
             self.writer.add_scalar("epochs_training_loss", loss_meter.sum, epoch + 1)
 
-            if epoch % self.cfg.VALIDATE_INTERVAL == 0 and self._is_main_process():
+            if epoch % self.cfg.VALIDATE_INTERVAL == 0:
                 self._validate_model(iter_type="Epoch", iterations=epoch + 1)
 
             if epoch % self.cfg.CKPT_INTERVAL == 0 and self._is_main_process():
@@ -187,32 +187,29 @@ class BaseTrainer:
 
         print(f"\nStarting step {total_steps + 1} of {n_steps}")
         print("-" * 80)
+        for step in range(start_step, n_steps):
+            try:
+                inp, target = next(train_iter)
+            except:
+                # Handle exception if there is no data
+                # left in train iterator to continue training.
+                train_iter = iter(self.train_loader)
+                inp, target = next(train_iter)
 
-        keep_training = True
-        while keep_training:
+            loss = self._run_step(inp, target)
+            loss_meter.update(loss.item())
 
-            loss_meter.reset()
-            for step, (inp, target) in enumerate(self.train_loader):
+            self._log_step(step, total_steps, loss_meter)
 
-                loss = self._run_step(inp, target)
-                loss_meter.update(loss.item())
+            self.writer.add_scalar("steps_training_loss", loss_meter.sum, total_steps)
 
-                self._log_step(step, total_steps, loss_meter)
+            if step % self.cfg.VALIDATE_INTERVAL == 0:
+                self._validate_model(iter_type="Iteration", iterations=total_steps)
 
-                self.writer.add_scalar(
-                    "steps_training_loss", loss_meter.sum, total_steps
-                )
+            if step % self.cfg.CKPT_INTERVAL == 0 and self._is_main_process():
+                self._save_checkpoints(ckpt_type="step", ckpt_number=total_steps)
 
-                if step % self.cfg.VALIDATE_INTERVAL == 0 and self._is_main_process():
-                    self._validate_model(iter_type="Iteration", iterations=total_steps)
-
-                if step % self.cfg.CKPT_INTERVAL == 0 and self._is_main_process():
-                    self._save_checkpoints(ckpt_type="step", ckpt_number=total_steps)
-
-                total_steps += 1
-                if total_steps > n_steps:
-                    keep_training = False
-                    break
+            total_steps += 1
 
         self.writer.close()
 
@@ -225,18 +222,17 @@ class BaseTrainer:
         )
         target = target / self.cfg.TARGET_SCALE_FACTOR
 
-        if self._is_main_process() and torch.cuda.is_available():
+        if torch.cuda.is_available():
             torch.cuda.synchronize()
 
-        start_time = time.time()
+        if self._is_main_process():
+            start_time = time.time()
 
         with autocast(enabled=self.cfg.MIXED_PRECISION):
             pred = self.model(img1, img2)
-
             loss = self.loss_fn(pred, target)
 
         self.optimizer.zero_grad()
-
         self.scaler.scale(loss).backward()
         self.scaler.unscale_(self.optimizer)
 
@@ -250,8 +246,10 @@ class BaseTrainer:
 
         self.scaler.update()
 
-        if self._is_main_process() and torch.cuda.is_available():
+        if torch.cuda.is_available():
             torch.cuda.synchronize()
+
+        if self._is_main_process():
             self.times.append(time.time() - start_time)
 
         return loss
@@ -269,15 +267,12 @@ class BaseTrainer:
             )
 
     def _validate_model(self, iter_type, iterations):
-
         self.model.eval()
-
         metric_meter = AverageMeter()
         loss_meter = AverageMeter()
 
         with torch.no_grad():
             for inp, target in self.val_loader:
-
                 img1, img2 = inp
                 img1, img2, target = (
                     img1.to(self.device),
@@ -287,10 +282,8 @@ class BaseTrainer:
                 target = target / self.cfg.TARGET_SCALE_FACTOR
 
                 pred = self.model(img1, img2)
-
                 loss = self.loss_fn(pred, target)
                 loss_meter.update(loss.item())
-
                 metric = self._calculate_metric(pred, target)
                 metric_meter.update(metric)
 
@@ -308,7 +301,8 @@ class BaseTrainer:
         )
         print("-" * 80, "\n")
 
-        self._save_best_model(new_avg_val_loss, new_avg_val_metric)
+        if self._is_main_process():
+            self._save_best_model(new_avg_val_loss, new_avg_val_metric)
 
         self.model.train()
         self._freeze_bn()
@@ -755,4 +749,5 @@ class DistributedTrainer(BaseTrainer):
             self._main_worker,
             args=(loss_fn, optimizer, scheduler, total_iterations, start_iteration),
             nprocs=self.cfg.DISTRIBUTED.WORLD_SIZE,
+            join=True,
         )
