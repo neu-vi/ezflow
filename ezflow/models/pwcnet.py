@@ -220,6 +220,9 @@ class PWCNet(nn.Module):
         flow_preds.reverse()
         flow_preds[0] += self.dc_conv(features)
 
+        if self.cfg.FLOW_SCALE_FACTOR is not None:
+            flow[0] *= self.cfg.FLOW_SCALE_FACTOR
+
         if self.training:
             return flow_preds
 
@@ -236,8 +239,5 @@ class PWCNet(nn.Module):
                 flow_u = flow[:, 0, :, :] * (W / W_)
                 flow_v = flow[:, 1, :, :] * (H / H_)
                 flow = torch.stack([flow_u, flow_v], dim=1)
-
-            if self.cfg.FLOW_SCALE_FACTOR is not None:
-                flow *= self.cfg.FLOW_SCALE_FACTOR
 
             return flow
