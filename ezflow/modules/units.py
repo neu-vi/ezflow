@@ -162,7 +162,14 @@ class ConvNormRelu(nn.Module):
 
 
 def conv(
-    in_channels, out_channels, kernel_size=3, stride=1, padding=1, dilation=1, norm=None
+    in_channels,
+    out_channels,
+    kernel_size=3,
+    stride=1,
+    padding=1,
+    dilation=1,
+    norm=None,
+    inplace_leaky_relu=True,
 ):
     """
     2D convolution layer with optional normalization followed by
@@ -184,6 +191,8 @@ def conv(
         Dilation of the convolutional kernel
     norm : str, default: None
         Type of normalization to use. Can be None, 'batch', 'layer', 'group'
+    inplace_leaky_relu : bool, default: True
+        If true, performs leaky relu operation in_place
     """
     bias = False
     if norm == "group":
@@ -210,7 +219,7 @@ def conv(
             bias=bias,
         ),
         norm_fn,
-        nn.LeakyReLU(0.1, inplace=True),
+        nn.LeakyReLU(0.1, inplace=inplace_leaky_relu),
     )
 
 

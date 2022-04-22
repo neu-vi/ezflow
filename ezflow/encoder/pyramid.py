@@ -29,12 +29,30 @@ class PyramidEncoder(nn.Module):
 
         self.encoder = nn.ModuleList()
 
-        for i in range(len(config) - 1):
+        for i in range(len(config) - 1):  # [3, 16, 32, 64, 96, 128, 196]
             self.encoder.append(
                 nn.Sequential(
-                    conv(config[i], config[i + 1], kernel_size=3, stride=2),
-                    conv(config[i + 1], config[i + 1], kernel_size=3, stride=1),
-                    conv(config[i + 1], config[i + 1], kernel_size=3, stride=1),
+                    conv(
+                        config[i],
+                        config[i + 1],
+                        kernel_size=3,
+                        stride=2,
+                        inplace_leaky_relu=False,
+                    ),
+                    conv(
+                        config[i + 1],
+                        config[i + 1],
+                        kernel_size=3,
+                        stride=1,
+                        inplace_leaky_relu=False,
+                    ),
+                    conv(
+                        config[i + 1],
+                        config[i + 1],
+                        kernel_size=3,
+                        stride=1,
+                        inplace_leaky_relu=False,
+                    ),
                 )
             )
 
