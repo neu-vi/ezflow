@@ -31,6 +31,7 @@ class PWCNet(nn.Module):
             pad_size=cfg.SIMILARITY.PAD_SIZE,
             max_displacement=cfg.SIMILARITY.MAX_DISPLACEMENT,
         )
+        self.leaky_relu = nn.LeakyReLU(0.1)
 
         search_range = (2 * cfg.SIMILARITY.MAX_DISPLACEMENT + 1) ** 2
 
@@ -38,6 +39,7 @@ class PWCNet(nn.Module):
         decoder_cfg = cfg.DECODER.CONFIG
 
         self.up_feature_layers = nn.ModuleList()
+        self.deconv_layers = nn.ModuleList()
 
         for i in range(len(decoder_cfg)):
 
@@ -52,23 +54,25 @@ class PWCNet(nn.Module):
                 ConvDecoder(
                     config=decoder_cfg,
                     to_flow=True,
+                    inplace_leaky_relu=False,
                     concat_channels=concat_channels,
                 )
             )
 
-            self.up_feature_layers.append(
-                deconv(
-                    concat_channels + sum(decoder_cfg),
-                    2,
-                    kernel_size=4,
-                    stride=2,
-                    padding=1,
+            if i < len(decoder_cfg) - 1:
+                self.deconv_layers.append(
+                    deconv(2, 2, kernel_size=4, stride=2, padding=1)
                 )
-            )
 
-        self.deconv_layers = nn.ModuleList()
-        for i in range(len(decoder_cfg)):
-            self.deconv_layers.append(deconv(2, 2, kernel_size=4, stride=2, padding=1))
+                self.up_feature_layers.append(
+                    deconv(
+                        concat_channels + sum(decoder_cfg),
+                        2,
+                        kernel_size=4,
+                        stride=2,
+                        padding=1,
+                    )
+                )
 
         self.dc_conv = nn.ModuleList(
             [
@@ -76,50 +80,69 @@ class PWCNet(nn.Module):
                     search_range
                     + cfg.SIMILARITY.MAX_DISPLACEMENT
                     + decoder_cfg[-1]
-                    + sum(decoder_cfg),
+                    + sum(decoder_cfg),  # 565
                     128,
                     kernel_size=3,
                     stride=1,
                     padding=1,
                     dilation=1,
+                    inplace_leaky_relu=False,
                 ),
             ]
         )
         self.dc_conv.append(
             conv(
-                decoder_cfg[0],
-                decoder_cfg[0],
+                decoder_cfg[0],  # 128
+                decoder_cfg[0],  # 128
                 kernel_size=3,
                 stride=1,
                 padding=2,
                 dilation=2,
+                inplace_leaky_relu=False,
             )
         )
-
-        padding = 4
-        dilation = 4
-        for i in range(len(decoder_cfg) - 2):
-            self.dc_conv.append(
-                conv(
-                    decoder_cfg[i],
-                    decoder_cfg[i + 1],
-                    kernel_size=3,
-                    stride=1,
-                    padding=padding,
-                    dilation=dilation,
-                )
-            )
-            padding *= 2
-            dilation *= 2
-
         self.dc_conv.append(
             conv(
-                decoder_cfg[3],
-                decoder_cfg[4],
+                decoder_cfg[0],  # 128
+                decoder_cfg[1],  # 128
+                kernel_size=3,
+                stride=1,
+                padding=4,
+                dilation=4,
+                inplace_leaky_relu=False,
+            )
+        )
+        self.dc_conv.append(
+            conv(
+                decoder_cfg[1],  # 128
+                decoder_cfg[2],  # 96
+                kernel_size=3,
+                stride=1,
+                padding=8,
+                dilation=8,
+                inplace_leaky_relu=False,
+            )
+        )
+        self.dc_conv.append(
+            conv(
+                decoder_cfg[2],  # 96
+                decoder_cfg[3],  # 64
+                kernel_size=3,
+                stride=1,
+                padding=16,
+                dilation=16,
+                inplace_leaky_relu=False,
+            )
+        )
+        self.dc_conv.append(
+            conv(
+                decoder_cfg[3],  # 64
+                decoder_cfg[4],  # 32
                 kernel_size=3,
                 stride=1,
                 padding=1,
                 dilation=1,
+                inplace_leaky_relu=False,
             )
         )
         self.dc_conv.append(
@@ -141,7 +164,7 @@ class PWCNet(nn.Module):
 
         corr = self.correlation_layer(features1, features2)
 
-        return F.leaky_relu(corr, negative_slope=0.1)
+        return self.leaky_relu(corr)
 
     def forward(self, img1, img2):
         """
@@ -190,8 +213,9 @@ class PWCNet(nn.Module):
             flow, features = self.decoder_layers[i](concatenated_features)
             flow_preds.append(flow)
 
-            up_flow = self.deconv_layers[i](flow)
-            up_features = self.up_feature_layers[i](features)
+            if i < len(self.decoder_layers) - 1:
+                up_flow = self.deconv_layers[i](flow)
+                up_features = self.up_feature_layers[i](features)
 
         flow_preds.reverse()
         flow_preds[0] += self.dc_conv(features)

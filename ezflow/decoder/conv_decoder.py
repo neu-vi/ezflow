@@ -2,43 +2,8 @@ import torch
 import torch.nn as nn
 
 from ..config import configurable
+from ..modules import conv
 from .build import DECODER_REGISTRY
-
-
-def conv(in_channels, out_channels, kernel_size=3, stride=1, padding=1, dilation=1):
-    """
-    Block for a 2D Convolutional layer with Leaky ReLU activation
-
-    Parameters
-    ----------
-    in_channels : int
-        Number of input channels
-    out_channels : int
-        Number of output channels
-    kernel_size : int, default : 3
-        Size of the kernel
-    stride : int, default : 1
-        Stride of the convolution
-    dilation : int, default : 1
-        Spacing between kernel elements
-
-    Returns
-    -------
-    torch.nn.Sequential
-        block containing nn.Conv2d layer and leaky relu
-    """
-    return nn.Sequential(
-        nn.Conv2d(
-            in_channels,
-            out_channels,
-            kernel_size=kernel_size,
-            stride=stride,
-            padding=padding,
-            dilation=dilation,
-            bias=True,
-        ),
-        nn.LeakyReLU(0.1),
-    )
 
 
 def deconv(in_channels, out_channels):
@@ -81,6 +46,8 @@ class ConvDecoder(nn.Module):
         If True, convoloves decoder output to optical flow of shape N x 2 x H x W
     block : object, default : None
         the conv block to be used to build the decoder layers.
+    inplace_leaky_relu : bool, default: True
+        If true, performs leaky relu operation in_place
     """
 
     @configurable
@@ -88,6 +55,7 @@ class ConvDecoder(nn.Module):
         self,
         config=[128, 128, 96, 64, 32],
         concat_channels=None,
+        inplace_leaky_relu=True,
         to_flow=True,
         block=None,
     ):
@@ -103,7 +71,13 @@ class ConvDecoder(nn.Module):
 
         if concat_channels is not None:
             self.decoder.append(
-                block(concat_channels, config[0], kernel_size=3, stride=1)
+                block(
+                    concat_channels,
+                    config[0],
+                    kernel_size=3,
+                    stride=1,
+                    inplace_leaky_relu=inplace_leaky_relu,
+                )
             )
 
         for i in range(len(config) - 1):
@@ -114,7 +88,13 @@ class ConvDecoder(nn.Module):
                 in_channels = config[i]
 
             self.decoder.append(
-                block(in_channels, config[i + 1], kernel_size=3, stride=1)
+                block(
+                    in_channels,
+                    config[i + 1],
+                    kernel_size=3,
+                    stride=1,
+                    inplace_leaky_relu=inplace_leaky_relu,
+                )
             )
 
         self.to_flow = nn.Identity()
