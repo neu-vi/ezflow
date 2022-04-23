@@ -54,7 +54,7 @@ class PWCNet(nn.Module):
                 ConvDecoder(
                     config=decoder_cfg,
                     to_flow=True,
-                    inplace_leaky_relu=False,
+                    inplace_leaky_relu=cfg.INPLACE_LEAKY_RELU,
                     concat_channels=concat_channels,
                 )
             )
@@ -86,7 +86,7 @@ class PWCNet(nn.Module):
                     stride=1,
                     padding=1,
                     dilation=1,
-                    inplace_leaky_relu=False,
+                    inplace_leaky_relu=cfg.INPLACE_LEAKY_RELU,
                 ),
             ]
         )
@@ -98,7 +98,7 @@ class PWCNet(nn.Module):
                 stride=1,
                 padding=2,
                 dilation=2,
-                inplace_leaky_relu=False,
+                inplace_leaky_relu=cfg.INPLACE_LEAKY_RELU,
             )
         )
         self.dc_conv.append(
@@ -109,7 +109,7 @@ class PWCNet(nn.Module):
                 stride=1,
                 padding=4,
                 dilation=4,
-                inplace_leaky_relu=False,
+                inplace_leaky_relu=cfg.INPLACE_LEAKY_RELU,
             )
         )
         self.dc_conv.append(
@@ -120,7 +120,7 @@ class PWCNet(nn.Module):
                 stride=1,
                 padding=8,
                 dilation=8,
-                inplace_leaky_relu=False,
+                inplace_leaky_relu=cfg.INPLACE_LEAKY_RELU,
             )
         )
         self.dc_conv.append(
@@ -131,7 +131,7 @@ class PWCNet(nn.Module):
                 stride=1,
                 padding=16,
                 dilation=16,
-                inplace_leaky_relu=False,
+                inplace_leaky_relu=cfg.INPLACE_LEAKY_RELU,
             )
         )
         self.dc_conv.append(
@@ -142,7 +142,7 @@ class PWCNet(nn.Module):
                 stride=1,
                 padding=1,
                 dilation=1,
-                inplace_leaky_relu=False,
+                inplace_leaky_relu=cfg.INPLACE_LEAKY_RELU,
             )
         )
         self.dc_conv.append(
@@ -220,15 +220,19 @@ class PWCNet(nn.Module):
         flow_preds.reverse()
         flow_preds[0] += self.dc_conv(features)
 
-        if self.cfg.FLOW_SCALE_FACTOR is not None:
-            flow[0] *= self.cfg.FLOW_SCALE_FACTOR
-
         if self.training:
+
+            if self.cfg.ADJUST_FLOW_SCALE_IN_TRAINING:
+                flow_preds[0] *= self.cfg.FLOW_SCALE_FACTOR
+
             return flow_preds
 
         else:
 
             flow = flow_preds[0]
+
+            if self.cfg.FLOW_SCALE_FACTOR is not None:
+                flow *= self.cfg.FLOW_SCALE_FACTOR
 
             if self.cfg.INTERPOLATE_FLOW:
 

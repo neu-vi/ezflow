@@ -46,7 +46,7 @@ class ConvDecoder(nn.Module):
         If True, convoloves decoder output to optical flow of shape N x 2 x H x W
     block : object, default : None
         the conv block to be used to build the decoder layers.
-    inplace_leaky_relu : bool, default: True
+    inplace_leaky_relu : bool, default: False
         If true, performs leaky relu operation in_place
     """
 
@@ -55,7 +55,7 @@ class ConvDecoder(nn.Module):
         self,
         config=[128, 128, 96, 64, 32],
         concat_channels=None,
-        inplace_leaky_relu=True,
+        inplace_leaky_relu=False,
         to_flow=True,
         block=None,
     ):

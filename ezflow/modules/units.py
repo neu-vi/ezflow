@@ -169,7 +169,7 @@ def conv(
     padding=1,
     dilation=1,
     norm=None,
-    inplace_leaky_relu=True,
+    inplace_leaky_relu=False,
 ):
     """
     2D convolution layer with optional normalization followed by
@@ -191,7 +191,7 @@ def conv(
         Dilation of the convolutional kernel
     norm : str, default: None
         Type of normalization to use. Can be None, 'batch', 'layer', 'group'
-    inplace_leaky_relu : bool, default: True
+    inplace_leaky_relu : bool, default: False
         If true, performs leaky relu operation in_place
     """
     bias = False
