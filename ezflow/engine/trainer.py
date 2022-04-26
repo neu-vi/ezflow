@@ -267,8 +267,10 @@ class BaseTrainer:
                 target = target / self.cfg.TARGET_SCALE_FACTOR
 
                 pred = self.model(img1, img2)
+
                 loss = self.loss_fn(pred, target)
                 loss_meter.update(loss.item())
+
                 metric = self._calculate_metric(pred, target)
                 metric_meter.update(metric)
 

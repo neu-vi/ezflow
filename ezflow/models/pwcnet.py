@@ -185,11 +185,20 @@ class PWCNet(nn.Module):
 
         H, W = img1.shape[-2:]
 
+        # RGB to BGR
+        # permute = [2,1,0]
+        # img1 = img1[:,permute,:,:]
+        # img2 = img2[:,permute,:,:]
+
+        # normalize
+        img1 = 1.0 * (img1 / 255.0)
+        img2 = 1.0 * (img2 / 255.0)
+
         feature_pyramid1 = self.encoder(img1)
         feature_pyramid2 = self.encoder(img2)
 
         up_flow, up_features = None, None
-        up_flow_scale = 0.625
+        up_flow_scale = 0.625  # 20 * 2 ** (-(len(self.cfg.DECODER.CONFIG)))
 
         flow_preds = []
 
@@ -212,7 +221,7 @@ class PWCNet(nn.Module):
 
             flow, features = self.decoder_layers[i](concatenated_features)
             flow_preds.append(flow)
-
+            print(flow.shape)
             if i < len(self.decoder_layers) - 1:
                 up_flow = self.deconv_layers[i](flow)
                 up_features = self.up_feature_layers[i](features)
@@ -221,18 +230,12 @@ class PWCNet(nn.Module):
         flow_preds[0] += self.dc_conv(features)
 
         if self.training:
-
-            if self.cfg.ADJUST_FLOW_SCALE_IN_TRAINING:
-                flow_preds[0] *= self.cfg.FLOW_SCALE_FACTOR
-
+            flow_preds[0] *= self.cfg.FLOW_SCALE_FACTOR
             return flow_preds
 
         else:
 
             flow = flow_preds[0]
-
-            if self.cfg.FLOW_SCALE_FACTOR is not None:
-                flow *= self.cfg.FLOW_SCALE_FACTOR
 
             if self.cfg.INTERPOLATE_FLOW:
 
@@ -243,5 +246,7 @@ class PWCNet(nn.Module):
                 flow_u = flow[:, 0, :, :] * (W / W_)
                 flow_v = flow[:, 1, :, :] * (H / H_)
                 flow = torch.stack([flow_u, flow_v], dim=1)
+
+            flow *= self.cfg.FLOW_SCALE_FACTOR
 
             return flow

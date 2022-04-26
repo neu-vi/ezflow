@@ -64,8 +64,13 @@ def crop(
             x0 = max(0, np.clip(x0, 0, img1.shape[1] - crop_size[1]))
 
         else:
-            y0 = max(0, np.random.randint(0, img1.shape[0] - crop_size[0]))
-            x0 = max(0, np.random.randint(0, img1.shape[1] - crop_size[1]))
+            y0, x0 = 0, 0
+
+            if img1.shape[0] > crop_size[0]:
+                y0 = max(0, np.random.randint(0, img1.shape[0] - crop_size[0]))
+
+            if img1.shape[1] > crop_size[1]:
+                x0 = max(0, np.random.randint(0, img1.shape[1] - crop_size[1]))
 
     img1 = img1[y0 : y0 + crop_size[0], x0 : x0 + crop_size[1]]
     img2 = img2[y0 : y0 + crop_size[0], x0 : x0 + crop_size[1]]
