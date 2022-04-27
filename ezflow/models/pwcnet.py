@@ -221,7 +221,7 @@ class PWCNet(nn.Module):
 
             flow, features = self.decoder_layers[i](concatenated_features)
             flow_preds.append(flow)
-            print(flow.shape)
+
             if i < len(self.decoder_layers) - 1:
                 up_flow = self.deconv_layers[i](flow)
                 up_features = self.up_feature_layers[i](features)
