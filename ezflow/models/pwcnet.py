@@ -31,7 +31,7 @@ class PWCNet(nn.Module):
             pad_size=cfg.SIMILARITY.PAD_SIZE,
             max_displacement=cfg.SIMILARITY.MAX_DISPLACEMENT,
         )
-        self.leaky_relu = nn.LeakyReLU(0.1)
+        self.leaky_relu = nn.LeakyReLU(negative_slope=0.1, inplace=False)
 
         search_range = (2 * cfg.SIMILARITY.MAX_DISPLACEMENT + 1) ** 2
 
@@ -191,8 +191,8 @@ class PWCNet(nn.Module):
         # img2 = img2[:,permute,:,:]
 
         # normalize
-        img1 = 1.0 * (img1 / 255.0)
-        img2 = 1.0 * (img2 / 255.0)
+        # img1 = 1.0 * (img1 / 255.0)
+        # img2 = 1.0 * (img2 / 255.0)
 
         feature_pyramid1 = self.encoder(img1)
         feature_pyramid2 = self.encoder(img2)
