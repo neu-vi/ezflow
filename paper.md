@@ -7,10 +7,10 @@ tags:
     - 'Python'
     - 'PyTorch'
 authors:
-    - name: Neelay Shah^[Co-first author]^[Corresponding author]
+    - name: Neelay Shah^[Corresponding author]
       orcid: 0000-0001-7950-1956
       affiliation: 1
-    - name: Prajnan Goswami^[Co-first author] 
+    - name: Prajnan Goswami
       affiliation: 2
     - name: Huaizu Jiang
       affiliation: 2 
