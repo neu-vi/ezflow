@@ -31,3 +31,12 @@ bibliography: paper.bib
 # Statement of need
 
 Over the past decade, the use of neural networks for the computer vision task of optical flow estimation has been on the rise. A sizeable number of research papers have been published on the topic, starting from **FlowNet** [@7410673] which was the one of the first ones to successfully demonstrate the use of neural networks for this task, to **RAFT** [@10.1007/978-3-030-58536-5_24] which is one of the best performing models, and finally to the recent work using transformer-based models for the task, **FlowFormer** [@https://doi.org/10.48550/arxiv.2203.16194].
+
+# Library Design and Structure
+
+- Functionalities
+- API
+- Customizable components
+- Tutorials 
+
+# References
