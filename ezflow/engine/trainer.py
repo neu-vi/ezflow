@@ -14,7 +14,13 @@ from torch.nn.parallel import DistributedDataParallel as DDP
 from torch.utils.tensorboard import SummaryWriter
 
 from ..functional import FUNCTIONAL_REGISTRY
-from ..utils import AverageMeter, endpointerror, find_free_port, is_port_available
+from ..utils import (
+    AverageMeter,
+    InputPadder,
+    endpointerror,
+    find_free_port,
+    is_port_available,
+)
 from .registry import loss_functions, optimizers, schedulers
 
 
@@ -117,12 +123,16 @@ class BaseTrainer:
 
         self.min_avg_val_loss = float("inf")
         self.min_avg_val_metric = float("inf")
-        
-        # TODO Create a separate PR to refactor user config validation 
+
+        # TODO Create a separate PR to refactor user config validation
         self.epe_valid_range = None
+        self.pad_divisor = 8
+
         if hasattr(cfg, "EPE_VALID_RANGE"):
             self.epe_valid_range = cfg.EPE_VALID_RANGE
 
+        if hasattr(cfg, "PAD_DIVISOR"):
+            self.pad_divisor = cfg.PAD_DIVISOR
 
     def _freeze_bn(self):
         if self.cfg.FREEZE_BATCH_NORM:
@@ -280,6 +290,10 @@ class BaseTrainer:
         with torch.no_grad():
             for inp, target in self.val_loader:
                 img1, img2 = inp
+
+                padder = InputPadder(img1.shape, divisor=self.pad_divisor)
+                img1, img2 = padder.pad(img1, img2)
+
                 img1, img2, target = (
                     img1.to(self.device),
                     img2.to(self.device),
