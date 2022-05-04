@@ -40,7 +40,7 @@ class Monkaa(BaseDataset):
         crop=False,
         crop_size=(256, 256),
         crop_type="center",
-        normalize=normalize,
+        normalize=False,
         augment=True,
         aug_params={
             "color_aug_params": {"aug_prob": 0.2},
