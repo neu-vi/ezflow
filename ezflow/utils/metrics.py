@@ -1,7 +1,7 @@
 import torch
 
 
-def endpointerror(pred, target, multi_magnitude=False):
+def endpointerror(pred, target, multi_magnitude=False, valid_range=None):
     """
     Endpoint error
 
@@ -11,6 +11,10 @@ def endpointerror(pred, target, multi_magnitude=False):
         Predicted flow
     target : torch.Tensor
         Target flow
+    multi_magnitude : bool, default=False
+        If True, computes epe for the magnitudes 1px, 3px and 5px
+    valid_range : tuple, default=None
+        range for the valid mask 
 
     Returns
     -------
@@ -23,6 +27,14 @@ def endpointerror(pred, target, multi_magnitude=False):
     if target.shape[1] == 3:
         """Ignore valid mask for EPE calculation."""
         target = target[:, :2, :, :]
+
+
+    if valid_range is not None:
+        mask = (target[:,0,:,:].abs()<=valid_range[1]) & (target[:,1,:,:].abs()<=valid_range[0])
+        mask = mask.unsqueeze(1).expand(-1,2,-1,-1).float()
+        
+        pred = pred * mask
+        target = target * mask
 
     epe = torch.norm(pred - target, p=2, dim=1)
 

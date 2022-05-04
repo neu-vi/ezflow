@@ -117,6 +117,12 @@ class BaseTrainer:
 
         self.min_avg_val_loss = float("inf")
         self.min_avg_val_metric = float("inf")
+        
+        # TODO Create a separate PR to refactor user config validation 
+        self.epe_valid_range = None
+        if hasattr(cfg, "EPE_VALID_RANGE"):
+            self.epe_valid_range = cfg.EPE_VALID_RANGE
+
 
     def _freeze_bn(self):
         if self.cfg.FREEZE_BATCH_NORM:
@@ -308,7 +314,7 @@ class BaseTrainer:
         self._freeze_bn()
 
     def _calculate_metric(self, pred, target):
-        return endpointerror(pred, target)
+        return endpointerror(pred, target, valid_range=self.epe_valid_range)
 
     def _save_checkpoints(self, ckpt_type, ckpt_number):
         if self.model_parallel:
