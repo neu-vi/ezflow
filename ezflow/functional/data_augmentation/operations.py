@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 from PIL import Image
-from torchvision.transforms import ColorJitter, Normalize
+from torchvision import transforms
 
 
 def crop(
@@ -114,7 +114,7 @@ def color_transform(
         Augmented image 2
     """
 
-    aug = ColorJitter(
+    aug = transforms.ColorJitter(
         brightness=brightness, contrast=contrast, saturation=saturation, hue=hue
     )
 
@@ -398,14 +398,13 @@ def sparse_spatial_transform(
 
 
 class Normalize:
-
     def __init__(self):
-        self.norm_transform = transforms.Compose([
-                transforms.Normalize(mean=[0,0,0], std=[255,255,255]),
-                transforms.Normalize(mean=[0.5,0.5,0.5], std=[0.5,0.5,0.5])
-            ])
+        self.norm_transform = transforms.Compose(
+            [
+                transforms.Normalize(mean=[0, 0, 0], std=[255, 255, 255]),
+                transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]),
+            ]
+        )
 
     def __call__(self, img):
         return self.norm_transform(img)
-
-    

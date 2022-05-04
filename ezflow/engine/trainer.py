@@ -128,11 +128,11 @@ class BaseTrainer:
         self.epe_valid_range = None
         self.pad_divisor = 8
 
-        if hasattr(cfg, "EPE_VALID_RANGE"):
-            self.epe_valid_range = cfg.EPE_VALID_RANGE
+        if hasattr(self.cfg, "EPE_VALID_RANGE"):
+            self.epe_valid_range = self.cfg.EPE_VALID_RANGE
 
-        if hasattr(cfg, "PAD_DIVISOR"):
-            self.pad_divisor = cfg.PAD_DIVISOR
+        if hasattr(self.cfg, "PAD_DIVISOR"):
+            self.pad_divisor = self.cfg.PAD_DIVISOR
 
     def _freeze_bn(self):
         if self.cfg.FREEZE_BATCH_NORM:
