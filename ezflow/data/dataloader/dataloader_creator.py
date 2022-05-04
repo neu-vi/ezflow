@@ -65,7 +65,9 @@ class DataloaderCreator:
         self.distributed = distributed
         self.world_size = world_size
 
-    def add_FlyingChairs(self, root_dir, split="training", augment=False, **kwargs):
+    def add_FlyingChairs(
+        self, root_dir, split="training", normalize=False, augment=False, **kwargs
+    ):
         """
         Adds the Flying Chairs dataset to the DataloaderCreator object.
 
@@ -75,6 +77,8 @@ class DataloaderCreator:
             path of the root directory for the flying chairs dataset
         split : str, default : "training"
             specify the training or validation split
+        normalize : bool, default : False
+            If True, normalizes images in the range -1 to 1
         augment : bool, default : True
             If True, applies data augmentation
         **kwargs
@@ -90,6 +94,7 @@ class DataloaderCreator:
                 init_seed=self.init_seed,
                 is_prediction=self.is_prediction,
                 append_valid_mask=self.append_valid_mask,
+                normalize=normalize,
                 augment=augment,
                 **kwargs,
             )
@@ -100,6 +105,7 @@ class DataloaderCreator:
         root_dir,
         split="training",
         dstype="frames_cleanpass",
+        normalize=False,
         augment=False,
         **kwargs,
     ):
@@ -114,6 +120,8 @@ class DataloaderCreator:
             specify the training or validation split
         dstype : str, default : "frames_cleanpass"
             specify dataset type
+        normalize : bool, default : False
+            If True, normalizes images in the range -1 to 1
         augment : bool, default : True
             If True, applies data augmentation
         **kwargs
@@ -130,13 +138,14 @@ class DataloaderCreator:
                 init_seed=self.init_seed,
                 is_prediction=self.is_prediction,
                 append_valid_mask=self.append_valid_mask,
+                normalize=normalize,
                 augment=augment,
                 **kwargs,
             )
         )
 
     def add_FlyingThings3DSubset(
-        self, root_dir, split="training", augment=False, **kwargs
+        self, root_dir, split="training", normalize=False, augment=False, **kwargs
     ):
         """
         Adds the Flying Things 3D Subset dataset to the DataloaderCreator object.
@@ -147,6 +156,8 @@ class DataloaderCreator:
             path of the root directory for the flying things 3D Subset dataset in SceneFlow
         split : str, default : "training"
             specify the training or validation split
+        normalize : bool, default : False
+            If True, normalizes images in the range -1 to 1
         augment : bool, default : True
             If True, applies data augmentation
         **kwargs
@@ -162,12 +173,13 @@ class DataloaderCreator:
                 init_seed=self.init_seed,
                 is_prediction=self.is_prediction,
                 append_valid_mask=self.append_valid_mask,
+                normalize=normalize,
                 augment=augment,
                 **kwargs,
             )
         )
 
-    def add_Monkaa(self, root_dir, augment=False, **kwargs):
+    def add_Monkaa(self, root_dir, normalize=False, augment=False, **kwargs):
         """
         Adds the Monkaa dataset to the DataloaderCreator object.
 
@@ -175,6 +187,8 @@ class DataloaderCreator:
         ----------
         root_dir : str
             path of the root directory for the Monkaa dataset in SceneFlow
+        normalize : bool, default : False
+            If True, normalizes images in the range -1 to 1
         augment : bool, default : True
             If True, applies data augmentation
         **kwargs
@@ -189,12 +203,13 @@ class DataloaderCreator:
                 init_seed=self.init_seed,
                 is_prediction=self.is_prediction,
                 append_valid_mask=self.append_valid_mask,
+                normalize=normalize,
                 augment=augment,
                 **kwargs,
             )
         )
 
-    def add_Driving(self, root_dir, augment=False, **kwargs):
+    def add_Driving(self, root_dir, normalize=False, augment=False, **kwargs):
         """
         Adds the Driving dataset to the DataloaderCreator object.
 
@@ -202,6 +217,8 @@ class DataloaderCreator:
         ----------
         root_dir : str
             path of the root directory for the Driving dataset in SceneFlow
+        normalize : bool, default : False
+            If True, normalizes images in the range -1 to 1
         augment : bool, default : True
             If True, applies data augmentation
         **kwargs
@@ -216,12 +233,13 @@ class DataloaderCreator:
                 init_seed=self.init_seed,
                 is_prediction=self.is_prediction,
                 append_valid_mask=self.append_valid_mask,
+                normalize=normalize,
                 augment=augment,
                 **kwargs,
             )
         )
 
-    def add_SceneFlow(self, root_dir, augment=False, **kwargs):
+    def add_SceneFlow(self, root_dir, normalize=False, augment=False, **kwargs):
         """
         Adds FlyingThings3D, Driving and Monkaa datasets to the DataloaderCreator object.
 
@@ -229,6 +247,8 @@ class DataloaderCreator:
         ----------
         root_dir : str
             path of the root directory for the SceneFlow dataset
+        normalize : bool, default : False
+            If True, normalizes images in the range -1 to 1
         augment : bool, default : True
             If True, applies data augmentation
         **kwargs
@@ -237,13 +257,32 @@ class DataloaderCreator:
             color, eraser and spatial transformation
         """
         self.add_FlyingThings3D(
-            root_dir=root_dir + "/FlyingThings3D", augment=augment, **kwargs
+            root_dir=root_dir + "/FlyingThings3D",
+            normalize=normalize,
+            augment=augment,
+            **kwargs,
         )
-        self.add_Monkaa(root_dir=root_dir + "/Monkaa", augment=augment, **kwargs)
-        self.add_Driving(root_dir=root_dir + "/Driving", augment=augment, **kwargs)
+        self.add_Monkaa(
+            root_dir=root_dir + "/Monkaa",
+            normalize=normalize,
+            augment=augment,
+            **kwargs,
+        )
+        self.add_Driving(
+            root_dir=root_dir + "/Driving",
+            normalize=normalize,
+            augment=augment,
+            **kwargs,
+        )
 
     def add_MPISintel(
-        self, root_dir, split="training", dstype="clean", augment=False, **kwargs
+        self,
+        root_dir,
+        split="training",
+        dstype="clean",
+        normalize=False,
+        augment=False,
+        **kwargs,
     ):
         """
         Adds the MPI Sintel dataset to the DataloaderCreator object.
@@ -256,6 +295,8 @@ class DataloaderCreator:
             specify the training or validation split
         dstype : str, default : "clean"
             specify dataset type
+        normalize : bool, default : False
+            If True, normalizes images in the range -1 to 1
         augment : bool, default : True
             If True, applies data augmentation
         **kwargs
@@ -271,12 +312,15 @@ class DataloaderCreator:
                 init_seed=self.init_seed,
                 is_prediction=self.is_prediction,
                 append_valid_mask=self.append_valid_mask,
+                normalize=normalize,
                 augment=augment,
                 **kwargs,
             )
         )
 
-    def add_Kitti(self, root_dir, split="training", augment=False, **kwargs):
+    def add_Kitti(
+        self, root_dir, split="training", normalize=False, augment=False, **kwargs
+    ):
         """
         Adds the KITTI dataset to the DataloaderCreator object.
 
@@ -286,6 +330,8 @@ class DataloaderCreator:
             path of the root directory for the MPI Sintel dataset
         split : str, default : "training"
             specify the training or validation split
+        normalize : bool, default : False
+            If True, normalizes images in the range -1 to 1
         augment : bool, default : True
             If True, applies data augmentation
         **kwargs
@@ -301,12 +347,13 @@ class DataloaderCreator:
                 init_seed=self.init_seed,
                 is_prediction=self.is_prediction,
                 append_valid_mask=self.append_valid_mask,
+                normalize=normalize,
                 augment=augment,
                 **kwargs,
             )
         )
 
-    def add_HD1K(self, root_dir, augment=False, **kwargs):
+    def add_HD1K(self, root_dir, normalize=False, augment=False, **kwargs):
         """
         Adds the HD1K dataset to the DataloaderCreator object.
 
@@ -314,6 +361,8 @@ class DataloaderCreator:
         ----------
         root_dir : str
             path of the root directory for the MPI Sintel dataset
+        normalize : bool, default : False
+            If True, normalizes images in the range -1 to 1
         augment : bool, default : True
             If True, applies data augmentation
         **kwargs
@@ -327,12 +376,13 @@ class DataloaderCreator:
                 init_seed=self.init_seed,
                 is_prediction=self.is_prediction,
                 append_valid_mask=self.append_valid_mask,
+                normalize=normalize,
                 augment=augment,
                 **kwargs,
             )
         )
 
-    def add_AutoFlow(self, root_dir, augment=False, **kwargs):
+    def add_AutoFlow(self, root_dir, normalize=False, augment=False, **kwargs):
         """
         Adds the AutoFLow dataset to the DataloaderCreator object.
 
@@ -340,6 +390,8 @@ class DataloaderCreator:
         ----------
         root_dir : str
             path of the root directory for the Monkaa dataset in SceneFlow
+        normalize : bool, default : False
+            If True, normalizes images in the range -1 to 1
         augment : bool, default : True
             If True, applies data augmentation
         **kwargs
@@ -354,6 +406,7 @@ class DataloaderCreator:
                 init_seed=self.init_seed,
                 is_prediction=self.is_prediction,
                 append_valid_mask=self.append_valid_mask,
+                normalize=normalize,
                 augment=augment,
                 **kwargs,
             )
