@@ -14,7 +14,7 @@ def endpointerror(pred, target, multi_magnitude=False, valid_range=None):
     multi_magnitude : bool, default=False
         If True, computes epe for the magnitudes 1px, 3px and 5px
     valid_range : tuple, default=None
-        range for the valid mask 
+        range for the valid flow mask
 
     Returns
     -------
@@ -28,11 +28,12 @@ def endpointerror(pred, target, multi_magnitude=False, valid_range=None):
         """Ignore valid mask for EPE calculation."""
         target = target[:, :2, :, :]
 
-
     if valid_range is not None:
-        mask = (target[:,0,:,:].abs()<=valid_range[1]) & (target[:,1,:,:].abs()<=valid_range[0])
-        mask = mask.unsqueeze(1).expand(-1,2,-1,-1).float()
-        
+        mask = (target[:, 0, :, :].abs() <= valid_range[1]) & (
+            target[:, 1, :, :].abs() <= valid_range[0]
+        )
+        mask = mask.unsqueeze(1).expand(-1, 2, -1, -1).float()
+
         pred = pred * mask
         target = target * mask
 
