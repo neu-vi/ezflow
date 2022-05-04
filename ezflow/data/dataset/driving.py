@@ -40,6 +40,7 @@ class Driving(BaseDataset):
         crop=False,
         crop_size=(256, 256),
         crop_type="center",
+        normalize=False,
         augment=True,
         aug_params={
             "color_aug_params": {"aug_prob": 0.2},
@@ -54,6 +55,7 @@ class Driving(BaseDataset):
             crop=crop,
             crop_size=crop_size,
             crop_type=crop_type,
+            normalize=normalize,
             augment=augment,
             aug_params=aug_params,
             sparse_transform=False,
