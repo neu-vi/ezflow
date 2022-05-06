@@ -59,6 +59,9 @@ class MultiScaleLoss(nn.Module):
 
         if label.shape[1] == 3:
             """Ignore valid mask for Multiscale Loss."""
+            self.extra_mask = label[:, 2:, :, :]
+            self.extra_mask = torch.squeeze(self.extra_mask, dim=1)
+
             label = label[:, :2, :, :]
 
         loss = 0

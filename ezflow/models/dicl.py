@@ -192,7 +192,9 @@ class DICL(BaseModule):
 
         cost_fn = getattr(self, "cost_fn" + level)
         flow_decoder = getattr(self, "flow_decoder" + level)
-        dap_layer = getattr(self, "dap_layer" + level)
+
+        if self.cfg.DAP.USE_DAP:
+            dap_layer = getattr(self, "dap_layer" + level)
 
         if self.context_net:
             context_net = getattr(self, "context_net" + level)
@@ -333,6 +335,11 @@ class DICL(BaseModule):
 
         else:
             _, _, height, width = img1.size()
-            return F.interpolate(
+            flow = F.interpolate(
                 flow2, (height, width), mode="bilinear", align_corners=True
             )
+
+            flow[:, 0, :, :] = flow[:, 0, :, :] * (width / flow2.shape[3])
+            flow[:, 1, :, :] = flow[:, 1, :, :] * (height / flow2.shape[2])
+
+            return flow

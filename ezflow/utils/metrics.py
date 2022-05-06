@@ -24,8 +24,12 @@ def endpointerror(pred, target, multi_magnitude=False, valid_range=None):
     if isinstance(pred, tuple) or isinstance(pred, list):
         pred = pred[-1]
 
+    extra_mask = None
     if target.shape[1] == 3:
         """Ignore valid mask for EPE calculation."""
+        extra_mask = target[:, 2:, :, :]
+        extra_mask = torch.squeeze(extra_mask, dim=1)
+
         target = target[:, :2, :, :]
 
     if valid_range is not None:
@@ -38,6 +42,9 @@ def endpointerror(pred, target, multi_magnitude=False, valid_range=None):
         target = target * mask
 
     epe = torch.norm(pred - target, p=2, dim=1)
+
+    if extra_mask is not None:
+        epe = epe[extra_mask.byte()]
 
     if not multi_magnitude:
         return epe.mean().item()
