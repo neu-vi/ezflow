@@ -221,12 +221,9 @@ class DICL(BaseModule):
         else:
             flow = flow_decoder(cost)
 
-        if self.context_net:
-
-            if self.cfg.SUP_RAW_FLOW:
-                raw_flow = flow
-            else:
-                raw_flow = None
+        raw_flow = None
+        if self.context_net and self.cfg.SUP_RAW_FLOW:
+            raw_flow = flow
 
             entropy = self.entropy_fn(cost)
             features = torch.cat((flow.detach(), entropy.detach(), x, g), dim=1)
