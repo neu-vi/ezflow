@@ -321,8 +321,7 @@ class BaseTrainer:
         )
         print("-" * 80, "\n")
 
-        if self._is_main_process():
-            self._save_best_model(new_avg_val_loss, new_avg_val_metric)
+        self._save_best_model(new_avg_val_loss, new_avg_val_metric)
 
         self.model.train()
         self._freeze_bn()
