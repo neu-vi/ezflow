@@ -179,6 +179,7 @@ def spatial_transform(
     min_scale=-0.2,
     max_scale=0.5,
     flip=True,
+    random_trans=0,
     h_flip_prob=0.5,
     v_flip_prob=0.1,
 ):
@@ -207,6 +208,8 @@ def spatial_transform(
         Maximum scale factor
     flip : bool
         Whether to apply the flip transform
+    random_trans : int
+        Apply random translations in the range (-random_trans, random_trans)
     h_flip_prob : float
         Probability of applying the horizontal flip transform
     v_flip_prob : float
@@ -248,6 +251,23 @@ def spatial_transform(
             flow, None, fx=scale_x, fy=scale_y, interpolation=cv2.INTER_LINEAR
         )
         flow = flow * [scale_x, scale_y]
+
+    if random_trans != 0:
+        tw = np.random.randint(-random_trans, random_trans)
+        th = np.random.randint(-random_trans, random_trans)
+
+        if tw != 0 and th != 0:
+            # compute x1,x2,y1,y2 for img1 and target, and x3,x4,y3,y4 for img2
+            x1, x2, x3, x4 = max(0, tw), min(W + tw, W), max(0, -tw), min(W - tw, W)
+            y1, y2, y3, y4 = max(0, th), min(H + th, H), max(0, -th), min(H - th, H)
+
+            img1 = img1[y1:y2, x1:x2]
+            img2 = img2[y3:y4, x3:x4]
+
+            flow = flow[y1:y2, x1:x2]
+
+            flow[:, :, 0] += tw
+            flow[:, :, 1] += th
 
     if flip:
         if np.random.rand() < h_flip_prob:
