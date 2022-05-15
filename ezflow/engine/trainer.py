@@ -222,9 +222,6 @@ class BaseTrainer:
         )
         target = target / self.cfg.TARGET_SCALE_FACTOR
 
-        if torch.cuda.is_available():
-            torch.cuda.synchronize()
-
         if self._is_main_process():
             start_time = time.time()
 
@@ -245,9 +242,6 @@ class BaseTrainer:
             self.scheduler.step()
 
         self.scaler.update()
-
-        if torch.cuda.is_available():
-            torch.cuda.synchronize()
 
         if self._is_main_process():
             self.times.append(time.time() - start_time)
@@ -301,8 +295,7 @@ class BaseTrainer:
         )
         print("-" * 80, "\n")
 
-        if self._is_main_process():
-            self._save_best_model(new_avg_val_loss, new_avg_val_metric)
+        self._save_best_model(new_avg_val_loss, new_avg_val_metric)
 
         self.model.train()
         self._freeze_bn()
@@ -508,11 +501,10 @@ class Trainer(BaseTrainer):
         self.val_loader = val_loader
 
     def _setup_device(self):
-        assert (
-            len(self.cfg.DEVICE) == 1 or self.cfg.DEVICE == "cpu"
-        ), "Multiple devices not supported. Use ezflow.DistributedTrainer for multi-gpu training."
 
-        if self.cfg.DEVICE.lower() == "cpu" or int(self.cfg.DEVICE) == -1:
+        if (
+            isinstance(self.cfg.DEVICE, str) and self.cfg.DEVICE.lower() == "cpu"
+        ) or int(self.cfg.DEVICE) == -1:
             self.device = torch.device("cpu")
             self.cfg.MIXED_PRECISION = False
             print("Running on CPU\n")

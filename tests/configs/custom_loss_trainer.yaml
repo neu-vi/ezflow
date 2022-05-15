@@ -11,9 +11,10 @@ SCHEDULER:
     step_size: 10
     gamma: 0.1
 CRITERION:
-  CUSTOM: False
-  NAME: L1Loss
-  PARAMS: null
+  CUSTOM: True
+  NAME: "MultiScaleLoss"
+  PARAMS:
+    weights: [1, 0.5, 0.25, 0.125, 0.0625]
 GRAD_CLIP: 
   USE: True
   VALUE: 1.0
@@ -25,8 +26,12 @@ DEVICE: "cpu"
 LOG_DIR: "./logs"
 LOG_ITERATIONS_INTERVAL: 1
 VALIDATE_INTERVAL: 1
-VALIDATE_ON: loss
+VALIDATE_ON: metric
 CKPT_DIR: "./ckpts"
 CKPT_INTERVAL: 1
 EPOCHS: 1
-NUM_STEPS: 1
+NUM_STEPS: null
+RESUME_TRAINING:
+  CONSOLIDATED_CKPT: null
+  EPOCHS: 1
+  START_EPOCH: null
