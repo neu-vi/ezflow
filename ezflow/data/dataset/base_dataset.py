@@ -4,7 +4,7 @@ import numpy as np
 import torch
 import torch.utils.data as data
 
-from ...functional import crop
+from ...functional import crop, Normalize
 from ...utils import read_flow, read_image
 
 
@@ -26,6 +26,8 @@ class BaseDataset(data.Dataset):
         The size of the image crop
     crop_type : :obj:`str`, default : 'center'
         The type of croppping to be performed, one of "center", "random"
+    normalize : bool, default : False
+        If True, normalizes images in the range -1 to 1
     augment : bool, default : False
         If True, applies data augmentation
     aug_params : :obj:`dict`
@@ -41,6 +43,7 @@ class BaseDataset(data.Dataset):
         crop=False,
         crop_size=(256, 256),
         crop_type="center",
+        normalize=False,
         augment=True,
         aug_params={
             "color_aug_params": {"aug_prob": 0.2},
@@ -60,6 +63,10 @@ class BaseDataset(data.Dataset):
 
         self.augment = augment
         self.augmentor = None
+
+        self.norm_transform = None
+        if normalize:
+            self.norm_transform = Normalize()
 
         self.flow_list = []
         self.image_list = []
@@ -132,6 +139,10 @@ class BaseDataset(data.Dataset):
         img1 = torch.from_numpy(img1).permute(2, 0, 1).float()
         img2 = torch.from_numpy(img2).permute(2, 0, 1).float()
         flow = torch.from_numpy(flow).permute(2, 0, 1).float()
+
+        if self.norm_transform is not None:
+            img1 = self.norm_transform(img1)
+            img2 = self.norm_transform(img2)
 
         if self.append_valid_mask:
             if valid is not None:

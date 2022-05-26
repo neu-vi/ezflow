@@ -1,5 +1,78 @@
-_BASE_: "./base.yaml"
+DATA:
+  TRAIN_DATASET:
+    NAME: "flyingchairs"
+    ROOT_DIR: "../../../Datasets/FlyingChairs_release/data"
+  VAL_DATASET:
+    NAME: "flyingchairs"
+    ROOT_DIR: "../../../Datasets/FlyingChairs_release/data"
+  BATCH_SIZE: 32
+  NUM_WORKERS: 1
+  PIN_MEMORY: True
+  NORMALIZE: True
+  APPEND_VALID_MASK: False
+  TRAIN_CROP_SIZE: [256, 384]
+  VAL_CROP_SIZE: [256, 384]
+  AUGMENTATION:
+    USE: True
+    PARAMS:
+      TRAINING:
+        SPATIAL_AUG_PARAMS: {"min_scale": -0.1, "max_scale": 1.0, "flip": True}
+        COLOR_AUG_PARAMS: {"aug_prob": 0.0}
+        ERASER_AUG_PARAMS: {"aug_prob": 0.0}
+      VALIDATION:
+        SPATIAL_AUG_PARAMS: {"aug_prob": 0.0}
+        COLOR_AUG_PARAMS: {"aug_prob": 0.0}
+        ERASER_AUG_PARAMS: {"aug_prob": 0.0}
+OPTIMIZER:
+  NAME: Adam
+  LR: 0.001
+  PARAMS:
+    weight_decay: 0.0
+    betas: [0.9, 0.999]
+SCHEDULER:
+  USE: False
+  NAME: OneCycleLR
+  PARAMS:
+    max_lr: 0.001
+    epochs: 120
+    steps_per_epoch: 2300
+    pct_start: 0.05
+    cycle_momentum: False
+    anneal_strategy: linear
 CRITERION:
-  NAME: "MultiScaleLoss"
-  PARAMS: null
+  CUSTOM: True
+  NAME: MultiScaleLoss
+  NORM: "l2"
+  USE_VALID_RANGE: True
+  PARAMS: 
+    weights: [1.0,0.75,0.50,0.25,0.25]
+    valid_range: [[372,372],[360,360],[336,336],[288,288],[192,192]]
+GRAD_CLIP: 
+  USE: True
+  VALUE: 1.0
+TARGET_SCALE_FACTOR: 1
+EPE_VALID_RANGE: [372,372]
+MIXED_PRECISION: False
+FREEZE_BATCH_NORM: False
+DEVICE: "0"
+DISTRIBUTED:
+  USE: False
+  WORLD_SIZE: 2
+  RANK: 0
+  BACKEND: nccl
+  MASTER_ADDR: localhost
+  MASTER_PORT: "12355"
+LOG_DIR: "./logs"
+LOG_ITERATIONS_INTERVAL: 100
+CKPT_DIR: "./ckpts"
+CKPT_INTERVAL: 1
+VALIDATE_INTERVAL: 1
+VALIDATE_ON: metric
+EPOCHS: 120
+NUM_STEPS: null
+RESUME_TRAINING:
+  CONSOLIDATED_CKPT: null
+  EPOCHS: 100
+  START_EPOCH: null
+
       
