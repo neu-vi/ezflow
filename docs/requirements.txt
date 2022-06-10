@@ -20,7 +20,7 @@ chardet==4.0.0
 charset-normalizer==2.0.1
 click==8.0.1
 colorama==0.4.4
-cookiecutter==1.7.3
+cookiecutter==2.1.1
 coverage==5.5
 cryptography==3.4.8
 cycler==0.10.0
