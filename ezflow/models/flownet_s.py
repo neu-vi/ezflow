@@ -5,11 +5,12 @@ from torch.nn.init import constant_, kaiming_normal_
 
 from ..decoder import build_decoder
 from ..encoder import build_encoder
+from ..modules import BaseModule
 from .build import MODEL_REGISTRY
 
 
 @MODEL_REGISTRY.register()
-class FlowNetS(nn.Module):
+class FlowNetS(BaseModule):
     """
     Implementation of **FlowNetSimple** from the paper
     `FlowNet: Learning Optical Flow with Convolutional Networks <https://arxiv.org/abs/1504.06852>`_

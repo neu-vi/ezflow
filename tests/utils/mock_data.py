@@ -1,6 +1,8 @@
 import torch
 from torch.utils.data import Dataset
 
+from ezflow.data import DataloaderCreator
+
 
 class MockOpticalFlowDataset(Dataset):
     def __init__(self, size, channels, length):
@@ -18,3 +20,13 @@ class MockOpticalFlowDataset(Dataset):
 
     def __getitem__(self, idx):
         return (self.imgs[idx], self.imgs[idx]), self.flow[idx]
+
+
+class MockDataloaderCreator(DataloaderCreator):
+    def __init__(self):
+        super(MockDataloaderCreator, self).__init__(batch_size=1)
+
+        self.dataset_list = []
+        self.dataset_list.append(
+            MockOpticalFlowDataset(size=(64, 64), channels=3, length=4)
+        )

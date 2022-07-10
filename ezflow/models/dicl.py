@@ -4,14 +4,14 @@ import torch.nn.functional as F
 
 from ..decoder import FlowEntropy, build_decoder
 from ..encoder import build_encoder
-from ..modules import ConvNormRelu, build_module
+from ..modules import BaseModule, ConvNormRelu, build_module
 from ..similarity import build_similarity
 from ..utils import warp
 from .build import MODEL_REGISTRY
 
 
 @MODEL_REGISTRY.register()
-class DICL(nn.Module):
+class DICL(BaseModule):
     """
     Implementation of the paper
     `Displacement-Invariant Matching Cost Learning for Accurate Optical Flow Estimation <https://arxiv.org/abs/2010.14851>`_

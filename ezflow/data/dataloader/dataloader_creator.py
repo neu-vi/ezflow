@@ -91,7 +91,7 @@ class DataloaderCreator:
                 is_prediction=self.is_prediction,
                 append_valid_mask=self.append_valid_mask,
                 augment=augment,
-                **kwargs
+                **kwargs,
             )
         )
 
@@ -101,7 +101,7 @@ class DataloaderCreator:
         split="training",
         dstype="frames_cleanpass",
         augment=False,
-        **kwargs
+        **kwargs,
     ):
         """
         Adds the Flying Things 3D dataset to the DataloaderCreator object.
@@ -131,7 +131,7 @@ class DataloaderCreator:
                 is_prediction=self.is_prediction,
                 append_valid_mask=self.append_valid_mask,
                 augment=augment,
-                **kwargs
+                **kwargs,
             )
         )
 
@@ -163,7 +163,7 @@ class DataloaderCreator:
                 is_prediction=self.is_prediction,
                 append_valid_mask=self.append_valid_mask,
                 augment=augment,
-                **kwargs
+                **kwargs,
             )
         )
 
@@ -190,7 +190,7 @@ class DataloaderCreator:
                 is_prediction=self.is_prediction,
                 append_valid_mask=self.append_valid_mask,
                 augment=augment,
-                **kwargs
+                **kwargs,
             )
         )
 
@@ -217,7 +217,7 @@ class DataloaderCreator:
                 is_prediction=self.is_prediction,
                 append_valid_mask=self.append_valid_mask,
                 augment=augment,
-                **kwargs
+                **kwargs,
             )
         )
 
@@ -272,7 +272,7 @@ class DataloaderCreator:
                 is_prediction=self.is_prediction,
                 append_valid_mask=self.append_valid_mask,
                 augment=augment,
-                **kwargs
+                **kwargs,
             )
         )
 
@@ -302,7 +302,7 @@ class DataloaderCreator:
                 is_prediction=self.is_prediction,
                 append_valid_mask=self.append_valid_mask,
                 augment=augment,
-                **kwargs
+                **kwargs,
             )
         )
 
@@ -328,7 +328,7 @@ class DataloaderCreator:
                 is_prediction=self.is_prediction,
                 append_valid_mask=self.append_valid_mask,
                 augment=augment,
-                **kwargs
+                **kwargs,
             )
         )
 
@@ -355,7 +355,7 @@ class DataloaderCreator:
                 is_prediction=self.is_prediction,
                 append_valid_mask=self.append_valid_mask,
                 augment=augment,
-                **kwargs
+                **kwargs,
             )
         )
 
@@ -408,6 +408,8 @@ class DataloaderCreator:
                 drop_last=self.drop_last,
             )
 
-        print("Total image pairs: %d" % len(dataset))
+        print(
+            f"Total image pairs loaded: {len(data_loader)*self.batch_size}/{len(dataset)}\n"
+        )
 
         return data_loader

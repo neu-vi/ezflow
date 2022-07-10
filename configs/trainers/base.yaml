@@ -51,7 +51,6 @@ DEVICE: "0"
 DISTRIBUTED:
   USE: False
   WORLD_SIZE: 2
-  RANK: 0
   BACKEND: nccl
   MASTER_ADDR: localhost
   MASTER_PORT: "12355"

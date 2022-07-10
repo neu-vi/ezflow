@@ -4,14 +4,14 @@ import torch.nn.functional as F
 
 from ..decoder import ConvDecoder
 from ..encoder import build_encoder
-from ..modules import conv, deconv
+from ..modules import BaseModule, conv, deconv
 from ..similarity import CorrelationLayer
 from ..utils import warp
 from .build import MODEL_REGISTRY
 
 
 @MODEL_REGISTRY.register()
-class PWCNet(nn.Module):
+class PWCNet(BaseModule):
     """
     Implementation of the paper
     `PWC-Net: CNNs for Optical Flow Using Pyramid, Warping, and Cost Volume <https://arxiv.org/abs/1709.02371>`_
