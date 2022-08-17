@@ -230,12 +230,13 @@ def profile_inference(
         )
     )
 
-    avg_inference_time = sum(times) / len(times)
+    avg_inference_time = 0 if len(times) == 0 else sum(times) / len(times)
     avg_inference_time /= batch_size  # Average inference time per sample
+    fps = 0 if avg_inference_time == 0 else 1 / avg_inference_time
     n_params = sum(p.numel() for p in model.parameters())
 
     print("=" * 100)
-    print(f"Average inference time: {avg_inference_time}, FPS: {1/avg_inference_time}")
+    print(f"Average inference time: {avg_inference_time}, FPS: {fps}")
 
     if count_params:
         print(f"Number of model parameters: {n_params}")

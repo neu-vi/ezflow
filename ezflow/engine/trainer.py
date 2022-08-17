@@ -1,6 +1,7 @@
 import os
 import time
 from copy import deepcopy
+from datetime import timedelta
 
 import numpy as np
 import torch
@@ -117,10 +118,16 @@ class BaseTrainer:
         self.min_avg_val_loss = float("inf")
         self.min_avg_val_metric = float("inf")
 
-    def _epoch_trainer(self, n_epochs=None, start_epoch=None):
+    def _freeze_bn(self):
+        if self.cfg.FREEZE_BATCH_NORM:
+            if self.model_parallel:
+                self.model.module.freeze_batch_norm()
+            else:
+                self.model.freeze_batch_norm()
 
-        best_model = deepcopy(self.model)
+    def _epoch_trainer(self, n_epochs=None, start_epoch=None):
         self.model.train()
+        self._freeze_bn()
 
         loss_meter = AverageMeter()
 
@@ -150,36 +157,17 @@ class BaseTrainer:
             print(f"\nEpoch {epoch+1}: Training loss = {loss_meter.sum}")
             self.writer.add_scalar("epochs_training_loss", loss_meter.sum, epoch + 1)
 
-            if epoch % self.cfg.VALIDATE_INTERVAL == 0 and self._is_main_process():
-                new_avg_val_loss, new_avg_val_metric = self._validate_model()
-                print("-" * 80)
-                self.writer.add_scalar(
-                    "avg_validation_loss", new_avg_val_loss, epoch + 1
-                )
-                print(
-                    f"\nEpoch {epoch+1}: Average validation loss = {new_avg_val_loss}"
-                )
-
-                self.writer.add_scalar(
-                    "avg_validation_metric", new_avg_val_metric, epoch + 1
-                )
-                print(
-                    f"Epoch {epoch+1}: Average validation metric = {new_avg_val_metric}\n"
-                )
-                print("-" * 80)
-                best_model = self._save_best_model(
-                    best_model, new_avg_val_loss, new_avg_val_metric
-                )
+            if epoch % self.cfg.VALIDATE_INTERVAL == 0:
+                self._validate_model(iter_type="Epoch", iterations=epoch + 1)
 
             if epoch % self.cfg.CKPT_INTERVAL == 0 and self._is_main_process():
-                self._save_checkpoints("epoch", epoch)
+                self._save_checkpoints(ckpt_type="epoch", ckpt_number=epoch + 1)
 
         self.writer.close()
-        return best_model
 
     def _step_trainer(self, n_steps=None, start_step=None):
-        best_model = deepcopy(self.model)
         self.model.train()
+        self._freeze_bn()
 
         loss_meter = AverageMeter()
 
@@ -199,11 +187,7 @@ class BaseTrainer:
 
         print(f"\nStarting step {total_steps + 1} of {n_steps}")
         print("-" * 80)
-
         for step in range(start_step, n_steps):
-
-            loss_meter.reset()
-
             try:
                 inp, target = next(train_iter)
             except:
@@ -213,41 +197,21 @@ class BaseTrainer:
                 inp, target = next(train_iter)
 
             loss = self._run_step(inp, target)
-
             loss_meter.update(loss.item())
 
             self._log_step(step, total_steps, loss_meter)
 
             self.writer.add_scalar("steps_training_loss", loss_meter.sum, total_steps)
 
-            if step % self.cfg.VALIDATE_INTERVAL == 0 and self._is_main_process():
-                new_avg_val_loss, new_avg_val_metric = self._validate_model()
-                print("-" * 80)
-                self.writer.add_scalar(
-                    "avg_validation_loss", new_avg_val_loss, total_steps
-                )
-                print(
-                    f"\nIteration {total_steps}: Average validation loss = {new_avg_val_loss}"
-                )
-
-                self.writer.add_scalar(
-                    "avg_validation_metric", new_avg_val_metric, total_steps
-                )
-                print(
-                    f"Iteration {total_steps}: Average validation metric = {new_avg_val_metric}\n"
-                )
-                print("-" * 80)
-                best_model = self._save_best_model(
-                    best_model, new_avg_val_loss, new_avg_val_metric
-                )
+            if step % self.cfg.VALIDATE_INTERVAL == 0:
+                self._validate_model(iter_type="Iteration", iterations=total_steps)
 
             if step % self.cfg.CKPT_INTERVAL == 0 and self._is_main_process():
-                self._save_checkpoints("step", total_steps)
+                self._save_checkpoints(ckpt_type="step", ckpt_number=total_steps)
 
             total_steps += 1
 
         self.writer.close()
-        return best_model
 
     def _run_step(self, inp, target):
         img1, img2 = inp
@@ -258,18 +222,14 @@ class BaseTrainer:
         )
         target = target / self.cfg.TARGET_SCALE_FACTOR
 
-        if torch.cuda.is_available():
-            torch.cuda.synchronize()
-
-        start_time = time.time()
+        if self._is_main_process():
+            start_time = time.time()
 
         with autocast(enabled=self.cfg.MIXED_PRECISION):
             pred = self.model(img1, img2)
-
             loss = self.loss_fn(pred, target)
 
         self.optimizer.zero_grad()
-
         self.scaler.scale(loss).backward()
         self.scaler.unscale_(self.optimizer)
 
@@ -283,10 +243,8 @@ class BaseTrainer:
 
         self.scaler.update()
 
-        if torch.cuda.is_available():
-            torch.cuda.synchronize()
-
-        self.times.append(time.time() - start_time)
+        if self._is_main_process():
+            self.times.append(time.time() - start_time)
 
         return loss
 
@@ -302,16 +260,13 @@ class BaseTrainer:
                 f"Iterations: {iteration}, Total iterations: {total_iters}, Average batch training loss: {loss_meter.avg}"
             )
 
-    def _validate_model(self):
-
+    def _validate_model(self, iter_type, iterations):
         self.model.eval()
-
         metric_meter = AverageMeter()
         loss_meter = AverageMeter()
 
         with torch.no_grad():
             for inp, target in self.val_loader:
-
                 img1, img2 = inp
                 img1, img2, target = (
                     img1.to(self.device),
@@ -321,16 +276,29 @@ class BaseTrainer:
                 target = target / self.cfg.TARGET_SCALE_FACTOR
 
                 pred = self.model(img1, img2)
-
                 loss = self.loss_fn(pred, target)
                 loss_meter.update(loss.item())
-
                 metric = self._calculate_metric(pred, target)
                 metric_meter.update(metric)
 
-        self.model.train()
+        new_avg_val_loss, new_avg_val_metric = loss_meter.avg, metric_meter.avg
 
-        return loss_meter.avg, metric_meter.avg
+        print("\n", "-" * 80)
+        self.writer.add_scalar("avg_validation_loss", new_avg_val_loss, iterations)
+        print(
+            f"\n{iter_type} {iterations}: Average validation loss = {new_avg_val_loss}"
+        )
+
+        self.writer.add_scalar("avg_validation_metric", new_avg_val_metric, iterations)
+        print(
+            f"{iter_type} {iterations}: Average validation metric = {new_avg_val_metric}\n"
+        )
+        print("-" * 80, "\n")
+
+        self._save_best_model(new_avg_val_loss, new_avg_val_metric)
+
+        self.model.train()
+        self._freeze_bn()
 
     def _calculate_metric(self, pred, target):
         return endpointerror(pred, target)
@@ -357,11 +325,11 @@ class BaseTrainer:
             ),
         )
 
-    def _save_best_model(self, best_model, new_avg_val_loss, new_avg_val_metric):
+    def _save_best_model(self, new_avg_val_loss, new_avg_val_metric):
         if new_avg_val_loss < self.min_avg_val_loss:
 
             self.min_avg_val_loss = new_avg_val_loss
-            print("New minimum average validation loss!")
+            print("\nNew minimum average validation loss!")
 
             if self.cfg.VALIDATE_ON.lower() == "loss":
                 best_model = deepcopy(self.model)
@@ -372,14 +340,12 @@ class BaseTrainer:
                     save_best_model.state_dict(),
                     os.path.join(self.cfg.CKPT_DIR, self.model_name + "_best.pth"),
                 )
-                print(f"Saved new best model!")
-
-            return best_model
+                print(f"Saved new best model!\n")
 
         if new_avg_val_metric < self.min_avg_val_metric:
 
             self.min_avg_val_metric = new_avg_val_metric
-            print("New minimum average validation metric!")
+            print("\nNew minimum average validation metric!")
 
             if self.cfg.VALIDATE_ON.lower() == "metric":
                 best_model = deepcopy(self.model)
@@ -390,9 +356,7 @@ class BaseTrainer:
                     save_best_model.state_dict(),
                     os.path.join(self.cfg.CKPT_DIR, self.model_name + "_best.pth"),
                 )
-                print(f"Saved new best model!")
-
-            return best_model
+                print(f"Saved new best model!\n")
 
     def _reload_trainer_states(
         self,
@@ -537,11 +501,10 @@ class Trainer(BaseTrainer):
         self.val_loader = val_loader
 
     def _setup_device(self):
-        assert (
-            len(self.cfg.DEVICE) == 1 or self.cfg.DEVICE == "cpu"
-        ), "Multiple devices not supported. Use ezflow.DistributedTrainer for multi-gpu training."
 
-        if self.cfg.DEVICE.lower() == "cpu" or int(self.cfg.DEVICE) == -1:
+        if (
+            isinstance(self.cfg.DEVICE, str) and self.cfg.DEVICE.lower() == "cpu"
+        ) or int(self.cfg.DEVICE) == -1:
             self.device = torch.device("cpu")
             self.cfg.MIXED_PRECISION = False
             print("Running on CPU\n")
@@ -553,6 +516,7 @@ class Trainer(BaseTrainer):
 
         else:
             self.device = torch.device(int(self.cfg.DEVICE))
+            torch.cuda.empty_cache()
 
     def _setup_model(self):
         self.model = self.model.to(self.device)
@@ -596,18 +560,10 @@ class Trainer(BaseTrainer):
         print(self.cfg)
         print("-" * 80)
 
-        best_model = self._trainer(total_iterations, start_iteration)
+        self._trainer(total_iterations, start_iteration)
 
         print("Training complete!")
-        print(f"Average training time: {sum(self.times)/len(self.times)}")
-        print(f"Total training time: {sum(self.times)}")
-
-        torch.save(
-            best_model.state_dict(),
-            os.path.join(self.cfg.CKPT_DIR, self.model_name + "_best_final.pth"),
-        )
-
-        print("Saved best model!\n")
+        print(f"Total training time: {str(timedelta(seconds=sum(self.times)))}")
 
 
 class DistributedTrainer(BaseTrainer):
@@ -634,10 +590,14 @@ class DistributedTrainer(BaseTrainer):
         self.model_name = model.__class__.__name__.lower()
         self.model = model
 
+        self.local_rank = None
         self.device_ids = None
 
-        self.train_loader = train_loader_creator
-        self.val_loader = val_loader_creator
+        self.train_loader = None
+        self.val_loader = None
+
+        self.train_loader_creator = train_loader_creator
+        self.val_loader_creator = val_loader_creator
 
         self._validate_ddp_config()
 
@@ -684,6 +644,8 @@ class DistributedTrainer(BaseTrainer):
             torch.cuda.is_available()
         ), "CUDA devices are not available. Use ezflow.Trainer for single device training."
         self.device = torch.device(rank)
+        self.local_rank = rank
+        torch.cuda.empty_cache()
 
     def _setup_ddp(self, rank):
         os.environ["MASTER_ADDR"] = self.cfg.DISTRIBUTED.MASTER_ADDR
@@ -700,7 +662,7 @@ class DistributedTrainer(BaseTrainer):
         print(f"{rank + 1}/{self.cfg.DISTRIBUTED.WORLD_SIZE} process initialized.")
 
     def _is_main_process(self):
-        return dist.get_rank() == 0
+        return self.local_rank == 0
 
     def _setup_model(self, rank):
 
@@ -729,28 +691,18 @@ class DistributedTrainer(BaseTrainer):
         self._setup_device(rank)
         self._setup_ddp(rank)
         self._setup_model(rank)
-        self.train_loader = self.train_loader.get_dataloader(rank=rank)
-        self.val_loader = self.val_loader.get_dataloader(rank=rank)
+        self.train_loader = self.train_loader_creator.get_dataloader(rank=rank)
+        self.val_loader = self.val_loader_creator.get_dataloader(rank=rank)
         self._setup_training(loss_fn, optimizer, scheduler)
 
         os.makedirs(self.cfg.CKPT_DIR, exist_ok=True)
         os.makedirs(self.cfg.LOG_DIR, exist_ok=True)
 
-        best_model = self._trainer(total_iterations, start_iteration)
+        self._trainer(total_iterations, start_iteration)
 
         if self._is_main_process():
             print("\nTraining complete!")
-            print(f"Average training time: {sum(self.times)/len(self.times)}")
-            print(f"Total training time: {sum(self.times)}")
-
-            if self.model_parallel:
-                best_model = best_model.module
-
-            torch.save(
-                best_model.state_dict(),
-                os.path.join(self.cfg.CKPT_DIR, self.model_name + "_best_final.pth"),
-            )
-            print("Saved best model!\n")
+            print(f"Total training time: {str(timedelta(seconds=sum(self.times)))}")
 
         self._cleanup()
 
@@ -789,4 +741,5 @@ class DistributedTrainer(BaseTrainer):
             self._main_worker,
             args=(loss_fn, optimizer, scheduler, total_iterations, start_iteration),
             nprocs=self.cfg.DISTRIBUTED.WORLD_SIZE,
+            join=True,
         )

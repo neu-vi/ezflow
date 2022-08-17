@@ -5,13 +5,13 @@ from torch.nn.init import constant_, kaiming_normal_
 
 from ..decoder import build_decoder
 from ..encoder import BasicConvEncoder, build_encoder
-from ..modules import conv
+from ..modules import BaseModule, conv
 from ..similarity import CorrelationLayer
 from .build import MODEL_REGISTRY
 
 
 @MODEL_REGISTRY.register()
-class FlowNetC(nn.Module):
+class FlowNetC(BaseModule):
     """
     Implementation of **FlowNetCorrelation** from the paper
     `FlowNet: Learning Optical Flow with Convolutional Networks <https://arxiv.org/abs/1504.06852>`_
