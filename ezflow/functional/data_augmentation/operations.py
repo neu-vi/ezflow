@@ -50,6 +50,8 @@ def crop(
 
     H, W = img1.shape[:2]
 
+    y0 = 0
+    x0 = 0
     if crop_type.lower() == "center":
         y0 = max(0, int(H / 2 - crop_size[0] / 2))
         x0 = max(0, int(W / 2 - crop_size[1] / 2))
@@ -64,8 +66,11 @@ def crop(
             x0 = max(0, np.clip(x0, 0, img1.shape[1] - crop_size[1]))
 
         else:
-            y0 = max(0, np.random.randint(0, img1.shape[0] - crop_size[0]))
-            x0 = max(0, np.random.randint(0, img1.shape[1] - crop_size[1]))
+            if img1.shape[0] - crop_size[0] > 0:
+                y0 = max(0, np.random.randint(0, img1.shape[0] - crop_size[0]))
+
+            if img1.shape[1] - crop_size[1] > 0:
+                x0 = max(0, np.random.randint(0, img1.shape[1] - crop_size[1]))
 
     img1 = img1[y0 : y0 + crop_size[0], x0 : x0 + crop_size[1]]
     img2 = img2[y0 : y0 + crop_size[0], x0 : x0 + crop_size[1]]
