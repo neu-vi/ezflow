@@ -6,6 +6,7 @@ import torch.utils.data as data
 
 from ...functional import crop
 from ...utils import read_flow, read_image
+import torchvision.transforms as transforms
 
 
 class BaseDataset(data.Dataset):
@@ -46,8 +47,10 @@ class BaseDataset(data.Dataset):
             "color_aug_params": {"aug_prob": 0.2},
             "eraser_aug_params": {"aug_prob": 0.5},
             "spatial_aug_params": {"aug_prob": 0.8},
+            "affine_params": {"aug_prob": 0.8},
         },
         sparse_transform=False,
+        normalize=False,
     ):
 
         self.is_prediction = is_prediction
@@ -63,6 +66,7 @@ class BaseDataset(data.Dataset):
 
         self.flow_list = []
         self.image_list = []
+        self.normalize = normalize
 
     def __getitem__(self, index):
         """
@@ -114,6 +118,13 @@ class BaseDataset(data.Dataset):
             img2 = torch.from_numpy(img2).permute(2, 0, 1).float()
 
             return img1, img2
+
+        if self.normalize:
+            input_transform = transforms.Compose([
+            transforms.Normalize(mean=[0,0,0], std=[255,255,255]),
+            ])
+            img1 = input_transform(img1)
+            img2 = input_transform(img2)
 
         if self.augment is True and self.augmentor is not None:
             img1, img2, flow, valid = self.augmentor(img1, img2, flow, valid)

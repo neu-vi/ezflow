@@ -25,12 +25,14 @@ class FlowAugmentor:
         color_aug_params={"aug_prob": 0.2},
         eraser_aug_params={"aug_prob": 0.5},
         spatial_aug_params={"aug_prob": 0.8},
+        affine_params={"aug_prob": 0.8},
     ):
 
         self.crop_size = crop_size
         self.color_aug_params = color_aug_params
         self.eraser_aug_params = eraser_aug_params
         self.spatial_aug_params = spatial_aug_params
+        self.affine_params = affine_params
 
     def __call__(self, img1, img2, flow, valid=None):
         """
@@ -63,6 +65,12 @@ class FlowAugmentor:
         img1, img2 = eraser_transform(img1, img2, **self.eraser_aug_params)
         img1, img2, flow = spatial_transform(
             img1, img2, flow, self.crop_size, **self.spatial_aug_params
+        )
+        img1, img2, flow = translate_transform(
+            img1, img2, flow, **self.affine_params
+        )
+        img1, img2, flow = rotate_transform(
+            img1, img2, flow, **self.affine_params
         )
 
         img1 = np.ascontiguousarray(img1)

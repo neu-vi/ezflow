@@ -45,7 +45,9 @@ class HD1K(BaseDataset):
             "color_aug_params": {"aug_prob": 0.2},
             "eraser_aug_params": {"aug_prob": 0.5},
             "spatial_aug_params": {"aug_prob": 0.8},
+            "affine_params": {"aug_prob": 0.8},
         },
+        normalize=False,
     ):
         super(HD1K, self).__init__(
             init_seed=init_seed,
@@ -57,6 +59,7 @@ class HD1K(BaseDataset):
             augment=augment,
             aug_params=aug_params,
             sparse_transform=True,
+            normalize=normalize
         )
 
         self.is_prediction = is_prediction
