@@ -4,7 +4,7 @@ import numpy as np
 import torch
 import torch.utils.data as data
 
-from ...functional import crop
+from ...functional import crop, normalize_image
 from ...utils import read_flow, read_image
 import torchvision.transforms as transforms
 
@@ -120,11 +120,13 @@ class BaseDataset(data.Dataset):
             return img1, img2
 
         if self.normalize:
-            input_transform = transforms.Compose([
-            transforms.Normalize(mean=[0,0,0], std=[255,255,255]),
-            ])
-            img1 = input_transform(img1)
-            img2 = input_transform(img2)
+            #input_transform = transforms.Compose([
+            #transforms.Normalize(mean=[0,0,0], std=[255,255,255]),
+            #])
+            #img1 = input_transform(img1)
+            #img2 = input_transform(img2)
+            img1 = normalize_image(img1)
+            img2 = normalize_image(img2)
 
         if self.augment is True and self.augmentor is not None:
             img1, img2, flow, valid = self.augmentor(img1, img2, flow, valid)

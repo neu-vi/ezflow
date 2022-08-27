@@ -1,5 +1,6 @@
 import numpy as np
 import torch
+import torchvision.transforms as transforms
 
 from ezflow.functional import (
     FlowAugmentor,
@@ -7,6 +8,7 @@ from ezflow.functional import (
     SequenceLoss,
     SparseFlowAugmentor,
     crop,
+    normalize_image
 )
 
 img1 = np.random.rand(256, 256, 3).astype(np.uint8)
@@ -146,3 +148,9 @@ def test_Augmentor():
     _ = augmentor(img1, img2, flow)
 
     del augmentor
+
+
+def test_normalize():
+
+    _ = normalize_image(img1)
+    _ = normalize_image(img2)
