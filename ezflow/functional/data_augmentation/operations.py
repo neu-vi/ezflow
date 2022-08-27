@@ -3,6 +3,7 @@ import numpy as np
 from PIL import Image
 import scipy.ndimage as ndimage
 from torchvision.transforms import ColorJitter
+import torchvision.transforms as transforms
 
 def crop(
     img1,
@@ -536,4 +537,7 @@ def rotate_transform(
     return img1, img2, flow
 
 def normalize_image(img):
-    return img/255
+    input_transform = transforms.Compose([
+            transforms.Normalize(mean=[0,0,0], std=[255,255,255]),
+        ])
+    return input_transform(img) 

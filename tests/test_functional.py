@@ -18,6 +18,9 @@ flow = np.random.rand(256, 256, 2).astype(np.float32)
 flow_pred = [torch.rand(4, 2, 256, 256)]
 flow_gt = torch.rand(4, 2, 256, 256)
 
+img1_tr = torch.from_numpy(img1).permute(2, 0, 1).float()
+img2_tr = torch.from_numpy(img2).permute(2, 0, 1).float()
+
 
 def test_crop():
 
@@ -151,6 +154,6 @@ def test_Augmentor():
 
 
 def test_normalize():
-
-    _ = normalize_image(img1)
-    _ = normalize_image(img2)
+    
+    _ = normalize_image(img1_tr)
+    _ = normalize_image(img2_tr)

@@ -119,15 +119,6 @@ class BaseDataset(data.Dataset):
 
             return img1, img2
 
-        if self.normalize:
-            #input_transform = transforms.Compose([
-            #transforms.Normalize(mean=[0,0,0], std=[255,255,255]),
-            #])
-            #img1 = input_transform(img1)
-            #img2 = input_transform(img2)
-            img1 = normalize_image(img1)
-            img2 = normalize_image(img2)
-
         if self.augment is True and self.augmentor is not None:
             img1, img2, flow, valid = self.augmentor(img1, img2, flow, valid)
 
@@ -145,6 +136,15 @@ class BaseDataset(data.Dataset):
         img1 = torch.from_numpy(img1).permute(2, 0, 1).float()
         img2 = torch.from_numpy(img2).permute(2, 0, 1).float()
         flow = torch.from_numpy(flow).permute(2, 0, 1).float()
+
+        if self.normalize:
+            #input_transform = transforms.Compose([
+            #transforms.Normalize(mean=[0,0,0], std=[255,255,255]),
+            #])
+            #img1 = input_transform(img1)
+            #img2 = input_transform(img2)
+            img1 = normalize_image(img1)
+            img2 = normalize_image(img2)
 
         if self.append_valid_mask:
             if valid is not None:
