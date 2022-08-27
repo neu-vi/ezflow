@@ -155,7 +155,9 @@ class BaseTrainer:
                 self._log_step(iteration, total_iters, loss_meter)
 
             print(f"\nEpoch {epoch+1}: Training loss = {loss_meter.sum}")
-            self.writer.add_scalar("epochs_training_loss", loss_meter.sum, epoch + 1)
+
+            if self._is_main_process():
+                self.writer.add_scalar("epochs_training_loss", loss_meter.sum, epoch + 1)
 
             if epoch % self.cfg.VALIDATE_INTERVAL == 0:
                 self._validate_model(iter_type="Epoch", iterations=epoch + 1)
@@ -201,7 +203,8 @@ class BaseTrainer:
 
             self._log_step(step, total_steps, loss_meter)
 
-            self.writer.add_scalar("steps_training_loss", loss_meter.sum, total_steps)
+            if self._is_main_process():
+                self.writer.add_scalar("steps_training_loss", loss_meter.sum, total_steps)
 
             if step % self.cfg.VALIDATE_INTERVAL == 0:
                 self._validate_model(iter_type="Iteration", iterations=total_steps)
@@ -284,16 +287,17 @@ class BaseTrainer:
         new_avg_val_loss, new_avg_val_metric = loss_meter.avg, metric_meter.avg
 
         print("\n", "-" * 80)
-        self.writer.add_scalar("avg_validation_loss", new_avg_val_loss, iterations)
-        print(
-            f"\n{iter_type} {iterations}: Average validation loss = {new_avg_val_loss}"
-        )
+        if self._is_main_process():
+            self.writer.add_scalar("avg_validation_loss", new_avg_val_loss, iterations)
+            print(
+                f"\n{iter_type} {iterations}: Average validation loss = {new_avg_val_loss}"
+            )
 
-        self.writer.add_scalar("avg_validation_metric", new_avg_val_metric, iterations)
-        print(
-            f"{iter_type} {iterations}: Average validation metric = {new_avg_val_metric}\n"
-        )
-        print("-" * 80, "\n")
+            self.writer.add_scalar("avg_validation_metric", new_avg_val_metric, iterations)
+            print(
+                f"{iter_type} {iterations}: Average validation metric = {new_avg_val_metric}\n"
+            )
+            print("-" * 80, "\n")
 
         self._save_best_model(new_avg_val_loss, new_avg_val_metric)
 
