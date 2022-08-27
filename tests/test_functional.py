@@ -109,3 +109,40 @@ def test_MultiScaleLoss():
     loss_fn = MultiScaleLoss()
     _ = loss_fn(flow_pred, flow_target)
     del loss_fn
+
+def test_Augmentor():
+    augmentor = FlowAugmentor(
+        crop_size=(224, 224),
+        color_aug_params={"aug_prob": 1.0},
+        eraser_aug_params={"aug_prob": 1.0},
+        spatial_aug_params={
+            "aug_prob": 1.0,
+            "h_flip_prob": 1.0,
+            "v_flip_prob": 1.0,
+            "stretch_prob": 1.0,
+        },
+        affine_params={
+            "translate": 20,
+            "degrees": 10
+        }
+    )
+    _ = augmentor(img1, img2, flow)
+
+    augmentor = FlowAugmentor(
+        crop_size=(224, 224),
+        color_aug_params={"aug_prob": 0.0},
+        eraser_aug_params={"aug_prob": 0.0},
+        spatial_aug_params={
+            "aug_prob": 0.0,
+            "h_flip_prob": 0.0,
+            "v_flip_prob": 0.0,
+            "stretch_prob": 0.0,
+        },
+        affine_params={
+            "translate": 20,
+            "degrees": 10
+        }
+    )
+    _ = augmentor(img1, img2, flow)
+
+    del augmentor
