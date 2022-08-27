@@ -410,6 +410,7 @@ def translate_transform(
     aug_prob=0.8,
     translate=10,
     degrees=10,
+    delta=0,
 ):
     """
     Translation augmentation.
@@ -428,6 +429,8 @@ def translate_transform(
         Pixels by which image will be translated
     degrees : int (optional)
         Angle by which image is to rotated
+    delta: int (optional)
+        Delta range for given degrees
 
     Returns
     -------
@@ -537,6 +540,18 @@ def rotate_transform(
     return img1, img2, flow
 
 def normalize_image(img):
+    """
+    Normalize Image.
+
+    Parameters
+    -----------
+    img : Image as tensor
+
+    Returns
+    -------
+    img1 : Normalized image tensor
+    """
+
     input_transform = transforms.Compose([
             transforms.Normalize(mean=[0,0,0], std=[255,255,255]),
         ])
