@@ -122,6 +122,7 @@ def test_Augmentor():
             "stretch_prob": 1.0,
         },
         affine_params={
+            "aug_prob": 1.0,
             "translate": 20,
             "degrees": 10
         }
@@ -139,8 +140,7 @@ def test_Augmentor():
             "stretch_prob": 0.0,
         },
         affine_params={
-            "translate": 20,
-            "degrees": 10
+            "aug_prob": 0.0
         }
     )
     _ = augmentor(img1, img2, flow)
