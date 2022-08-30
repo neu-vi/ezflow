@@ -54,7 +54,7 @@ class FlyingChairs(BaseDataset):
             "translate_params": {"aug_prob": 0.8},
             "rotate_params": {"aug_prob": 0.8},
         },
-        norm_params={"use": False},
+        norm_params={"USE": False},
     ):
         super(FlyingChairs, self).__init__(
             init_seed=init_seed,

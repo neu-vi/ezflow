@@ -54,7 +54,7 @@ class FlyingThings3D(BaseDataset):
             "translate_params": {"aug_prob": 0.8},
             "rotate_params": {"aug_prob": 0.8},
         },
-        norm_params={"use": False},
+        norm_params={"USE": False},
     ):
         super(FlyingThings3D, self).__init__(
             init_seed=init_seed,
@@ -141,10 +141,18 @@ class FlyingThings3DSubset(BaseDataset):
             "color_aug_params": {"aug_prob": 0.2},
             "eraser_aug_params": {"aug_prob": 0.5},
             "spatial_aug_params": {"aug_prob": 0.8},
+            "translate_params": {"aug_prob": 0.8},
+            "rotate_params": {"aug_prob": 0.8},
         },
+        norm_params={"USE": False},
     ):
         super(FlyingThings3DSubset, self).__init__(
-            augment, aug_params, is_prediction, init_seed, append_valid_mask
+            augment,
+            aug_params,
+            is_prediction,
+            init_seed,
+            append_valid_mask,
+            norm_params,
         )
         assert (
             split.lower() == "training" or split.lower() == "validation"
