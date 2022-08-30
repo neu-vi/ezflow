@@ -1,9 +1,10 @@
 import cv2
 import numpy as np
-from PIL import Image
 import scipy.ndimage as ndimage
-from torchvision.transforms import ColorJitter
 import torchvision.transforms as transforms
+from PIL import Image
+from torchvision.transforms import ColorJitter
+
 
 def crop(
     img1,
@@ -403,14 +404,12 @@ def sparse_spatial_transform(
     return img1, img2, flow, valid
 
 
-def translate_transform(   
+def translate_transform(
     img1,
     img2,
     flow,
     aug_prob=0.8,
     translate=10,
-    degrees=10,
-    delta=0,
 ):
     """
     Translation augmentation.
@@ -427,10 +426,6 @@ def translate_transform(
         Probability of applying the augmentation
     translate : int
         Pixels by which image will be translated
-    degrees : int (optional)
-        Angle by which image is to rotated
-    delta: int (optional)
-        Delta range for given degrees
 
     Returns
     -------
@@ -454,28 +449,28 @@ def translate_transform(
 
     if np.random.rand() < aug_prob:
 
-        x1,x2,x3,x4 = max(0,t_x), min(W+t_x,W), max(0,-t_x), min(W-t_x,W)
-        y1,y2,y3,y4 = max(0,t_y), min(H+t_y,H), max(0,-t_y), min(H-t_y,H)
+        x1, x2, x3, x4 = max(0, t_x), min(W + t_x, W), max(0, -t_x), min(W - t_x, W)
+        y1, y2, y3, y4 = max(0, t_y), min(H + t_y, H), max(0, -t_y), min(H - t_y, H)
 
-        img1 = img1[y1:y2,x1:x2]
-        img2 = img2[y3:y4,x3:x4]
-        flow = flow[y1:y2,x1:x2]
-        flow[:,:,0] += t_x
-        flow[:,:,1] += t_y
+        img1 = img1[y1:y2, x1:x2]
+        img2 = img2[y3:y4, x3:x4]
+        flow = flow[y1:y2, x1:x2]
+        flow[:, :, 0] += t_x
+        flow[:, :, 1] += t_y
 
     return img1, img2, flow
 
-def rotate_transform(   
+
+def rotate_transform(
     img1,
     img2,
     flow,
     aug_prob=0.8,
-    translate=10,
     degrees=10,
     delta=0,
 ):
     """
-    Rotation augmentation. 
+    Rotation augmentation.
     (Referenced from Clement Picard)
 
     Parameters
@@ -488,12 +483,10 @@ def rotate_transform(
         Flow field
     aug_prob : float
         Probability of applying the augmentation
-    translate : int (optional)
-        Pixels by which image will be translated
     degrees : int
         Angle by which image is to rotated
     delta: int
-        Delta range for given degrees
+        Assigns angle range of degrees-delta to degrees+delta
 
     Returns
     -------
@@ -504,13 +497,13 @@ def rotate_transform(
     flow : numpy.ndarray
         Augmented flow field
     """
-    
-    angle = np.random.uniform(-degrees,degrees)
-    diff = np.random.uniform(-delta,delta)
-    angle1 = angle - diff/2
-    angle2 = angle + diff/2
-    angle1_rad = angle1*np.pi/180
-    diff_rad = diff*np.pi/180
+
+    angle = np.random.uniform(-degrees, degrees)
+    diff = np.random.uniform(-delta, delta)
+    angle1 = angle - diff / 2
+    angle2 = angle + diff / 2
+    angle1_rad = angle1 * np.pi / 180
+    diff_rad = diff * np.pi / 180
 
     H, W = img1.shape[:2]
 
@@ -519,11 +512,14 @@ def rotate_transform(
 
     warped_coords_rot = np.zeros_like(flow)
 
-    warped_coords_rot[..., 0] = \
-        (np.cos(diff_rad) - 1) * warped_coords[..., 0] + np.sin(diff_rad) * warped_coords[..., 1]
+    warped_coords_rot[..., 0] = (np.cos(diff_rad) - 1) * warped_coords[..., 0] + np.sin(
+        diff_rad
+    ) * warped_coords[..., 1]
 
-    warped_coords_rot[..., 1] = \
-        -np.sin(diff_rad) * warped_coords[..., 0] + (np.cos(diff_rad) - 1) * warped_coords[..., 1]
+    warped_coords_rot[..., 1] = (
+        -np.sin(diff_rad) * warped_coords[..., 0]
+        + (np.cos(diff_rad) - 1) * warped_coords[..., 1]
+    )
 
     if np.random.rand() < aug_prob:
 
@@ -532,27 +528,47 @@ def rotate_transform(
         img1 = ndimage.interpolation.rotate(img1, angle1, reshape=False, order=2)
         img2 = ndimage.interpolation.rotate(img2, angle2, reshape=False, order=2)
         flow = ndimage.interpolation.rotate(flow, angle1, reshape=False, order=2)
-        
+
         target_ = np.copy(flow)
-        flow[:,:,0] = np.cos(angle1_rad)*target_[:,:,0] + np.sin(angle1_rad)*target_[:,:,1]
-        flow[:,:,1] = -np.sin(angle1_rad)*target_[:,:,0] + np.cos(angle1_rad)*target_[:,:,1]
+        flow[:, :, 0] = (
+            np.cos(angle1_rad) * target_[:, :, 0]
+            + np.sin(angle1_rad) * target_[:, :, 1]
+        )
+        flow[:, :, 1] = (
+            -np.sin(angle1_rad) * target_[:, :, 0]
+            + np.cos(angle1_rad) * target_[:, :, 1]
+        )
 
     return img1, img2, flow
 
-def normalize_image(img):
-    """
-    Normalize Image.
 
-    Parameters
+class Normalize:
+    """
+    A class to return Normalized Image.
+
+    Attributes
     -----------
-    img : Image as tensor
-
-    Returns
-    -------
-    img1 : Normalized image tensor
+    use: boolean
+        Whether to normalize image or not
+    mean: list
+        The list of mean values to be substracted from each image channel
+    std: list
+        The list of std values with which to divide each image channel by
     """
 
-    input_transform = transforms.Compose([
-            transforms.Normalize(mean=[0,0,0], std=[255,255,255]),
-        ])
-    return input_transform(img) 
+    def __init__(self, use=False, mean=[0, 0, 0], std=[255.0, 255.0, 255.0]):
+        # setup params
+        # setup self.normalize
+        self.use = use
+        self.mean = mean
+        self.std = std
+        self.normalize = transforms.Compose(
+            [
+                transforms.Normalize(mean=self.mean, std=self.std),
+            ]
+        )
+
+    def __call__(self, img1, img2):
+        if self.use:
+            return self.normalize(img1), self.normalize(img2)
+        return img1, img2

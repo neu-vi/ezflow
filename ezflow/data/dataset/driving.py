@@ -45,9 +45,10 @@ class Driving(BaseDataset):
             "color_aug_params": {"aug_prob": 0.2},
             "eraser_aug_params": {"aug_prob": 0.5},
             "spatial_aug_params": {"aug_prob": 0.8},
-            "affine_params": {"aug_prob": 0.8},
+            "translate_params": {"aug_prob": 0.8},
+            "rotate_params": {"aug_prob": 0.8},
         },
-        normalize=False,
+        norm_params={"use": False},
     ):
         super(Driving, self).__init__(
             init_seed=init_seed,
@@ -59,7 +60,7 @@ class Driving(BaseDataset):
             augment=augment,
             aug_params=aug_params,
             sparse_transform=False,
-            normalize=normalize,
+            norm_params=norm_params,
         )
 
         self.is_prediction = is_prediction

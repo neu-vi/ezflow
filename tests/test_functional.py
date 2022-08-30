@@ -5,10 +5,10 @@ import torchvision.transforms as transforms
 from ezflow.functional import (
     FlowAugmentor,
     MultiScaleLoss,
+    Normalize,
     SequenceLoss,
     SparseFlowAugmentor,
     crop,
-    normalize_image
 )
 
 img1 = np.random.rand(256, 256, 3).astype(np.uint8)
@@ -115,6 +115,7 @@ def test_MultiScaleLoss():
     _ = loss_fn(flow_pred, flow_target)
     del loss_fn
 
+
 def test_Augmentor():
     augmentor = FlowAugmentor(
         crop_size=(224, 224),
@@ -126,11 +127,15 @@ def test_Augmentor():
             "v_flip_prob": 1.0,
             "stretch_prob": 1.0,
         },
-        affine_params={
+        translate_params={
             "aug_prob": 1.0,
             "translate": 20,
-            "degrees": 10
-        }
+        },
+        rotate_params={
+            "aug_prob": 1.0,
+            "degrees": 20,
+            "delta": 5,
+        },
     )
     _ = augmentor(img1, img2, flow)
 
@@ -144,9 +149,12 @@ def test_Augmentor():
             "v_flip_prob": 0.0,
             "stretch_prob": 0.0,
         },
-        affine_params={
-            "aug_prob": 0.0
-        }
+        translate_params={
+            "aug_prob": 0.0,
+        },
+        rotate_params={
+            "aug_prob": 0.0,
+        },
     )
     _ = augmentor(img1, img2, flow)
 
@@ -154,6 +162,5 @@ def test_Augmentor():
 
 
 def test_normalize():
-    
-    _ = normalize_image(img1_tr)
-    _ = normalize_image(img2_tr)
+    normalize = Normalize(use=True, mean=[0, 0, 0], std=[255.0, 255.0, 255.0])
+    _ = normalize(img1_tr, img2_tr)

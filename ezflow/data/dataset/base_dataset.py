@@ -3,10 +3,10 @@ import random
 import numpy as np
 import torch
 import torch.utils.data as data
-
-from ...functional import crop, normalize_image
-from ...utils import read_flow, read_image
 import torchvision.transforms as transforms
+
+from ...functional import Normalize, crop
+from ...utils import read_flow, read_image
 
 
 class BaseDataset(data.Dataset):
@@ -47,10 +47,11 @@ class BaseDataset(data.Dataset):
             "color_aug_params": {"aug_prob": 0.2},
             "eraser_aug_params": {"aug_prob": 0.5},
             "spatial_aug_params": {"aug_prob": 0.8},
-            "affine_params": {"aug_prob": 0.8},
+            "translate_params": {"aug_prob": 0.8},
+            "rotate_params": {"aug_prob": 0.8},
         },
         sparse_transform=False,
-        normalize=False,
+        norm_params={"use": False},
     ):
 
         self.is_prediction = is_prediction
@@ -66,7 +67,7 @@ class BaseDataset(data.Dataset):
 
         self.flow_list = []
         self.image_list = []
-        self.normalize = normalize
+        self.normalize = Normalize(**norm_params)
 
     def __getitem__(self, index):
         """
@@ -105,6 +106,14 @@ class BaseDataset(data.Dataset):
         img1 = np.array(img1).astype(np.uint8)
         img2 = np.array(img2).astype(np.uint8)
 
+        img1 = torch.from_numpy(img1).permute(2, 0, 1).float()
+        img2 = torch.from_numpy(img2).permute(2, 0, 1).float()
+
+        img1, img2 = self.normalize(img1, img2)
+
+        img1 = img1.numpy()
+        img2 = img2.numpy()
+
         if len(img1.shape) == 2:  # grayscale images
             img1 = np.tile(img1[..., None], (1, 1, 3))
             img2 = np.tile(img2[..., None], (1, 1, 3))
@@ -137,14 +146,7 @@ class BaseDataset(data.Dataset):
         img2 = torch.from_numpy(img2).permute(2, 0, 1).float()
         flow = torch.from_numpy(flow).permute(2, 0, 1).float()
 
-        if self.normalize:
-            #input_transform = transforms.Compose([
-            #transforms.Normalize(mean=[0,0,0], std=[255,255,255]),
-            #])
-            #img1 = input_transform(img1)
-            #img2 = input_transform(img2)
-            img1 = normalize_image(img1)
-            img2 = normalize_image(img2)
+        # img1, img2 = self.normalize(img1, img2)
 
         if self.append_valid_mask:
             if valid is not None:
