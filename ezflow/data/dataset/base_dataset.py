@@ -51,7 +51,7 @@ class BaseDataset(data.Dataset):
             "rotate_params": {"aug_prob": 0.8},
         },
         sparse_transform=False,
-        norm_params={"USE": False},
+        norm_params={"use": False},
     ):
 
         self.is_prediction = is_prediction
@@ -106,17 +106,6 @@ class BaseDataset(data.Dataset):
         img1 = np.array(img1).astype(np.uint8)
         img2 = np.array(img2).astype(np.uint8)
 
-        img1 = torch.from_numpy(img1).permute(2, 0, 1).float()
-        img2 = torch.from_numpy(img2).permute(2, 0, 1).float()
-
-        img1, img2 = self.normalize(img1, img2)
-
-        img1 = img1.permute(1, 2, 0).numpy()
-        img2 = img2.permute(1, 2, 0).numpy()
-
-        img1 = np.array(img1).astype(np.uint8)
-        img2 = np.array(img2).astype(np.uint8)
-
         if len(img1.shape) == 2:  # grayscale images
             img1 = np.tile(img1[..., None], (1, 1, 3))
             img2 = np.tile(img2[..., None], (1, 1, 3))
@@ -128,6 +117,8 @@ class BaseDataset(data.Dataset):
 
             img1 = torch.from_numpy(img1).permute(2, 0, 1).float()
             img2 = torch.from_numpy(img2).permute(2, 0, 1).float()
+
+            img1, img2 = self.normalize(img1, img2)
 
             return img1, img2
 
@@ -149,7 +140,7 @@ class BaseDataset(data.Dataset):
         img2 = torch.from_numpy(img2).permute(2, 0, 1).float()
         flow = torch.from_numpy(flow).permute(2, 0, 1).float()
 
-        # img1, img2 = self.normalize(img1, img2)
+        img1, img2 = self.normalize(img1, img2)
 
         if self.append_valid_mask:
             if valid is not None:

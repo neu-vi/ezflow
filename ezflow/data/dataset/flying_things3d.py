@@ -54,7 +54,7 @@ class FlyingThings3D(BaseDataset):
             "translate_params": {"aug_prob": 0.8},
             "rotate_params": {"aug_prob": 0.8},
         },
-        norm_params={"USE": False},
+        norm_params={"use": False},
     ):
         super(FlyingThings3D, self).__init__(
             init_seed=init_seed,
@@ -144,7 +144,7 @@ class FlyingThings3DSubset(BaseDataset):
             "translate_params": {"aug_prob": 0.8},
             "rotate_params": {"aug_prob": 0.8},
         },
-        norm_params={"USE": False},
+        norm_params={"use": False},
     ):
         super(FlyingThings3DSubset, self).__init__(
             augment,

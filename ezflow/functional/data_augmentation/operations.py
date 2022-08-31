@@ -556,12 +556,12 @@ class Normalize:
         The list of std values with which to divide each image channel by
     """
 
-    def __init__(self, USE=False, MEAN=[0, 0, 0], STD=[255.0, 255.0, 255.0]):
+    def __init__(self, use=False, mean=[0, 0, 0], std=[255.0, 255.0, 255.0]):
         # setup params
         # setup self.normalize
-        self.use = USE
-        self.mean = MEAN
-        self.std = STD
+        self.use = use
+        self.mean = mean
+        self.std = std
         self.normalize = transforms.Compose(
             [
                 transforms.Normalize(mean=self.mean, std=self.std),

@@ -52,7 +52,7 @@ class Kitti(BaseDataset):
             "translate_params": {"aug_prob": 0.8},
             "rotate_params": {"aug_prob": 0.8},
         },
-        norm_params={"USE": False},
+        norm_params={"use": False},
     ):
         super(Kitti, self).__init__(
             init_seed=init_seed,
