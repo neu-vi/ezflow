@@ -546,19 +546,17 @@ class Normalize:
     """
     A class to return Normalized Image.
 
-    Attributes
+    Parameters
     -----------
-    USE: boolean
+    use : boolean
         Whether to normalize image or not
-    MEAN: list
+    mean : list
         The list of mean values to be substracted from each image channel
-    STD: list
+    std : list
         The list of std values with which to divide each image channel by
     """
 
     def __init__(self, use=False, mean=[0, 0, 0], std=[255.0, 255.0, 255.0]):
-        # setup params
-        # setup self.normalize
         self.use = use
         self.mean = mean
         self.std = std
