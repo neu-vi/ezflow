@@ -105,10 +105,10 @@ class BaseTrainer:
         self.optimizer = optimizer
         self.scheduler = scheduler
 
-        if rank==0:
-            '''
-                Initialize Tensorboard SummyWriter only for main process
-            '''
+        if rank == 0:
+            """
+            Initialize Tensorboard SummyWriter only for main process
+            """
             self.writer = SummaryWriter(log_dir=self.cfg.LOG_DIR)
 
         self.scaler = GradScaler(enabled=self.cfg.MIXED_PRECISION)
@@ -161,7 +161,9 @@ class BaseTrainer:
             print(f"\nEpoch {epoch+1}: Training loss = {loss_meter.sum}")
 
             if self._is_main_process():
-                self.writer.add_scalar("epochs_training_loss", loss_meter.sum, epoch + 1)
+                self.writer.add_scalar(
+                    "epochs_training_loss", loss_meter.sum, epoch + 1
+                )
 
             if epoch % self.cfg.VALIDATE_INTERVAL == 0:
                 self._validate_model(iter_type="Epoch", iterations=epoch + 1)
@@ -187,7 +189,7 @@ class BaseTrainer:
             total_steps = start_step
             n_steps += start_step
         else:
-            start_step = 0
+            start_step = 1
 
         train_iter = iter(self.train_loader)
 
@@ -208,7 +210,9 @@ class BaseTrainer:
             self._log_step(step, total_steps, loss_meter)
 
             if self._is_main_process():
-                self.writer.add_scalar("steps_training_loss", loss_meter.sum, total_steps)
+                self.writer.add_scalar(
+                    "steps_training_loss", loss_meter.sum, total_steps
+                )
 
             if step % self.cfg.VALIDATE_INTERVAL == 0:
                 self._validate_model(iter_type="Iteration", iterations=total_steps)
@@ -266,7 +270,6 @@ class BaseTrainer:
                     loss_meter.avg,
                     total_iters,
                 )
-            
 
     def _validate_model(self, iter_type, iterations):
         self.model.eval()
@@ -294,12 +297,14 @@ class BaseTrainer:
         print("\n", "-" * 80)
         if self._is_main_process():
             self.writer.add_scalar("avg_validation_loss", new_avg_val_loss, iterations)
-            self.writer.add_scalar("avg_validation_metric", new_avg_val_metric, iterations)
+            self.writer.add_scalar(
+                "avg_validation_metric", new_avg_val_metric, iterations
+            )
 
         print(
             f"\n{iter_type} {iterations}: Average validation loss = {new_avg_val_loss}"
         )
-        
+
         print(
             f"{iter_type} {iterations}: Average validation metric = {new_avg_val_metric}\n"
         )
@@ -561,7 +566,9 @@ class Trainer(BaseTrainer):
         """
         self._setup_device()
         self._setup_model()
-        self._setup_training(rank=0,loss_fn=loss_fn, optimizer=optimizer, scheduler=scheduler)
+        self._setup_training(
+            rank=0, loss_fn=loss_fn, optimizer=optimizer, scheduler=scheduler
+        )
 
         os.makedirs(self.cfg.CKPT_DIR, exist_ok=True)
         os.makedirs(self.cfg.LOG_DIR, exist_ok=True)
@@ -703,7 +710,9 @@ class DistributedTrainer(BaseTrainer):
         self._setup_model(rank)
         self.train_loader = self.train_loader_creator.get_dataloader(rank=rank)
         self.val_loader = self.val_loader_creator.get_dataloader(rank=rank)
-        self._setup_training(rank=rank,loss_fn=loss_fn, optimizer=optimizer, scheduler=scheduler)
+        self._setup_training(
+            rank=rank, loss_fn=loss_fn, optimizer=optimizer, scheduler=scheduler
+        )
 
         os.makedirs(self.cfg.CKPT_DIR, exist_ok=True)
         os.makedirs(self.cfg.LOG_DIR, exist_ok=True)
