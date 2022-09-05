@@ -185,7 +185,7 @@ class BaseTrainer:
             n_steps = self.cfg.NUM_STEPS
 
         if start_step is not None:
-            print(f"Resuming training from step {start_step+1}\n")
+            print(f"Resuming training from step {start_step}\n")
             total_steps = start_step
             n_steps += start_step
         else:
@@ -193,7 +193,7 @@ class BaseTrainer:
 
         train_iter = iter(self.train_loader)
 
-        print(f"\nStarting step {total_steps + 1} of {n_steps}")
+        print(f"\nStarting step {total_steps} of {n_steps}")
         print("-" * 80)
         for step in range(start_step, n_steps):
             try:
