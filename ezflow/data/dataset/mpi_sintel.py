@@ -52,7 +52,10 @@ class MPISintel(BaseDataset):
             "color_aug_params": {"aug_prob": 0.2},
             "eraser_aug_params": {"aug_prob": 0.5},
             "spatial_aug_params": {"aug_prob": 0.8},
+            "translate_params": {"aug_prob": 0.8},
+            "rotate_params": {"aug_prob": 0.8},
         },
+        norm_params={"use": False},
     ):
         super(MPISintel, self).__init__(
             init_seed=init_seed,
@@ -64,6 +67,7 @@ class MPISintel(BaseDataset):
             augment=augment,
             aug_params=aug_params,
             sparse_transform=False,
+            norm_params=norm_params,
         )
 
         assert (
