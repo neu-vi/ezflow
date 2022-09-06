@@ -25,15 +25,17 @@ def test_Predictor():
 def test_RAFT():
 
     model = build_model("RAFT", "raft.yaml")
-    flow_preds = model(img1, img2)
-    assert isinstance(flow_preds, tuple) or isinstance(flow_preds, list)
+    output = model(img1, img2)
+    assert isinstance(output, dict)
+    assert isinstance(output["flow_preds"], tuple) or isinstance(
+        output["flow_preds"], list
+    )
 
     model.eval()
-    _ = model(img1, img2, only_flow=False)
-    flow = model(img1, img2)
-    assert flow.shape == (2, 2, 256, 256)
+    output = model(img1, img2)
+    assert output["flow_upsampled"].shape == (2, 2, 256, 256)
 
-    del model, flow, flow_preds
+    del model, output
 
     _ = build_model("RAFT", default=True)
 
@@ -41,14 +43,17 @@ def test_RAFT():
 def test_DICL():
 
     model = build_model("DICL", "dicl.yaml")
-    flow_preds = model(img1, img2)
-    assert isinstance(flow_preds, tuple) or isinstance(flow_preds, list)
+    output = model(img1, img2)
+    assert isinstance(output, dict)
+    assert isinstance(output["flow_preds"], tuple) or isinstance(
+        output["flow_preds"], list
+    )
 
     model.eval()
-    flow = model(img1, img2)
-    assert flow.shape == (2, 2, 256, 256)
+    output = model(img1, img2)
+    assert output["flow_upsampled"].shape == (2, 2, 256, 256)
 
-    del model, flow, flow_preds
+    del model, output
 
     _ = build_model("DICL", default=True)
 
@@ -56,14 +61,17 @@ def test_DICL():
 def test_PWCNet():
 
     model = build_model("PWCNet", "pwcnet.yaml")
-    flow_preds = model(img1, img2)
-    assert isinstance(flow_preds, tuple) or isinstance(flow_preds, list)
+    output = model(img1, img2)
+    assert isinstance(output, dict)
+    assert isinstance(output["flow_preds"], tuple) or isinstance(
+        output["flow_preds"], list
+    )
 
     model.eval()
-    flow = model(img1, img2)
-    assert flow.shape == (2, 2, 256, 256)
+    output = model(img1, img2)
+    assert output["flow_upsampled"].shape == (2, 2, 256, 256)
 
-    del model, flow, flow_preds
+    del model, output
 
     _ = build_model("PWCNet", default=True)
 
@@ -71,14 +79,17 @@ def test_PWCNet():
 def test_FlowNetS():
 
     model = build_model("FlowNetS", "flownet_s.yaml")
-    flow_preds = model(img1, img2)
-    assert isinstance(flow_preds, tuple) or isinstance(flow_preds, list)
+    output = model(img1, img2)
+    assert isinstance(output, dict)
+    assert isinstance(output["flow_preds"], tuple) or isinstance(
+        output["flow_preds"], list
+    )
 
     model.eval()
-    flow = model(img1, img2)
-    assert flow.shape == (2, 2, 256, 256)
+    output = model(img1, img2)
+    assert output["flow_upsampled"].shape == (2, 2, 256, 256)
 
-    del model, flow, flow_preds
+    del model, output
 
     _ = build_model("FlowNetS", default=True)
 
@@ -86,14 +97,17 @@ def test_FlowNetS():
 def test_FlowNetC():
 
     model = build_model("FlowNetC", "flownet_c.yaml")
-    flow_preds = model(img1, img2)
-    assert isinstance(flow_preds, tuple) or isinstance(flow_preds, list)
+    output = model(img1, img2)
+    assert isinstance(output, dict)
+    assert isinstance(output["flow_preds"], tuple) or isinstance(
+        output["flow_preds"], list
+    )
 
     model.eval()
-    flow = model(img1, img2)
-    assert flow.shape == (2, 2, 256, 256)
+    output = model(img1, img2)
+    assert output["flow_upsampled"].shape == (2, 2, 256, 256)
 
-    del model, flow, flow_preds
+    del model, output
 
     _ = build_model("FlowNetC", default=True)
 
@@ -104,12 +118,14 @@ def test_VCN():
 
     img = torch.randn(16, 3, 256, 256)
 
-    flow_preds = model(img, img)
-    assert isinstance(flow_preds, tuple) or isinstance(flow_preds, list)
-    assert flow_preds[0].shape == (16, 2, 256, 256)
+    output = model(img, img)
+    assert isinstance(output, dict)
+    assert isinstance(output["flow_preds"], tuple) or isinstance(
+        output["flow_preds"], list
+    )
 
     model.eval()
-    flow = model(img, img)
-    assert flow.shape == (16, 2, 256, 256)
+    output = model(img, img)
+    assert output["flow_upsampled"].shape == (16, 2, 256, 256)
 
-    del model, flow, flow_preds
+    del model, output

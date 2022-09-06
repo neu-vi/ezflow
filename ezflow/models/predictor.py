@@ -105,8 +105,7 @@ class Predictor:
         padder = InputPadder(img1.shape, divisor=self.pad_divisor)
         img1, img2 = padder.pad(img1, img2)
 
-        flow_pred = self.model(img1, img2)
-        flow_pred = padder.unpad(flow_pred)
+        output = self.model(img1, img2)
+        flow_pred = padder.unpad(output["flow_upsampled"])
         flow_pred = flow_pred * self.flow_scale
-
         return flow_pred

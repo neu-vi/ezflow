@@ -65,20 +65,18 @@ class FlowNetS(BaseModule):
         flow_preds = self.decoder(conv_outputs)
         flow_preds.reverse()
 
+        output = {"flow_preds": flow_preds}
+
         if self.training:
-            return flow_preds
+            return output
 
-        else:
+        flow = flow_preds[0]
 
-            flow = flow_preds[0]
+        H_, W_ = flow.shape[-2:]
+        flow = F.interpolate(flow, img1.shape[-2:], mode="bilinear", align_corners=True)
+        flow_u = flow[:, 0, :, :] * (W / W_)
+        flow_v = flow[:, 1, :, :] * (H / H_)
+        flow = torch.stack([flow_u, flow_v], dim=1)
 
-            if self.cfg.INTERPOLATE_FLOW:
-                H_, W_ = flow.shape[-2:]
-                flow = F.interpolate(
-                    flow, img1.shape[-2:], mode="bilinear", align_corners=True
-                )
-                flow_u = flow[:, 0, :, :] * (W / W_)
-                flow_v = flow[:, 1, :, :] * (H / H_)
-                flow = torch.stack([flow_u, flow_v], dim=1)
-
-            return flow
+        output["flow_upsampled"] = flow
+        return output

@@ -82,15 +82,14 @@ class PWCNet(BaseModule):
         if self.training:
             return output
 
-        else:
-            flow_up = flow_preds[-1]
+        flow_up = flow_preds[-1]
 
-            flow_up = F.interpolate(
-                flow_up, size=(H, W), mode="bilinear", align_corners=False
-            )
+        flow_up = F.interpolate(
+            flow_up, size=(H, W), mode="bilinear", align_corners=False
+        )
 
-            flow_up *= self.cfg.DECODER.FLOW_SCALE_FACTOR
+        flow_up *= self.cfg.DECODER.FLOW_SCALE_FACTOR
 
-            output["flow_upsampled"] = flow_up
+        output["flow_upsampled"] = flow_up
 
-            return output
+        return output
