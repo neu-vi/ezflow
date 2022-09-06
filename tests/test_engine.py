@@ -228,9 +228,11 @@ class TestTrainer(TestCase):
     @mock.patch("ezflow.engine.trainer.SummaryWriter")
     @mock.patch("ezflow.engine.trainer.os")
     def test_epoch_trainer(self, mock_os, mock_writer, mock_save_model):
-        trainer = Trainer(
-            self.training_cfg, self.mock_model, self.train_loader, self.val_loader
+        cfg = get_training_cfg(
+            cfg_path="./tests/configs/custom_loss_trainer.yaml", custom=True
         )
+
+        trainer = Trainer(cfg, self.mock_model, self.train_loader, self.val_loader)
         trainer._trainer = Trainer._epoch_trainer
 
         trainer.train()
@@ -241,7 +243,6 @@ class TestTrainer(TestCase):
 
         del trainer
 
-        cfg = self.training_cfg
         cfg.VALIDATE_ON = "loss"
         trainer = Trainer(cfg, self.mock_model, self.train_loader, self.val_loader)
         trainer._trainer = Trainer._epoch_trainer
@@ -258,7 +259,9 @@ class TestTrainer(TestCase):
     @mock.patch("ezflow.engine.trainer.SummaryWriter")
     @mock.patch("ezflow.engine.trainer.os")
     def test_step_trainer(self, mock_os, mock_writer, mock_save_model):
-        cfg = self.training_cfg
+        cfg = get_training_cfg(
+            cfg_path="./tests/configs/custom_loss_trainer.yaml", custom=True
+        )
         cfg.NUM_STEPS = 1
 
         trainer = Trainer(cfg, self.mock_model, self.train_loader, self.val_loader)
