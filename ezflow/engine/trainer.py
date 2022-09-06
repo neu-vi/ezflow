@@ -232,14 +232,15 @@ class BaseTrainer:
             img2.to(self.device),
             target.to(self.device),
         )
-        target = target / self.cfg.TARGET_SCALE_FACTOR
 
         if self._is_main_process():
             start_time = time.time()
 
         with autocast(enabled=self.cfg.MIXED_PRECISION):
-            pred = self.model(img1, img2)
-            loss = self.loss_fn(pred, target)
+            output = self.model(img1, img2)
+            loss = self.loss_fn(
+                output["flow_preds"], target / self.cfg.TARGET_SCALE_FACTOR
+            )
 
         self.optimizer.zero_grad()
         self.scaler.scale(loss).backward()
@@ -285,12 +286,14 @@ class BaseTrainer:
                     img2.to(self.device),
                     target.to(self.device),
                 )
-                target = target / self.cfg.TARGET_SCALE_FACTOR
 
-                pred = self.model(img1, img2)
-                loss = self.loss_fn(pred, target)
+                output = self.model(img1, img2)
+                loss = self.loss_fn(
+                    output["flow_preds"], target / self.cfg.TARGET_SCALE_FACTOR
+                )
+
                 loss_meter.update(loss.item())
-                metric = self._calculate_metric(pred, target)
+                metric = self._calculate_metric(output["flow_upsampled"], target)
                 metric_meter.update(metric)
 
         new_avg_val_loss, new_avg_val_metric = loss_meter.avg, metric_meter.avg
