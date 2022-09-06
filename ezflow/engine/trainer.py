@@ -189,7 +189,8 @@ class BaseTrainer:
             total_steps = start_step
             n_steps += start_step
         else:
-            start_step = 1
+            start_step = total_steps = 1
+            n_steps += start_step
 
         train_iter = iter(self.train_loader)
 

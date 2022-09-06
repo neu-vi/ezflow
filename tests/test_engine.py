@@ -65,7 +65,9 @@ class TestTrainer(TestCase):
 
         # assert trainer
         mock_setup_model.assert_called()
-        mock_setup_training.assert_called_with(None, None, None)
+        mock_setup_training.assert_called_with(
+            rank=0, loss_fn=None, optimizer=None, scheduler=None
+        )
         mock_trainer.assert_called_with(50, 0)
         assert trainer.cfg.MIXED_PRECISION == False
 
@@ -159,7 +161,9 @@ class TestTrainer(TestCase):
 
         # assert trainer
         mock_setup_device.assert_called()
-        mock_setup_training.assert_called_with(None, None, None)
+        mock_setup_training.assert_called_with(
+            rank=0, loss_fn=None, optimizer=None, scheduler=None
+        )
         mock_trainer.assert_called_with(None, None)
 
         del trainer
@@ -258,7 +262,7 @@ class TestTrainer(TestCase):
         cfg.NUM_STEPS = 1
 
         trainer = Trainer(cfg, self.mock_model, self.train_loader, self.val_loader)
-        trainer._trainer = Trainer._epoch_trainer
+        trainer._trainer = Trainer._step_trainer
 
         trainer.train()
 
@@ -375,7 +379,9 @@ class TestDistributedTrainer(TestCase):
         mock_setup_device.assert_called_with(rank)
         mock_setup_ddp.assert_called_with(rank)
         mock_setup_model.assert_called_with(rank)
-        mock_setup_training.assert_called_with(None, None, None)
+        mock_setup_training.assert_called_with(
+            rank=0, loss_fn=None, optimizer=None, scheduler=None
+        )
         mock_trainer.assert_called_with(None, None)
         mock_dist_cleanup.assert_called()
 
