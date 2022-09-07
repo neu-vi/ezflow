@@ -66,10 +66,6 @@ class PWCNet(BaseModule):
 
         H, W = img1.shape[-2:]
 
-        # normalize
-        img1 = 1.0 * (img1 / 255.0)
-        img2 = 1.0 * (img2 / 255.0)
-
         feature_pyramid1 = self.encoder(img1)
         feature_pyramid2 = self.encoder(img2)
 

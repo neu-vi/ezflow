@@ -96,8 +96,6 @@ class RAFT(BaseModule):
         torch.Tensor
             Flow from img1 to img2
         """
-        img1 = 2 * (img1 / 255.0) - 1.0
-        img2 = 2 * (img2 / 255.0) - 1.0
 
         img1 = img1.contiguous()
         img2 = img2.contiguous()
