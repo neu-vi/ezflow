@@ -217,6 +217,7 @@ class BaseTrainer:
                 self._save_checkpoints(ckpt_type="step", ckpt_number=total_steps)
 
             total_steps += 1
+            print("-" * 80)
 
         self.writer.close()
 
