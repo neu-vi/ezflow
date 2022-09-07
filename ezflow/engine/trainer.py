@@ -210,11 +210,6 @@ class BaseTrainer:
 
             self._log_step(step, total_steps, loss_meter)
 
-            if self._is_main_process():
-                self.writer.add_scalar(
-                    "steps_training_loss", loss_meter.sum, total_steps
-                )
-
             if step % self.cfg.VALIDATE_INTERVAL == 0:
                 self._validate_model(iter_type="Iteration", iterations=total_steps)
 
