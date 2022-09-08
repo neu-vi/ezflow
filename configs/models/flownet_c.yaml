@@ -5,11 +5,10 @@ ENCODER:
   CONFIG: [64, 128, 256, 256, 512, 512, 512, 512, 1024, 1024]
   NORM: batch
 SIMILARITY:
-  NAME: CorrelationLayer
+  NAME: IterSpatialCorrelationSampler
   PAD_SIZE: 0
   MAX_DISPLACEMENT: 10
 DECODER:
   NAME: FlowNetConvDecoder
   IN_CHANNELS: 1024
   CONFIG: [512, 256, 128, 64]
-INTERPOLATE_FLOW: True
