@@ -38,10 +38,7 @@ class FlowNetC(BaseModule):
             padding=cfg.SIMILARITY.PAD_SIZE,
             dilation_patch=2,
         )
-        self.correlation_layer = CorrelationLayer(
-            pad_size=cfg.SIMILARITY.PAD_SIZE,
-            max_displacement=cfg.SIMILARITY.MAX_DISPLACEMENT,
-        )
+
         self.corr_activation = nn.LeakyReLU(negative_slope=0.1, inplace=True)
 
         self.conv_redirect = conv(
@@ -86,6 +83,9 @@ class FlowNetC(BaseModule):
         conv_outputs2 = self.feature_encoder(img2)
 
         corr_output = self.correlation_layer(conv_outputs1[-1], conv_outputs2[-1])
+        corr_output = corr_output.view(
+            corr_output.shape[0], -1, corr_output.shape[3], corr_output.shape[4]
+        )
         corr_output = self.corr_activation(corr_output)
 
         # Redirect final feature output of img1
