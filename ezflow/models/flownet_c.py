@@ -99,14 +99,13 @@ class FlowNetC(BaseModule):
         conv_outputs = [conv_outputs1[0], conv_outputs1[1]] + conv_outputs
 
         flow_preds = self.decoder(conv_outputs)
-        flow_preds.reverse()
 
         output = {"flow_preds": flow_preds}
 
         if self.training:
             return output
 
-        flow = flow_preds[0]
+        flow = flow_preds[-1]
 
         H_, W_ = flow.shape[-2:]
         flow = F.interpolate(flow, img1.shape[-2:], mode="bilinear", align_corners=True)
