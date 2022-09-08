@@ -212,12 +212,13 @@ class BaseTrainer:
 
             if step % self.cfg.VALIDATE_INTERVAL == 0:
                 self._validate_model(iter_type="Iteration", iterations=total_steps)
+                print("-" * 80)
 
             if step % self.cfg.CKPT_INTERVAL == 0 and self._is_main_process():
                 self._save_checkpoints(ckpt_type="step", ckpt_number=total_steps)
-
+                
             total_steps += 1
-            print("-" * 80)
+            
 
         self.writer.close()
 
@@ -291,10 +292,9 @@ class BaseTrainer:
                 loss_meter.update(loss.item())
 
                 """
-                    Predicted upsampled flow is scaled when the model is in evaluate state.
-                    No Further scaling of output and ground truth is required for EPE calculation.
+                    Predicted upsampled flow should be scaled for EPE calculation.
                 """
-                metric = self._calculate_metric(output["flow_upsampled"], target)
+                metric = self._calculate_metric(output["flow_upsampled"] * self.cfg.TARGET_SCALE_FACTOR, target)
                 metric_meter.update(metric)
 
         new_avg_val_loss, new_avg_val_metric = loss_meter.avg, metric_meter.avg
