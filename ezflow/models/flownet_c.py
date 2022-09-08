@@ -6,7 +6,7 @@ from torch.nn.init import constant_, kaiming_normal_
 from ..decoder import build_decoder
 from ..encoder import BasicConvEncoder, build_encoder
 from ..modules import BaseModule, conv
-from ..similarity import CorrelationLayer
+from ..similarity import IterSpatialCorrelationSampler as SpatialCorrelationSampler
 from .build import MODEL_REGISTRY
 
 
@@ -32,10 +32,13 @@ class FlowNetC(BaseModule):
 
         self.feature_encoder = build_encoder(cfg.ENCODER)
 
-        self.correlation_layer = CorrelationLayer(
-            pad_size=cfg.SIMILARITY.PAD_SIZE,
-            max_displacement=cfg.SIMILARITY.MAX_DISPLACEMENT,
+        self.correlation_layer = SpatialCorrelationSampler(
+            kernel_size=1,
+            patch_size=2 * cfg.SIMILARITY.MAX_DISPLACEMENT + 1,
+            padding=cfg.SIMILARITY.PAD_SIZE,
+            dilation_patch=2,
         )
+
         self.corr_activation = nn.LeakyReLU(negative_slope=0.1, inplace=True)
 
         self.conv_redirect = conv(
@@ -80,6 +83,9 @@ class FlowNetC(BaseModule):
         conv_outputs2 = self.feature_encoder(img2)
 
         corr_output = self.correlation_layer(conv_outputs1[-1], conv_outputs2[-1])
+        corr_output = corr_output.view(
+            corr_output.shape[0], -1, corr_output.shape[3], corr_output.shape[4]
+        )
         corr_output = self.corr_activation(corr_output)
 
         # Redirect final feature output of img1
@@ -93,22 +99,19 @@ class FlowNetC(BaseModule):
         conv_outputs = [conv_outputs1[0], conv_outputs1[1]] + conv_outputs
 
         flow_preds = self.decoder(conv_outputs)
-        flow_preds.reverse()
+
+        output = {"flow_preds": flow_preds}
 
         if self.training:
-            return flow_preds
+            return output
 
-        else:
+        flow = flow_preds[-1]
 
-            flow = flow_preds[0]
+        H_, W_ = flow.shape[-2:]
+        flow = F.interpolate(flow, img1.shape[-2:], mode="bilinear", align_corners=True)
+        flow_u = flow[:, 0, :, :] * (W / W_)
+        flow_v = flow[:, 1, :, :] * (H / H_)
+        flow = torch.stack([flow_u, flow_v], dim=1)
 
-            if self.cfg.INTERPOLATE_FLOW:
-                H_, W_ = flow.shape[-2:]
-                flow = F.interpolate(
-                    flow, img1.shape[-2:], mode="bilinear", align_corners=True
-                )
-                flow_u = flow[:, 0, :, :] * (W / W_)
-                flow_v = flow[:, 1, :, :] * (H / H_)
-                flow = torch.stack([flow_u, flow_v], dim=1)
-
-            return flow
+        output["flow_upsampled"] = flow
+        return output

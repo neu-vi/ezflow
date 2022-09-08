@@ -31,7 +31,8 @@ class BaseDataset(data.Dataset):
         If True, applies data augmentation
     aug_params : :obj:`dict`
         The parameters for data augmentation
-
+    norm_params : :obj:`dict`, optional
+        The parameters for normalization
     """
 
     def __init__(

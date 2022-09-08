@@ -313,10 +313,10 @@ class DICL(BaseModule):
             self.scale_contexts[0],
         )
 
+        output = {"flow_preds": [flow2, flow3, flow4, flow5, flow6]}
         if self.training:
-
             if self.cfg.SUP_RAW_FLOW:
-                return (
+                output["flow_preds"] = [
                     flow2,
                     raw_flow2,
                     flow3,
@@ -327,12 +327,14 @@ class DICL(BaseModule):
                     raw_flow5,
                     flow6,
                     raw_flow6,
-                )
+                ]
 
-            return (flow2, flow3, flow4, flow5, flow6)
+            return output
 
-        else:
-            _, _, height, width = img1.size()
-            return F.interpolate(
-                flow2, (height, width), mode="bilinear", align_corners=True
-            )
+        _, _, height, width = img1.size()
+        flow_up = F.interpolate(
+            flow2, (height, width), mode="bilinear", align_corners=True
+        )
+
+        output["flow_upsampled"] = flow_up
+        return output

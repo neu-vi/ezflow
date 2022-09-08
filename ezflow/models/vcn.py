@@ -320,7 +320,9 @@ class VCN(BaseModule):
             flow_preds[i] = flow_preds[i] * scale
             scale *= 2
 
+        output = {"flow_preds": flow_preds}
         if self.training:
-            return flow_preds
+            return output
 
-        return flow_preds[0]
+        output["flow_upsampled"] = flow_preds[0]
+        return output

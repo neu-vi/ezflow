@@ -210,18 +210,15 @@ class BaseTrainer:
 
             self._log_step(step, total_steps, loss_meter)
 
-            if self._is_main_process():
-                self.writer.add_scalar(
-                    "steps_training_loss", loss_meter.sum, total_steps
-                )
-
             if step % self.cfg.VALIDATE_INTERVAL == 0:
                 self._validate_model(iter_type="Iteration", iterations=total_steps)
+                print("-" * 80)
 
             if step % self.cfg.CKPT_INTERVAL == 0 and self._is_main_process():
                 self._save_checkpoints(ckpt_type="step", ckpt_number=total_steps)
-
+                
             total_steps += 1
+            
 
         self.writer.close()
 
@@ -232,14 +229,15 @@ class BaseTrainer:
             img2.to(self.device),
             target.to(self.device),
         )
-        target = target / self.cfg.TARGET_SCALE_FACTOR
 
         if self._is_main_process():
             start_time = time.time()
 
         with autocast(enabled=self.cfg.MIXED_PRECISION):
-            pred = self.model(img1, img2)
-            loss = self.loss_fn(pred, target)
+            output = self.model(img1, img2)
+            loss = self.loss_fn(
+                output["flow_preds"], target / self.cfg.TARGET_SCALE_FACTOR
+            )
 
         self.optimizer.zero_grad()
         self.scaler.scale(loss).backward()
@@ -285,12 +283,18 @@ class BaseTrainer:
                     img2.to(self.device),
                     target.to(self.device),
                 )
-                target = target / self.cfg.TARGET_SCALE_FACTOR
 
-                pred = self.model(img1, img2)
-                loss = self.loss_fn(pred, target)
+                output = self.model(img1, img2)
+                loss = self.loss_fn(
+                    output["flow_preds"], target / self.cfg.TARGET_SCALE_FACTOR
+                )
+
                 loss_meter.update(loss.item())
-                metric = self._calculate_metric(pred, target)
+
+                """
+                    Predicted upsampled flow should be scaled for EPE calculation.
+                """
+                metric = self._calculate_metric(output["flow_upsampled"] * self.cfg.TARGET_SCALE_FACTOR, target)
                 metric_meter.update(metric)
 
         new_avg_val_loss, new_avg_val_metric = loss_meter.avg, metric_meter.avg

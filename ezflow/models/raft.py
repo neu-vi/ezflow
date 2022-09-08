@@ -80,13 +80,7 @@ class RAFT(BaseModule):
 
         return up_flow.reshape(N, 2, 8 * H, 8 * W)
 
-    def forward(
-        self,
-        img1,
-        img2,
-        flow_init=None,
-        only_flow=True,
-    ):
+    def forward(self, img1, img2, flow_init=None):
         """
         Performs forward pass of the network
 
@@ -102,8 +96,6 @@ class RAFT(BaseModule):
         torch.Tensor
             Flow from img1 to img2
         """
-        img1 = 2 * (img1 / 255.0) - 1.0
-        img2 = 2 * (img2 / 255.0) - 1.0
 
         img1 = img1.contiguous()
         img2 = img2.contiguous()
@@ -149,11 +141,10 @@ class RAFT(BaseModule):
 
             flow_predictions.append(flow_up)
 
-        if not self.training:
+        output = {"flow_preds": flow_predictions}
 
-            if only_flow:
-                return flow_up
+        if self.training:
+            return output
 
-            return coords1 - coords0, flow_up
-
-        return flow_predictions
+        output["flow_upsampled"] = flow_up
+        return output
