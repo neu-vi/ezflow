@@ -6,7 +6,7 @@ from torch.nn.init import constant_, kaiming_normal_
 from ..decoder import build_decoder
 from ..encoder import BasicConvEncoder, build_encoder
 from ..modules import BaseModule, conv
-from ..similarity import CorrelationLayer
+from ..similarity import IterSpatialCorrelationSampler as SpatialCorrelationSampler
 from .build import MODEL_REGISTRY
 
 
@@ -32,6 +32,12 @@ class FlowNetC(BaseModule):
 
         self.feature_encoder = build_encoder(cfg.ENCODER)
 
+        self.correlation_layer = SpatialCorrelationSampler(
+            kernel_size=1,
+            patch_size=2 * cfg.SIMILARITY.MAX_DISPLACEMENT + 1,
+            padding=cfg.SIMILARITY.PAD_SIZE,
+            dilation_patch=2,
+        )
         self.correlation_layer = CorrelationLayer(
             pad_size=cfg.SIMILARITY.PAD_SIZE,
             max_displacement=cfg.SIMILARITY.MAX_DISPLACEMENT,

@@ -6,7 +6,7 @@ ENCODER:
   NORM: batch
 SIMILARITY:
   NAME: CorrelationLayer
-  PAD_SIZE: 10
+  PAD_SIZE: 0
   MAX_DISPLACEMENT: 10
 DECODER:
   NAME: FlowNetConvDecoder
