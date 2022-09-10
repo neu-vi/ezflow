@@ -63,15 +63,15 @@ class FlowAugmentor:
             None object
         """
 
-        img1, img2 = color_transform(img1, img2, **self.color_aug_params)
-        img1, img2 = eraser_transform(img1, img2, **self.eraser_aug_params)
-        img1, img2, flow = spatial_transform(
-            img1, img2, flow, self.crop_size, **self.spatial_aug_params
-        )
         img1, img2, flow = translate_transform(
             img1, img2, flow, **self.translate_params
         )
         img1, img2, flow = rotate_transform(img1, img2, flow, **self.rotate_params)
+        img1, img2, flow = spatial_transform(
+            img1, img2, flow, self.crop_size, **self.spatial_aug_params
+        )
+        img1, img2 = color_transform(img1, img2, **self.color_aug_params)
+        img1, img2 = eraser_transform(img1, img2, **self.eraser_aug_params)
 
         img1 = np.ascontiguousarray(img1)
         img2 = np.ascontiguousarray(img2)

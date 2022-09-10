@@ -103,7 +103,7 @@ def color_transform(
     img2 : PIL Image or numpy.ndarray
         Second of the pair of images
     aug_prob : float
-        Probability of applying the augmentation
+        Probability of applying assymetric color jitter augmentation
     brightness : float
         Brightness augmentation factor
     contrast : float
