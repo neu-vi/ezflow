@@ -59,6 +59,8 @@ class FlowAugmentor:
             "schedule_coeff": 1,
         }
 
+        self.chromatic_augmentor = PCAAug(**self.chromatic_params)
+
     def __call__(self, img1, img2, flow, valid=None):
         """
         Applies the augmentations to the pair of images and the flow field.
@@ -94,6 +96,7 @@ class FlowAugmentor:
             img1, img2, flow, self.crop_size, **self.spatial_aug_params
         )
         img1, img2 = color_transform(img1, img2, **self.color_aug_params)
+        img1, img2 = self.chromatic_augmentor(img1, img2)
         img1, img2 = noise_transform(img1, img2, **self.noise_params)
         img1, img2 = eraser_transform(img1, img2, **self.eraser_aug_params)
 

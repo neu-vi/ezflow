@@ -720,12 +720,12 @@ class PCAAug(object):
             [0.51, 0.56, 0.65, 0.79, 0.01, -0.62, 0.35, -0.83, 0.44], [3, 3]
         ).transpose()
 
-    def __call__(self, img1, img2, target):
+    def __call__(self, img1, img2):
         img1 = self.pca_image(img1)
         img2 = self.pca_image(img2)
         img2 = self.chromatic_aug(img2)
 
-        return img1, img2, target
+        return img1, img2
 
     def pca_image(self, rgb):
         eig = np.dot(rgb, self.eigvec)
