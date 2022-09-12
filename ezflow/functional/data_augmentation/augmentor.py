@@ -63,7 +63,7 @@ class FlowAugmentor:
             "schedule_coeff": 1,
         }
 
-        self.spatial_transform = SpatialAug(**self.spatial_params)
+        self.spatial_transform = SpatialAug(crop=self.crop_size, **self.spatial_params)
         self.chromatic_transform = PCAAug(**self.chromatic_params)
 
     def __call__(self, img1, img2, flow, valid=None):
