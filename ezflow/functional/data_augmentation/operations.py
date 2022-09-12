@@ -87,6 +87,7 @@ def crop(
 def color_transform(
     img1,
     img2,
+    enabled=False,
     aug_prob=0.2,
     brightness=0.4,
     contrast=0.4,
@@ -120,6 +121,8 @@ def color_transform(
     img2 : PIL Image or numpy.ndarray
         Augmented image 2
     """
+    if not enabled:
+        return img1, img2
 
     aug = ColorJitter(
         brightness=brightness, contrast=contrast, saturation=saturation, hue=hue
@@ -137,7 +140,7 @@ def color_transform(
     return img1, img2
 
 
-def eraser_transform(img1, img2, bounds=[50, 100], aug_prob=0.5):
+def eraser_transform(img1, img2, enabled=False, bounds=[50, 100], aug_prob=0.5):
     """
     Occlusion augmentation
     Parameters
@@ -158,6 +161,8 @@ def eraser_transform(img1, img2, bounds=[50, 100], aug_prob=0.5):
     img2 : PIL Image or numpy.ndarray
         Augmented image 2
     """
+    if not enabled:
+        return img1, img2
 
     H, W = img1.shape[:2]
 
@@ -180,6 +185,7 @@ def spatial_transform(
     img2,
     flow,
     crop_size,
+    enabled=False,
     aug_prob=0.8,
     stretch_prob=0.8,
     max_stretch=0.2,
@@ -228,6 +234,8 @@ def spatial_transform(
     flow : numpy.ndarray
         Augmented flow field
     """
+    if not enabled:
+        return img1, img2, flow
 
     H, W = img1.shape[:2]
     min_scale = np.maximum((crop_size[0] + 8) / float(H), (crop_size[1] + 8) / float(W))
@@ -332,6 +340,7 @@ def sparse_spatial_transform(
     flow,
     valid,
     crop_size,
+    enabled=False,
     aug_prob=0.8,
     min_scale=-0.2,
     max_scale=0.5,
@@ -377,6 +386,9 @@ def sparse_spatial_transform(
     valid : numpy.ndarray
         Valid flow field
     """
+    if not enabled:
+        return img1, img2, flow, valid
+
     H, W = img1.shape[:2]
     min_scale = np.maximum((crop_size[0] + 1) / float(H), (crop_size[1] + 1) / float(W))
 
@@ -408,6 +420,7 @@ def translate_transform(
     img1,
     img2,
     flow,
+    enabled=False,
     aug_prob=0.8,
     translate=10,
 ):
@@ -436,6 +449,9 @@ def translate_transform(
     flow : numpy.ndarray
         Augmented flow field
     """
+    if not enabled:
+        return img1, img2, flow
+
     H, W = img1.shape[:2]
 
     max_t_x = translate
@@ -465,6 +481,7 @@ def rotate_transform(
     img1,
     img2,
     flow,
+    enabled=False,
     aug_prob=0.8,
     degrees=10,
     delta=0,
@@ -497,6 +514,8 @@ def rotate_transform(
     flow : numpy.ndarray
         Augmented flow field
     """
+    if not enabled:
+        return img1, img2, flow
 
     angle = np.random.uniform(-degrees, degrees)
     diff = np.random.uniform(-delta, delta)
@@ -579,6 +598,7 @@ class PCAAug(object):
 
     def __init__(
         self,
+        enabled=False,
         lmult_pow=[0.4, 0, -0.2],
         lmult_mult=[
             0.4,
@@ -643,6 +663,7 @@ class PCAAug(object):
         schedule_coeff=1,
     ):
 
+        self.enabled = enabled
         self.gamma = np.exp(np.random.normal(0, gamma * schedule_coeff))
         self.brightness = np.random.normal(0, brightness * schedule_coeff)
         self.contrast = np.exp(np.random.normal(0, contrast * schedule_coeff))
@@ -721,6 +742,10 @@ class PCAAug(object):
         ).transpose()
 
     def __call__(self, img1, img2):
+
+        if not self.enabled:
+            return img1, img2
+
         img1 = self.pca_image(img1)
         img2 = self.pca_image(img2)
         img2 = self.chromatic_aug(img2)
@@ -842,7 +867,10 @@ class PCAAug(object):
         return rgb
 
 
-def noise_transform(img1, img2, aug_prob, noise_std_range):
+def noise_transform(img1, img2, enabled=False, aug_prob=0.5, noise_std_range=0.06):
+
+    if not enabled:
+        return img1, img2
 
     if np.random.rand() < aug_prob:
         noise = np.random.uniform(0, noise_std_range)
@@ -901,6 +929,7 @@ class SpatialAug(object):
     def __init__(
         self,
         crop,
+        enabled=False,
         scale=None,
         rot=None,
         trans=None,
@@ -909,6 +938,7 @@ class SpatialAug(object):
         order=1,
         black=False,
     ):
+        self.enabled = enabled
         self.crop = crop
         self.scale = scale
         self.rot = rot
@@ -977,6 +1007,9 @@ class SpatialAug(object):
         return vgrid
 
     def __call__(self, img1, img2, target):
+        if not self.enabled:
+            return img1, img2, target
+
         inputs = [img1, img2]
         h, w, _ = inputs[0].shape
         th, tw = self.crop
