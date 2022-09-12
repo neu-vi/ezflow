@@ -976,7 +976,8 @@ class SpatialAug(object):
             vgrid[:, :, 1] = 2.0 * vgrid[:, :, 1] / max(h - 1, 1) - 1.0
         return vgrid
 
-    def __call__(self, inputs, target):
+    def __call__(self, img1, img2, target):
+        inputs = [img1, img2]
         h, w, _ = inputs[0].shape
         th, tw = self.crop
         meshgrid = torch.meshgrid([torch.Tensor(range(th)), torch.Tensor(range(tw))])[
@@ -1100,7 +1101,7 @@ class SpatialAug(object):
                 ) == 0:
                     break
         if i == 49:
-            print("max_iter in augmentation")
+            # print("max_iter in augmentation")
             self.to_identity()
             self.left_multiply(1, 0, 0, 1, -0.5 * tw, -0.5 * th)
             self.left_multiply(1, 0, 0, 1, 0.5 * w, 0.5 * h)
@@ -1172,4 +1173,4 @@ class SpatialAug(object):
         inputs = [np.asarray(inputs_0), np.asarray(inputs_1)]
         target = np.asarray(target)
 
-        return inputs, target
+        return inputs[0], inputs[1], target

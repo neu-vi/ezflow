@@ -28,6 +28,7 @@ class FlowAugmentor:
         translate_params={"aug_prob": 0.8},
         rotate_params={"aug_prob": 0.8},
         noise_params={"aug_prob": 0.5},
+        spatial_params={},
         chromatic_params={},
     ):
 
@@ -38,6 +39,9 @@ class FlowAugmentor:
         self.translate_params = translate_params
         self.rotate_params = rotate_params
         self.noise_params = noise_params
+
+        self.spatial_params = spatial_params
+
         self.chromatic_params = {
             "lmult_pow": [0.4 * chromatic_params["lmult_factor"], 0, -0.2],
             "lmult_mult": [0.4 * chromatic_params["lmult_factor"], 0, 0],
@@ -59,6 +63,7 @@ class FlowAugmentor:
             "schedule_coeff": 1,
         }
 
+        self.spatial_transform = SpatialAug(**self.spatial_params)
         self.chromatic_transform = PCAAug(**self.chromatic_params)
 
     def __call__(self, img1, img2, flow, valid=None):
@@ -96,7 +101,10 @@ class FlowAugmentor:
             img1, img2, flow, self.crop_size, **self.spatial_aug_params
         )
         img1, img2 = color_transform(img1, img2, **self.color_aug_params)
+
+        img1, img2, flow = self.spatial_transform(img1, img2, flow)
         img1, img2 = self.chromatic_transform(img1, img2)
+
         img1, img2 = noise_transform(img1, img2, **self.noise_params)
         img1, img2 = eraser_transform(img1, img2, **self.eraser_aug_params)
 
