@@ -29,7 +29,14 @@ class FlowAugmentor:
         rotate_params={"enabled": False, "aug_prob": 0.8},
         noise_params={"enabled": False, "aug_prob": 0.5},
         spatial_params={"enabled": False},
-        chromatic_params={"enabled": False},
+        chromatic_params={
+            "enabled": False,
+            "lmult_factor": 1.,
+            "sat_factor": 1.,
+            "col_factor": 1.,
+            "ladd_factor": 1.,
+            "col_rot_factor": 1.
+        },
     ):
 
         self.crop_size = crop_size
