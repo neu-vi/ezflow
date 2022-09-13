@@ -884,7 +884,7 @@ def noise_transform(img1, img2, enabled=False, aug_prob=0.5, noise_std_range=0.0
         return img1, img2
 
     if np.random.rand() < aug_prob:
-        noise = np.random.uniform(0, noise_std_range)
+        noise = np.random.uniform(0, noise_std_range * 255.0)
 
         img1 = img1.astype(np.float64)
         img2 = img2.astype(np.float64)
