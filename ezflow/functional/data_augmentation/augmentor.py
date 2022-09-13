@@ -43,6 +43,7 @@ class FlowAugmentor:
         self.spatial_params = spatial_params
 
         self.chromatic_params = {
+            "enabled": chromatic_params["enabled"],
             "lmult_pow": [0.4 * chromatic_params["lmult_factor"], 0, -0.2],
             "lmult_mult": [0.4 * chromatic_params["lmult_factor"], 0, 0],
             "lmult_add": [0.03 * chromatic_params["lmult_factor"], 0, 0],
@@ -93,6 +94,11 @@ class FlowAugmentor:
             None object
         """
 
+        img1, img2 = color_transform(img1, img2, **self.color_aug_params)
+        img1, img2 = self.chromatic_transform(img1, img2)
+
+        img1, img2, flow = self.spatial_transform(img1, img2, flow)
+
         img1, img2, flow = translate_transform(
             img1, img2, flow, **self.translate_params
         )
@@ -100,10 +106,6 @@ class FlowAugmentor:
         img1, img2, flow = spatial_transform(
             img1, img2, flow, self.crop_size, **self.spatial_aug_params
         )
-        img1, img2 = color_transform(img1, img2, **self.color_aug_params)
-
-        img1, img2, flow = self.spatial_transform(img1, img2, flow)
-        img1, img2 = self.chromatic_transform(img1, img2)
 
         img1, img2 = noise_transform(img1, img2, **self.noise_params)
         img1, img2 = eraser_transform(img1, img2, **self.eraser_aug_params)

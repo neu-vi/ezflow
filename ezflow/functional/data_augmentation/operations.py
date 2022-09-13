@@ -1,8 +1,17 @@
+from __future__ import division
+
+import numbers
+import pdb
+import random
+
 import cv2
 import numpy as np
 import scipy.ndimage as ndimage
+import torch
+import torchvision
 import torchvision.transforms as transforms
 from PIL import Image
+from torch.nn import functional as F
 from torchvision.transforms import ColorJitter
 
 
@@ -749,8 +758,7 @@ class PCAAug(object):
         img1 = self.pca_image(img1)
         img2 = self.pca_image(img2)
         img2 = self.chromatic_aug(img2)
-
-        return img1, img2
+        return self.denorm(img1), self.denorm(img2)
 
     def pca_image(self, rgb):
         eig = np.dot(rgb, self.eigvec)
@@ -866,6 +874,9 @@ class PCAAug(object):
         rgb = np.clip(rgb, 0, 1)
         return rgb
 
+    def denorm(self, rgb):
+        return rgb * (255.0, 255.0, 255.0)
+
 
 def noise_transform(img1, img2, enabled=False, aug_prob=0.5, noise_std_range=0.06):
 
@@ -875,8 +886,14 @@ def noise_transform(img1, img2, enabled=False, aug_prob=0.5, noise_std_range=0.0
     if np.random.rand() < aug_prob:
         noise = np.random.uniform(0, noise_std_range)
 
+        img1 = img1.astype(np.float64)
+        img2 = img2.astype(np.float64)
+
         img1 += np.random.normal(0, noise, img1.shape)
         img2 += np.random.normal(0, noise, img2.shape)
+
+        img1 = np.clip(img1, 0.0, 255.0)
+        img2 = np.clip(img2, 0.0, 255.0)
 
     return img1, img2
 
