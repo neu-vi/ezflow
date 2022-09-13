@@ -22,14 +22,14 @@ class FlowAugmentor:
     def __init__(
         self,
         crop_size,
-        color_aug_params={"enable": False, "aug_prob": 0.2},
-        eraser_aug_params={"enable": False, "aug_prob": 0.5},
-        spatial_aug_params={"enable": False, "aug_prob": 0.8},
-        translate_params={"enable": False, "aug_prob": 0.8},
-        rotate_params={"enable": False, "aug_prob": 0.8},
-        noise_params={"enable": False, "aug_prob": 0.5},
-        spatial_params={"enable": False},
-        chromatic_params={"enable": False},
+        color_aug_params={"enabled": False, "aug_prob": 0.2},
+        eraser_aug_params={"enabled": False, "aug_prob": 0.5},
+        spatial_aug_params={"enabled": False, "aug_prob": 0.8},
+        translate_params={"enabled": False, "aug_prob": 0.8},
+        rotate_params={"enabled": False, "aug_prob": 0.8},
+        noise_params={"enabled": False, "aug_prob": 0.5},
+        spatial_params={"enabled": False},
+        chromatic_params={"enabled": False},
     ):
 
         self.crop_size = crop_size
