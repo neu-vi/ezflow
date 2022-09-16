@@ -239,6 +239,8 @@ class BaseTrainer:
                 output["flow_preds"], target / self.cfg.TARGET_SCALE_FACTOR
             )
 
+            del output
+
         self.optimizer.zero_grad()
         self.scaler.scale(loss).backward()
         self.scaler.unscale_(self.optimizer)
@@ -296,6 +298,8 @@ class BaseTrainer:
                 """
                 metric = self._calculate_metric(output["flow_upsampled"] * self.cfg.TARGET_SCALE_FACTOR, target)
                 metric_meter.update(metric)
+
+                del output
 
         new_avg_val_loss, new_avg_val_metric = loss_meter.avg, metric_meter.avg
 
