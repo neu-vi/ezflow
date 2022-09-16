@@ -105,13 +105,12 @@ class FlowNetC(BaseModule):
         if self.training:
             return output
 
-        flow = flow_preds[-1]
+        flow_up = flow_preds[-1]
 
-        H_, W_ = flow.shape[-2:]
-        flow = F.interpolate(flow, img1.shape[-2:], mode="bilinear", align_corners=True)
-        flow_u = flow[:, 0, :, :] * (W / W_)
-        flow_v = flow[:, 1, :, :] * (H / H_)
-        flow = torch.stack([flow_u, flow_v], dim=1)
+        flow_up = F.interpolate(
+            flow_up, size=(H, W), mode="bilinear", align_corners=False
+        )
 
-        output["flow_upsampled"] = flow
+        output["flow_upsampled"] = flow_up
+
         return output
