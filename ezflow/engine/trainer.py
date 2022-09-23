@@ -73,6 +73,8 @@ class BaseTrainer:
             else:
                 loss_fn = loss()
 
+            print(f"Loss function: {self.cfg.CRITERION.NAME} is initialized!")
+
         if optimizer is None:
 
             opt = optimizers.get(self.cfg.OPTIMIZER.NAME)
@@ -87,6 +89,8 @@ class BaseTrainer:
             else:
                 optimizer = opt(self.model.parameters(), lr=self.cfg.OPTIMIZER.LR)
 
+            print(f"Optimizer: {self.cfg.OPTIMIZER.NAME} is initialized!")
+
         if scheduler is None:
 
             if self.cfg.SCHEDULER.USE:
@@ -100,6 +104,8 @@ class BaseTrainer:
                     scheduler = sched(optimizer, **scheduler_params)
                 else:
                     scheduler = sched(optimizer)
+
+                print(f"Scheduler: {self.cfg.SCHEDULER.NAME} is initialized!")
 
         self.loss_fn = loss_fn
         self.optimizer = optimizer
