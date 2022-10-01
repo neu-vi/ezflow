@@ -11,7 +11,7 @@ Config
     
 
 Retrieve
--------
+---------
 
 .. automodule:: ezflow.config.retrieve
     :members:
