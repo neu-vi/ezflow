@@ -4,7 +4,7 @@ Non-iterative Deocders
 Soft Regression
 ---------------------
 
-.. automodule:: ezflow.decoder.non_iterative.soft_regression
+.. automodule:: ezflow.decoder.noniterative.soft_regression
    :members:
    
    
@@ -12,7 +12,7 @@ Soft Regression
 Operators
 ---------------------
 
-.. automodule:: ezflow.decoder.non_iterative.operators
+.. automodule:: ezflow.decoder.noniterative.operators
    :members:
    
    

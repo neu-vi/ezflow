@@ -2,7 +2,7 @@ Encoder
 ================
 
 Convolution Encoder
----------------
+--------------------
 
 .. automodule:: ezflow.encoder.conv_encoder
    :members:
@@ -46,13 +46,4 @@ Builder
 
 .. automodule:: ezflow.encoder.build
    :members:
-   
-   
-
-Config
----------------
-
-.. automodule:: ezflow.encoder.config
-   :members:
-   
    
