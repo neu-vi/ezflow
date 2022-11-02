@@ -54,6 +54,4 @@ class PyramidEncoder(nn.Module):
             x = self.encoder[i](x)
             feature_pyramid.append(x)
 
-        feature_pyramid.reverse()
-
         return feature_pyramid

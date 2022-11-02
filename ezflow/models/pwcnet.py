@@ -69,6 +69,9 @@ class PWCNet(BaseModule):
         feature_pyramid1 = self.encoder(img1)
         feature_pyramid2 = self.encoder(img2)
 
+        feature_pyramid1.reverse()
+        feature_pyramid2.reverse()
+
         flow_preds, features = self.decoder(feature_pyramid1, feature_pyramid2)
 
         flow_preds[-1] += self.context_net(features)

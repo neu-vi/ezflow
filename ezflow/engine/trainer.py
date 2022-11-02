@@ -60,7 +60,7 @@ class BaseTrainer:
         raise NotImplementedError
 
     def _setup_training(self, rank=0, loss_fn=None, optimizer=None, scheduler=None):
-        if loss_fn is None:
+        if loss_fn is None and self.loss_fn is None:
 
             if self.cfg.CRITERION.CUSTOM:
                 loss = FUNCTIONAL_REGISTRY.get(self.cfg.CRITERION.NAME)
@@ -75,7 +75,7 @@ class BaseTrainer:
 
             print(f"Loss function: {self.cfg.CRITERION.NAME} is initialized!")
 
-        if optimizer is None:
+        if optimizer is None and self.optimizer is None:
 
             opt = optimizers.get(self.cfg.OPTIMIZER.NAME)
 
@@ -91,7 +91,7 @@ class BaseTrainer:
 
             print(f"Optimizer: {self.cfg.OPTIMIZER.NAME} is initialized!")
 
-        if scheduler is None:
+        if scheduler is None and self.scheduler is None:
 
             if self.cfg.SCHEDULER.USE:
                 sched = schedulers.get(self.cfg.SCHEDULER.NAME)
@@ -107,9 +107,14 @@ class BaseTrainer:
 
                 print(f"Scheduler: {self.cfg.SCHEDULER.NAME} is initialized!")
 
-        self.loss_fn = loss_fn
-        self.optimizer = optimizer
-        self.scheduler = scheduler
+        if self.loss_fn is None:
+            self.loss_fn = loss_fn
+        
+        if self.optimizer is None:
+            self.optimizer = optimizer
+
+        if self.scheduler is None:
+            self.scheduler = scheduler
 
         if rank == 0:
             """
@@ -154,6 +159,9 @@ class BaseTrainer:
             print(f"\nEpoch {epoch+1} of {start_epoch+n_epochs}")
             print("-" * 80)
 
+            if self.model_parallel:
+                self.train_loader.sampler.set_epoch(epoch)
+
             loss_meter.reset()
             for iteration, (inp, target) in enumerate(self.train_loader):
 
@@ -171,11 +179,15 @@ class BaseTrainer:
                     "epochs_training_loss", loss_meter.sum, epoch + 1
                 )
 
-            if epoch % self.cfg.VALIDATE_INTERVAL == 0:
+            if epoch % self.cfg.VALIDATE_INTERVAL == 0 and self._is_main_process():
                 self._validate_model(iter_type="Epoch", iterations=epoch + 1)
 
             if epoch % self.cfg.CKPT_INTERVAL == 0 and self._is_main_process():
                 self._save_checkpoints(ckpt_type="epoch", ckpt_number=epoch + 1)
+
+            # Synchronize all processes in multi gpu after validation and checkpoint
+            if (epoch % self.cfg.VALIDATE_INTERVAL == 0 or epoch % self.cfg.CKPT_INTERVAL == 0) and self.model_parallel:
+                dist.barrier()
 
         self.writer.close()
 
@@ -193,10 +205,14 @@ class BaseTrainer:
         if start_step is not None:
             print(f"Resuming training from step {start_step}\n")
             total_steps = start_step
-            n_steps += start_step
+            n_steps += start_step - 1
         else:
             start_step = total_steps = 1
             n_steps += start_step
+
+        if self.model_parallel:
+            epoch = 0
+            self.train_loader.sampler.set_epoch(epoch)
 
         train_iter = iter(self.train_loader)
 
@@ -206,6 +222,10 @@ class BaseTrainer:
             try:
                 inp, target = next(train_iter)
             except:
+                if self.model_parallel:
+                    epoch += 1
+                    self.train_loader.sampler.set_epoch(epoch)
+
                 # Handle exception if there is no data
                 # left in train iterator to continue training.
                 train_iter = iter(self.train_loader)
@@ -216,12 +236,16 @@ class BaseTrainer:
 
             self._log_step(step, total_steps, loss_meter)
 
-            if step % self.cfg.VALIDATE_INTERVAL == 0:
+            if step % self.cfg.VALIDATE_INTERVAL == 0 and self._is_main_process():
                 self._validate_model(iter_type="Iteration", iterations=total_steps)
                 print("-" * 80)
 
             if step % self.cfg.CKPT_INTERVAL == 0 and self._is_main_process():
                 self._save_checkpoints(ckpt_type="step", ckpt_number=total_steps)
+
+            # Synchronize all processes in multi gpu after validation and checkpoint
+            if (step % self.cfg.VALIDATE_INTERVAL == 0 or step % self.cfg.CKPT_INTERVAL == 0) and self.model_parallel:
+                dist.barrier()
                 
             total_steps += 1
             
@@ -292,7 +316,11 @@ class BaseTrainer:
                     target.to(self.device),
                 )
 
-                output = self.model(img1, img2)
+                if self.model_parallel:
+                    output = self.model.module(img1, img2)
+                else:
+                    output = self.model(img1, img2)
+                    
                 loss = self.loss_fn(
                     output["flow_preds"], target / self.cfg.TARGET_SCALE_FACTOR
                 )
@@ -310,11 +338,10 @@ class BaseTrainer:
         new_avg_val_loss, new_avg_val_metric = loss_meter.avg, metric_meter.avg
 
         print("\n", "-" * 80)
-        if self._is_main_process():
-            self.writer.add_scalar("avg_validation_loss", new_avg_val_loss, iterations)
-            self.writer.add_scalar(
-                "avg_validation_metric", new_avg_val_metric, iterations
-            )
+        self.writer.add_scalar("avg_validation_loss", new_avg_val_loss, iterations)
+        self.writer.add_scalar(
+            "avg_validation_metric", new_avg_val_metric, iterations
+        )
 
         print(
             f"\n{iter_type} {iterations}: Average validation loss = {new_avg_val_loss}"
@@ -398,6 +425,9 @@ class BaseTrainer:
         scheduler_ckpt=None,
         use_cfg=False,
     ):
+
+        self._setup_device()
+
         consolidated_ckpt = (
             self.cfg.RESUME_TRAINING.CONSOLIDATED_CKPT
             if use_cfg is True
@@ -406,7 +436,7 @@ class BaseTrainer:
 
         if consolidated_ckpt is not None:
 
-            ckpt = torch.load(consolidated_ckpt, map_location=torch.device("cpu"))
+            ckpt = torch.load(consolidated_ckpt, map_location=self.device)
 
             model_state_dict = ckpt["model_state_dict"]
             optimizer_state_dict = ckpt["optimizer_state_dict"]
@@ -415,7 +445,10 @@ class BaseTrainer:
                 scheduler_state_dict = ckpt["scheduler_state_dict"]
 
             if "epochs" in ckpt.keys():
-                start_epoch = ckpt["epochs"] + 1
+                start_iteration = ckpt["epochs"] + 1
+
+            if "step" in ckpt.keys():
+                start_iteration = ckpt["step"] + 1
 
         else:
 
@@ -423,24 +456,28 @@ class BaseTrainer:
                 model_ckpt is not None and optimizer_ckpt is not None
             ), "Must provide a consolidated ckpt or model and optimizer ckpts separately"
 
-            model_state_dict = torch.load(model_ckpt, map_location=torch.device("cpu"))
+            model_state_dict = torch.load(model_ckpt, map_location=self.device)
             optimizer_state_dict = torch.load(
-                optimizer_ckpt, map_location=torch.device("cpu")
+                optimizer_ckpt, map_location=self.device
             )
 
             if scheduler_ckpt is not None:
                 scheduler_state_dict = torch.load(
-                    scheduler_ckpt, map_location=torch.device("cpu")
+                    scheduler_ckpt, map_location=self.device
                 )
 
+        self._setup_model()
         self.model.load_state_dict(model_state_dict)
+        print("Model state loaded!!")
 
         self._setup_training()
 
         self.optimizer.load_state_dict(optimizer_state_dict)
+        print("Optimizer state loaded!!")
 
         if self.scheduler is not None:
             self.scheduler.load_state_dict(scheduler_state_dict)
+            print("Scheduler state loaded!!")
 
         if total_iterations is None and use_cfg:
             total_iterations = (
@@ -457,6 +494,7 @@ class BaseTrainer:
             )
 
         return (total_iterations, start_iteration)
+
 
     def resume_training(
         self,
@@ -499,7 +537,17 @@ class BaseTrainer:
             use_cfg=use_cfg,
         )
 
-        self.train(total_iterations=total_iterations, start_iteration=start_iteration)
+        os.makedirs(self.cfg.CKPT_DIR, exist_ok=True)
+        os.makedirs(self.cfg.LOG_DIR, exist_ok=True)
+
+        print("Training config:\n")
+        print(self.cfg)
+        print("-" * 80)
+
+        self._trainer(total_iterations, start_iteration)
+
+        print("Training complete!")
+        print(f"Total training time: {str(timedelta(seconds=sum(self.times)))}")
 
 
 class Trainer(BaseTrainer):
@@ -629,7 +677,10 @@ class DistributedTrainer(BaseTrainer):
         self.val_loader = None
 
         self.train_loader_creator = train_loader_creator
-        self.val_loader_creator = val_loader_creator
+
+        # Validate model only on the main process.
+        val_loader_creator.distributed = False
+        self.val_loader = val_loader_creator.get_dataloader()
 
         self._validate_ddp_config()
 
@@ -678,6 +729,7 @@ class DistributedTrainer(BaseTrainer):
         self.device = torch.device(rank)
         self.local_rank = rank
         torch.cuda.empty_cache()
+        torch.cuda.set_device(local_rank)
 
     def _setup_ddp(self, rank):
         os.environ["MASTER_ADDR"] = self.cfg.DISTRIBUTED.MASTER_ADDR
@@ -693,18 +745,21 @@ class DistributedTrainer(BaseTrainer):
         )
         print(f"{rank + 1}/{self.cfg.DISTRIBUTED.WORLD_SIZE} process initialized.")
 
+        # synchronizes all the threads to reach this point before moving on
+        dist.barrier()
+
     def _is_main_process(self):
         return self.local_rank == 0
 
     def _setup_model(self, rank):
 
+        if self.cfg.DISTRIBUTED.SYNC_BATCH_NORM:
+            self.model = nn.SyncBatchNorm.convert_sync_batchnorm(self.model)
+
         self.model = DDP(
             self.model.cuda(rank),
             device_ids=[rank],
         )
-
-        if self.cfg.DISTRIBUTED.SYNC_BATCH_NORM:
-            self.model = nn.SyncBatchNorm.convert_sync_batchnorm(self.model)
 
         self.model = self.model.to(self.device)
 
@@ -724,7 +779,7 @@ class DistributedTrainer(BaseTrainer):
         self._setup_ddp(rank)
         self._setup_model(rank)
         self.train_loader = self.train_loader_creator.get_dataloader(rank=rank)
-        self.val_loader = self.val_loader_creator.get_dataloader(rank=rank)
+
         self._setup_training(
             rank=rank, loss_fn=loss_fn, optimizer=optimizer, scheduler=scheduler
         )
@@ -732,6 +787,8 @@ class DistributedTrainer(BaseTrainer):
         os.makedirs(self.cfg.CKPT_DIR, exist_ok=True)
         os.makedirs(self.cfg.LOG_DIR, exist_ok=True)
 
+        # synchronizes all the threads to reach this point before moving on
+        dist.barrier()
         self._trainer(total_iterations, start_iteration)
 
         if self._is_main_process():
