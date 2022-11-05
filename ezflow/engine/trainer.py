@@ -189,7 +189,8 @@ class BaseTrainer:
             if (epoch % self.cfg.VALIDATE_INTERVAL == 0 or epoch % self.cfg.CKPT_INTERVAL == 0) and self.model_parallel:
                 dist.barrier()
 
-        self.writer.close()
+        if self._is_main_process():
+            self.writer.close()
 
     def _step_trainer(self, n_steps=None, start_step=None):
         self.model.train()
@@ -249,8 +250,8 @@ class BaseTrainer:
                 
             total_steps += 1
             
-
-        self.writer.close()
+        if self._is_main_process():
+            self.writer.close()
 
     def _run_step(self, inp, target):
         img1, img2 = inp
@@ -729,7 +730,7 @@ class DistributedTrainer(BaseTrainer):
         self.device = torch.device(rank)
         self.local_rank = rank
         torch.cuda.empty_cache()
-        torch.cuda.set_device(local_rank)
+        torch.cuda.set_device(rank)
 
     def _setup_ddp(self, rank):
         os.environ["MASTER_ADDR"] = self.cfg.DISTRIBUTED.MASTER_ADDR
