@@ -113,7 +113,7 @@ def color_transform(
     img2 : PIL Image or numpy.ndarray
         Second of the pair of images
     aug_prob : float
-        Probability of applying assymetric color jitter augmentation
+        Probability of applying asymetric color jitter augmentation
     brightness : float
         Brightness augmentation factor
     contrast : float
@@ -247,7 +247,6 @@ def spatial_transform(
         return img1, img2, flow
 
     H, W = img1.shape[:2]
-    min_scale = np.maximum((crop_size[0] + 8) / float(H), (crop_size[1] + 8) / float(W))
 
     scale = 2 ** np.random.uniform(min_scale, max_scale)
     scale_x = scale
@@ -256,6 +255,8 @@ def spatial_transform(
     if np.random.rand() < stretch_prob:
         scale_x *= 2 ** np.random.uniform(-max_stretch, max_stretch)
         scale_y *= 2 ** np.random.uniform(-max_stretch, max_stretch)
+
+    min_scale = np.maximum((crop_size[0] + 8) / float(H), (crop_size[1] + 8) / float(W))
 
     scale_x = np.clip(scale_x, min_scale, None)
     scale_y = np.clip(scale_y, min_scale, None)
@@ -899,7 +900,10 @@ def noise_transform(img1, img2, enabled=False, aug_prob=0.5, noise_std_range=0.0
 
 
 class Scale(object):
-    """Rescales the inputs and target arrays to the given 'size'.
+    """
+    NOT USED
+
+    Rescales the inputs and target arrays to the given 'size'.
     'size' will be the size of the smaller edge.
     For example, if height > width, then image will be
     rescaled to (size * height / width, size)
