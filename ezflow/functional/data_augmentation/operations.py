@@ -200,9 +200,6 @@ def spatial_transform(
     max_stretch=0.2,
     min_scale=-0.2,
     max_scale=0.5,
-    flip=True,
-    h_flip_prob=0.5,
-    v_flip_prob=0.1,
 ):
     """
     Spatial augmentation
@@ -274,16 +271,22 @@ def spatial_transform(
         )
         flow = flow * [scale_x, scale_y]
 
-    if flip:
-        if np.random.rand() < h_flip_prob:
-            img1 = img1[:, ::-1]
-            img2 = img2[:, ::-1]
-            flow = flow[:, ::-1] * [-1.0, 1.0]
+    return img1, img2, flow
 
-        if np.random.rand() < v_flip_prob:
-            img1 = img1[::-1, :]
-            img2 = img2[::-1, :]
-            flow = flow[::-1, :] * [1.0, -1.0]
+
+def flip_transform(img1, img2, flow, enabled=False, h_flip_prob=0.5, v_flip_prob=0.1):
+    if not enabled:
+        return img1, img2, flow
+
+    if np.random.rand() < h_flip_prob:
+        img1 = img1[:, ::-1]
+        img2 = img2[:, ::-1]
+        flow = flow[:, ::-1] * [-1.0, 1.0]
+
+    if np.random.rand() < v_flip_prob:
+        img1 = img1[::-1, :]
+        img2 = img2[::-1, :]
+        flow = flow[::-1, :] * [1.0, -1.0]
 
     return img1, img2, flow
 
@@ -621,53 +624,6 @@ def noise_transform(img1, img2, enabled=False, aug_prob=0.5, noise_std_range=0.0
     return img1, img2
 
 
-# class Scale(object):
-#     """
-#     NOT USED
-
-#     Rescales the inputs and target arrays to the given 'size'.
-#     'size' will be the size of the smaller edge.
-#     For example, if height > width, then image will be
-#     rescaled to (size * height / width, size)
-#     size: size of the smaller edge
-#     interpolation order: Default: 2 (bilinear)
-#     """
-
-#     def __init__(self, size, order=1):
-#         self.ratio = size
-#         self.order = order
-#         if order == 0:
-#             self.code = cv2.INTER_NEAREST
-#         elif order == 1:
-#             self.code = cv2.INTER_LINEAR
-#         elif order == 2:
-#             self.code = cv2.INTER_CUBIC
-
-#     def __call__(self, inputs, target):
-#         if self.ratio == 1:
-#             return inputs, target
-#         h, w, _ = inputs[0].shape
-#         ratio = self.ratio
-
-#         inputs[0] = cv2.resize(
-#             inputs[0], None, fx=ratio, fy=ratio, interpolation=cv2.INTER_LINEAR
-#         )
-#         inputs[1] = cv2.resize(
-#             inputs[1], None, fx=ratio, fy=ratio, interpolation=cv2.INTER_LINEAR
-#         )
-#         # keep the mask same
-#         tmp = cv2.resize(
-#             target[:, :, 2], None, fx=ratio, fy=ratio, interpolation=cv2.INTER_NEAREST
-#         )
-#         target = (
-#             cv2.resize(target, None, fx=ratio, fy=ratio, interpolation=self.code)
-#             * ratio
-#         )
-#         target[:, :, 2] = tmp
-
-#         return inputs, target
-
-
 class AdvancedSpatialTransform(object):
     def __init__(
         self,
@@ -676,7 +632,7 @@ class AdvancedSpatialTransform(object):
         scale2=0.1,
         rotate=0.4,
         translate=0.4,
-        squeeze=0.3,
+        stretch=0.3,
         enabled=False,
         h_flip_prob=0.5,
         schedule_coeff=1,
@@ -686,9 +642,9 @@ class AdvancedSpatialTransform(object):
         self.enabled = enabled
         self.crop = crop
         self.scale = [scale1, 0.03, scale2]
-        self.rot = [rotate, 0.03]
-        self.trans = [translate, 0.03]
-        self.squeeze = [squeeze, 0.0]
+        self.rot = [rotate, 0.03] if rotate != 0 else None
+        self.trans = [translate, 0.03] if translate != 0 else None
+        self.squeeze = [stretch, 0.0] if stretch != 0 else None
         self.h_flip_prob = h_flip_prob
         self.t = np.zeros(6)
         self.schedule_coeff = schedule_coeff

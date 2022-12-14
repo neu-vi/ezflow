@@ -24,6 +24,7 @@ class FlowAugmentor:
         crop_size,
         eraser_aug_params={"enabled": False, "aug_prob": 0.5, "bounds": [50, 100]},
         noise_aug_params={"enabled": False, "aug_prob": 0.5, "noise_std_range": 0.06},
+        flip_aug_params={"enabled": False, " h_flip_prob": 0.5, "v_flip_prob": 0.1},
         color_aug_params={
             "enabled": False,
             "asymmetric_aug_prob": 0.2,
@@ -39,9 +40,6 @@ class FlowAugmentor:
             "min_scale": -0.1,
             "max_scale": 1.0,
             "max_stretch": 0.2,
-            "flip": True,
-            "h_flip_prob": 0.5,
-            "v_flip_prob": 0.1,
         },
         advanced_spatial_aug_params={
             "enabled": False,
@@ -49,7 +47,7 @@ class FlowAugmentor:
             "scale2": 0.1,
             "rotate": 0.4,
             "translate": 0.4,
-            "squeeze": 0.3,
+            "stretch": 0.3,
             "enable_out_of_boundary_crop": False,
         },
     ):
@@ -59,25 +57,19 @@ class FlowAugmentor:
         self.eraser_aug_params = eraser_aug_params
         self.spatial_aug_params = spatial_aug_params
         self.noise_aug_params = noise_aug_params
+        self.flip_aug_params = flip_aug_params
 
         self.advanced_spatial_aug_params = advanced_spatial_aug_params
         self.advanced_spatial_aug_params["h_flip_prob"] = (
-            spatial_aug_params["h_flip_prob"]
-            if "h_flip_prob" in spatial_aug_params
-            else 0.5
+            flip_aug_params["h_flip_prob"] if "h_flip_prob" in flip_aug_params else 0.0
         )
         self.advanced_spatial_transform = AdvancedSpatialTransform(
             crop=self.crop_size, **self.advanced_spatial_aug_params
         )
 
         if self.advanced_spatial_aug_params["enabled"]:
-            # Disable Scale, Stretch and Horizontal Flip if advanced spatial transforms are used
-            self.spatial_aug_params["enabled"] = True
-            self.spatial_aug_params["aug_prob"] = 0.0
-            self.spatial_aug_params["stretch_prob"] = 0.0
-            self.spatial_aug_params["flip"] = True
-            self.spatial_aug_params["h_flip_prob"] = 0.0
-            self.spatial_aug_params["v_flip_prob"] = True
+            # Disable spatial transform  if advanced spatial transforms are used
+            self.spatial_aug_params["enabled"] = False
 
     def __call__(self, img1, img2, flow, valid=None):
         """
@@ -113,6 +105,8 @@ class FlowAugmentor:
         img1, img2, flow = spatial_transform(
             img1, img2, flow, self.crop_size, **self.spatial_aug_params
         )
+
+        img1, img2, flow = flip_transform(img1, img2, flow, **self.fl)
 
         img1, img2 = noise_transform(img1, img2, **self.noise_aug_params)
         img1, img2 = eraser_transform(img1, img2, **self.eraser_aug_params)
