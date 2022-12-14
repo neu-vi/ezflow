@@ -23,15 +23,6 @@ Other Utilities
 .. automodule:: ezflow.utils.other_utils
    :members:
    
-   
-
-Profiler
-------------
-
-.. automodule:: ezflow.utils.profiler
-   :members:
-   
-   
 
 Registry
 ------------
