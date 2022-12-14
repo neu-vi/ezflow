@@ -50,11 +50,12 @@ class FlyingThings3D(BaseDataset):
         crop_type="center",
         augment=True,
         aug_params={
-            "color_aug_params": {"aug_prob": 0.2},
-            "eraser_aug_params": {"aug_prob": 0.5},
-            "spatial_aug_params": {"aug_prob": 0.8},
-            "translate_params": {"aug_prob": 0.8},
-            "rotate_params": {"aug_prob": 0.8},
+            "eraser_aug_params": {"enabled": False},
+            "noise_aug_params": {"enabled": False},
+            "flip_aug_params": {"enabled": False},
+            "color_aug_params": {"enabled": False},
+            "spatial_aug_params": {"enabled": False},
+            "advanced_spatial_aug_params": {"enabled": False},
         },
         norm_params={"use": False},
     ):
