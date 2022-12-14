@@ -97,7 +97,7 @@ def color_transform(
     img1,
     img2,
     enabled=False,
-    aug_prob=0.2,
+    asymmetric_color_aug_prob=0.2,
     brightness=0.4,
     contrast=0.4,
     saturation=0.4,
@@ -112,7 +112,7 @@ def color_transform(
         First of the pair of images
     img2 : PIL Image or numpy.ndarray
         Second of the pair of images
-    aug_prob : float
+    asymmetric_color_aug_prob : float
         Probability of applying asymetric color jitter augmentation
     brightness : float
         Brightness augmentation factor
@@ -137,7 +137,7 @@ def color_transform(
         brightness=brightness, contrast=contrast, saturation=saturation, hue=hue
     )
 
-    if np.random.rand() < aug_prob:
+    if np.random.rand() < asymmetric_color_aug_prob:
         img1 = np.array(aug(Image.fromarray(img1)), dtype=np.uint8)
         img2 = np.array(aug(Image.fromarray(img2)), dtype=np.uint8)
 
@@ -621,76 +621,79 @@ def noise_transform(img1, img2, enabled=False, aug_prob=0.5, noise_std_range=0.0
     return img1, img2
 
 
-class Scale(object):
-    """
-    NOT USED
+# class Scale(object):
+#     """
+#     NOT USED
 
-    Rescales the inputs and target arrays to the given 'size'.
-    'size' will be the size of the smaller edge.
-    For example, if height > width, then image will be
-    rescaled to (size * height / width, size)
-    size: size of the smaller edge
-    interpolation order: Default: 2 (bilinear)
-    """
+#     Rescales the inputs and target arrays to the given 'size'.
+#     'size' will be the size of the smaller edge.
+#     For example, if height > width, then image will be
+#     rescaled to (size * height / width, size)
+#     size: size of the smaller edge
+#     interpolation order: Default: 2 (bilinear)
+#     """
 
-    def __init__(self, size, order=1):
-        self.ratio = size
-        self.order = order
-        if order == 0:
-            self.code = cv2.INTER_NEAREST
-        elif order == 1:
-            self.code = cv2.INTER_LINEAR
-        elif order == 2:
-            self.code = cv2.INTER_CUBIC
+#     def __init__(self, size, order=1):
+#         self.ratio = size
+#         self.order = order
+#         if order == 0:
+#             self.code = cv2.INTER_NEAREST
+#         elif order == 1:
+#             self.code = cv2.INTER_LINEAR
+#         elif order == 2:
+#             self.code = cv2.INTER_CUBIC
 
-    def __call__(self, inputs, target):
-        if self.ratio == 1:
-            return inputs, target
-        h, w, _ = inputs[0].shape
-        ratio = self.ratio
+#     def __call__(self, inputs, target):
+#         if self.ratio == 1:
+#             return inputs, target
+#         h, w, _ = inputs[0].shape
+#         ratio = self.ratio
 
-        inputs[0] = cv2.resize(
-            inputs[0], None, fx=ratio, fy=ratio, interpolation=cv2.INTER_LINEAR
-        )
-        inputs[1] = cv2.resize(
-            inputs[1], None, fx=ratio, fy=ratio, interpolation=cv2.INTER_LINEAR
-        )
-        # keep the mask same
-        tmp = cv2.resize(
-            target[:, :, 2], None, fx=ratio, fy=ratio, interpolation=cv2.INTER_NEAREST
-        )
-        target = (
-            cv2.resize(target, None, fx=ratio, fy=ratio, interpolation=self.code)
-            * ratio
-        )
-        target[:, :, 2] = tmp
+#         inputs[0] = cv2.resize(
+#             inputs[0], None, fx=ratio, fy=ratio, interpolation=cv2.INTER_LINEAR
+#         )
+#         inputs[1] = cv2.resize(
+#             inputs[1], None, fx=ratio, fy=ratio, interpolation=cv2.INTER_LINEAR
+#         )
+#         # keep the mask same
+#         tmp = cv2.resize(
+#             target[:, :, 2], None, fx=ratio, fy=ratio, interpolation=cv2.INTER_NEAREST
+#         )
+#         target = (
+#             cv2.resize(target, None, fx=ratio, fy=ratio, interpolation=self.code)
+#             * ratio
+#         )
+#         target[:, :, 2] = tmp
 
-        return inputs, target
+#         return inputs, target
 
 
-class SpatialAug(object):
+class AdvancedSpatialTransform(object):
     def __init__(
         self,
         crop,
+        scale1=0.3,
+        scale2=0.1,
+        rotate=0.4,
+        translate=0.4,
+        squeeze=0.3,
         enabled=False,
-        scale=None,
-        rot=None,
-        trans=None,
-        squeeze=None,
+        h_flip_prob=0.5,
         schedule_coeff=1,
         order=1,
-        black=False,
+        enable_out_of_boundary_crop=False,
     ):
         self.enabled = enabled
         self.crop = crop
-        self.scale = scale
-        self.rot = rot
-        self.trans = trans
-        self.squeeze = squeeze
+        self.scale = [scale1, 0.03, scale2]
+        self.rot = [rotate, 0.03]
+        self.trans = [translate, 0.03]
+        self.squeeze = [squeeze, 0.0]
+        self.h_flip_prob = h_flip_prob
         self.t = np.zeros(6)
         self.schedule_coeff = schedule_coeff
         self.order = order
-        self.black = black
+        self.black = enable_out_of_boundary_crop
 
     def to_identity(self):
         self.t[0] = 1
@@ -766,13 +769,12 @@ class SpatialAug(object):
         for i in range(50):
             # im0
             self.to_identity()
-            # TODO add mirror
-            if np.random.binomial(1, 0.5):
+
+            if np.random.binomial(1, self.h_flip_prob):
                 mirror = True
             else:
                 mirror = False
-            ##TODO
-            # mirror = False
+
             if mirror:
                 self.left_multiply(-1, 0, 0, 1, 0.5 * tw, -0.5 * th)
             else:

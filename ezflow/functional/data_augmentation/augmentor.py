@@ -22,20 +22,35 @@ class FlowAugmentor:
     def __init__(
         self,
         crop_size,
-        color_aug_params={"enabled": False, "aug_prob": 0.2},
-        eraser_aug_params={"enabled": False, "aug_prob": 0.5},
-        spatial_aug_params={"enabled": False, "aug_prob": 0.8},
-        translate_params={"enabled": False, "aug_prob": 0.8},
-        rotate_params={"enabled": False, "aug_prob": 0.8},
-        noise_params={"enabled": False, "aug_prob": 0.5},
-        spatial_params={"enabled": False},
-        chromatic_params={
+        eraser_aug_params={"enabled": False, "aug_prob": 0.5, "bounds": [50, 100]},
+        noise_aug_params={"enabled": False, "aug_prob": 0.5, "noise_std_range": 0.06},
+        color_aug_params={
             "enabled": False,
-            "lmult_factor": 1.,
-            "sat_factor": 1.,
-            "col_factor": 1.,
-            "ladd_factor": 1.,
-            "col_rot_factor": 1.
+            "asymmetric_aug_prob": 0.2,
+            "brightnesss": 0.4,
+            "contrast": 0.4,
+            "saturation": 0.4,
+            "hue": 0.15915494309189535,
+        },
+        spatial_aug_params={
+            "enabled": False,
+            "aug_prob": 0.8,
+            "stretch_prob": 0.8,
+            "min_scale": -0.1,
+            "max_scale": 1.0,
+            "max_stretch": 0.2,
+            "flip": True,
+            "h_flip_prob": 0.5,
+            "v_flip_prob": 0.1,
+        },
+        advanced_spatial_aug_params={
+            "enabled": False,
+            "scale1": 0.3,
+            "scale2": 0.1,
+            "rotate": 0.4,
+            "translate": 0.4,
+            "squeeze": 0.3,
+            "enable_out_of_boundary_crop": False,
         },
     ):
 
@@ -43,36 +58,26 @@ class FlowAugmentor:
         self.color_aug_params = color_aug_params
         self.eraser_aug_params = eraser_aug_params
         self.spatial_aug_params = spatial_aug_params
-        self.translate_params = translate_params
-        self.rotate_params = rotate_params
-        self.noise_params = noise_params
+        self.noise_aug_params = noise_aug_params
 
-        self.spatial_params = spatial_params
+        self.advanced_spatial_aug_params = advanced_spatial_aug_params
+        self.advanced_spatial_aug_params["h_flip_prob"] = (
+            spatial_aug_params["h_flip_prob"]
+            if "h_flip_prob" in spatial_aug_params
+            else 0.5
+        )
+        self.advanced_spatial_transform = AdvancedSpatialTransform(
+            crop=self.crop_size, **self.advanced_spatial_aug_params
+        )
 
-        self.chromatic_params = {
-            "enabled": chromatic_params["enabled"],
-            "lmult_pow": [0.4 * chromatic_params["lmult_factor"], 0, -0.2],
-            "lmult_mult": [0.4 * chromatic_params["lmult_factor"], 0, 0],
-            "lmult_add": [0.03 * chromatic_params["lmult_factor"], 0, 0],
-            "sat_pow": [0.4 * chromatic_params["sat_factor"], 0, 0],
-            "sat_mult": [0.5 * chromatic_params["sat_factor"], 0, -0.3],
-            "sat_add": [0.03 * chromatic_params["sat_factor"], 0, 0],
-            "col_pow": [0.4 * chromatic_params["col_factor"], 0, 0],
-            "col_mult": [0.2 * chromatic_params["col_factor"], 0, 0],
-            "col_add": [0.02 * chromatic_params["col_factor"], 0, 0],
-            "ladd_pow": [0.4 * chromatic_params["ladd_factor"], 0, 0],
-            "ladd_mult": [0.4 * chromatic_params["ladd_factor"], 0, 0],
-            "ladd_add": [0.04 * chromatic_params["ladd_factor"], 0, 0],
-            "col_rotate": [1.0 * chromatic_params["col_rot_factor"], 0, 0],
-            "gamma": 0.02,
-            "brightness": 0.02,
-            "contrast": 0.02,
-            "color": 0.02,
-            "schedule_coeff": 1,
-        }
-
-        self.spatial_transform = SpatialAug(crop=self.crop_size, **self.spatial_params)
-        self.chromatic_transform = PCAAug(**self.chromatic_params)
+        if self.advanced_spatial_aug_params["enabled"]:
+            # Disable Scale, Stretch and Horizontal Flip if advanced spatial transforms are used
+            self.spatial_aug_params["enabled"] = True
+            self.spatial_aug_params["aug_prob"] = 0.0
+            self.spatial_aug_params["stretch_prob"] = 0.0
+            self.spatial_aug_params["flip"] = True
+            self.spatial_aug_params["h_flip_prob"] = 0.0
+            self.spatial_aug_params["v_flip_prob"] = True
 
     def __call__(self, img1, img2, flow, valid=None):
         """
@@ -102,19 +107,14 @@ class FlowAugmentor:
         """
 
         img1, img2 = color_transform(img1, img2, **self.color_aug_params)
-        img1, img2 = self.chromatic_transform(img1, img2)
 
-        img1, img2, flow = self.spatial_transform(img1, img2, flow)
+        img1, img2, flow = self.advanced_spatial_transform(img1, img2, flow)
 
-        img1, img2, flow = translate_transform(
-            img1, img2, flow, **self.translate_params
-        )
-        img1, img2, flow = rotate_transform(img1, img2, flow, **self.rotate_params)
         img1, img2, flow = spatial_transform(
             img1, img2, flow, self.crop_size, **self.spatial_aug_params
         )
 
-        img1, img2 = noise_transform(img1, img2, **self.noise_params)
+        img1, img2 = noise_transform(img1, img2, **self.noise_aug_params)
         img1, img2 = eraser_transform(img1, img2, **self.eraser_aug_params)
 
         img1 = np.ascontiguousarray(img1)
