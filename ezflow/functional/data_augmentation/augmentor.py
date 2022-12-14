@@ -27,7 +27,7 @@ class FlowAugmentor:
         flip_aug_params={"enabled": False, " h_flip_prob": 0.5, "v_flip_prob": 0.1},
         color_aug_params={
             "enabled": False,
-            "asymmetric_aug_prob": 0.2,
+            "asymmetric_color_aug_prob": 0.2,
             "brightnesss": 0.4,
             "contrast": 0.4,
             "saturation": 0.4,
