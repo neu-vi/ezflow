@@ -101,9 +101,7 @@ class BaseDataset(data.Dataset):
 
         img1 = read_image(self.image_list[index][0])
         img2 = read_image(self.image_list[index][1])
-        flow, valid = read_flow(self.flow_list[index])
 
-        flow = np.array(flow).astype(np.float32)
         img1 = np.array(img1).astype(np.uint8)
         img2 = np.array(img2).astype(np.uint8)
 
@@ -122,6 +120,9 @@ class BaseDataset(data.Dataset):
             img1, img2 = self.normalize(img1, img2)
 
             return img1, img2
+
+        flow, valid = read_flow(self.flow_list[index])
+        flow = np.array(flow).astype(np.float32)
 
         if self.augment is True and self.augmentor is not None:
             img1, img2, flow, valid = self.augmentor(img1, img2, flow, valid)

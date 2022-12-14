@@ -85,6 +85,7 @@ class MPISintel(BaseDataset):
         split = split.lower()
         if split == "validation":
             split = "test"
+            self.is_prediction = True
 
         image_root = osp.join(root_dir, split, dstype)
         flow_root = osp.join(root_dir, split, "flow")
