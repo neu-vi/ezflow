@@ -109,7 +109,7 @@ class BaseTrainer:
 
         if self.loss_fn is None:
             self.loss_fn = loss_fn
-        
+
         if self.optimizer is None:
             self.optimizer = optimizer
 
@@ -186,7 +186,10 @@ class BaseTrainer:
                 self._save_checkpoints(ckpt_type="epoch", ckpt_number=epoch + 1)
 
             # Synchronize all processes in multi gpu after validation and checkpoint
-            if (epoch % self.cfg.VALIDATE_INTERVAL == 0 or epoch % self.cfg.CKPT_INTERVAL == 0) and self.model_parallel:
+            if (
+                epoch % self.cfg.VALIDATE_INTERVAL == 0
+                or epoch % self.cfg.CKPT_INTERVAL == 0
+            ) and self.model_parallel:
                 dist.barrier()
 
         if self._is_main_process():
@@ -245,11 +248,14 @@ class BaseTrainer:
                 self._save_checkpoints(ckpt_type="step", ckpt_number=total_steps)
 
             # Synchronize all processes in multi gpu after validation and checkpoint
-            if (step % self.cfg.VALIDATE_INTERVAL == 0 or step % self.cfg.CKPT_INTERVAL == 0) and self.model_parallel:
+            if (
+                step % self.cfg.VALIDATE_INTERVAL == 0
+                or step % self.cfg.CKPT_INTERVAL == 0
+            ) and self.model_parallel:
                 dist.barrier()
-                
+
             total_steps += 1
-            
+
         if self._is_main_process():
             self.writer.close()
 
@@ -321,7 +327,7 @@ class BaseTrainer:
                     output = self.model.module(img1, img2)
                 else:
                     output = self.model(img1, img2)
-                    
+
                 loss = self.loss_fn(
                     output["flow_preds"], target / self.cfg.TARGET_SCALE_FACTOR
                 )
@@ -331,7 +337,9 @@ class BaseTrainer:
                 """
                     Predicted upsampled flow should be scaled for EPE calculation.
                 """
-                metric = self._calculate_metric(output["flow_upsampled"] * self.cfg.TARGET_SCALE_FACTOR, target)
+                metric = self._calculate_metric(
+                    output["flow_upsampled"] * self.cfg.TARGET_SCALE_FACTOR, target
+                )
                 metric_meter.update(metric)
 
                 del output
@@ -340,9 +348,7 @@ class BaseTrainer:
 
         print("\n", "-" * 80)
         self.writer.add_scalar("avg_validation_loss", new_avg_val_loss, iterations)
-        self.writer.add_scalar(
-            "avg_validation_metric", new_avg_val_metric, iterations
-        )
+        self.writer.add_scalar("avg_validation_metric", new_avg_val_metric, iterations)
 
         print(
             f"\n{iter_type} {iterations}: Average validation loss = {new_avg_val_loss}"
@@ -458,9 +464,7 @@ class BaseTrainer:
             ), "Must provide a consolidated ckpt or model and optimizer ckpts separately"
 
             model_state_dict = torch.load(model_ckpt, map_location=self.device)
-            optimizer_state_dict = torch.load(
-                optimizer_ckpt, map_location=self.device
-            )
+            optimizer_state_dict = torch.load(optimizer_ckpt, map_location=self.device)
 
             if scheduler_ckpt is not None:
                 scheduler_state_dict = torch.load(
@@ -495,7 +499,6 @@ class BaseTrainer:
             )
 
         return (total_iterations, start_iteration)
-
 
     def resume_training(
         self,
