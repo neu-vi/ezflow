@@ -24,7 +24,7 @@ class FlowAugmentor:
         crop_size,
         eraser_aug_params={"enabled": False, "aug_prob": 0.5, "bounds": [50, 100]},
         noise_aug_params={"enabled": False, "aug_prob": 0.5, "noise_std_range": 0.06},
-        flip_aug_params={"enabled": False, " h_flip_prob": 0.5, "v_flip_prob": 0.1},
+        flip_aug_params={"enabled": False, "h_flip_prob": 0.5, "v_flip_prob": 0.1},
         color_aug_params={
             "enabled": False,
             "asymmetric_color_aug_prob": 0.2,
