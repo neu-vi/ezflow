@@ -53,17 +53,26 @@ class MultiScaleLoss(nn.Module):
     ):
         super(MultiScaleLoss, self).__init__()
 
-        self.norm = norm.lower()
-        assert self.norm in ("l1", "l2", "robust"), "Norm must be one of L1, L2, Robust"
+        assert norm.lower() in (
+            "l1",
+            "l2",
+            "robust",
+        ), "Norm must be one of L1, L2, Robust"
+        assert resize_flow.lower() in (
+            "upsample",
+            "downsample",
+        ), "Resize flow must be one of upsample or downsample"
+        assert average.lower() in ("mean", "sum"), "Average must be one of mean or sum"
 
+        self.norm = norm.lower()
         self.q = q
         self.eps = eps
         self.weights = weights
         self.extra_mask = extra_mask
         self.use_valid_range = use_valid_range
         self.valid_range = valid_range
-        self.average = average
-        self.resize_flow = resize_flow
+        self.average = average.lower()
+        self.resize_flow = resize_flow.lower()
 
     @classmethod
     def from_config(cls, cfg):

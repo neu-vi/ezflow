@@ -148,15 +148,39 @@ def test_SequenceLoss():
 
 def test_MultiScaleLoss():
 
-    loss_fn = MultiScaleLoss()
+    loss_fn = MultiScaleLoss(norm="l1")
     _ = loss_fn(flow_pred, flow_gt)
     del loss_fn
 
     valid_mask = torch.randn(4, 1, 256, 256)
     flow_target = torch.cat([flow_gt, valid_mask], dim=1)
 
-    loss_fn = MultiScaleLoss()
+    loss_fn = MultiScaleLoss(norm="l1")
     _ = loss_fn(flow_pred, flow_target)
+    del loss_fn
+
+    loss_fn = MultiScaleLoss(norm="l2")
+    _ = loss_fn(flow_pred, flow_gt)
+    del loss_fn
+
+    loss_fn = MultiScaleLoss(norm="robust")
+    _ = loss_fn(flow_pred, flow_gt)
+    del loss_fn
+
+    loss_fn = MultiScaleLoss(resize_flow="upsample")
+    _ = loss_fn(flow_pred, flow_gt)
+    del loss_fn
+
+    loss_fn = MultiScaleLoss(resize_flow="downsample")
+    _ = loss_fn(flow_pred, flow_gt)
+    del loss_fn
+
+    loss_fn = MultiScaleLoss(average="mean")
+    _ = loss_fn(flow_pred, flow_gt)
+    del loss_fn
+
+    loss_fn = MultiScaleLoss(average="sum")
+    _ = loss_fn(flow_pred, flow_gt)
     del loss_fn
 
 
