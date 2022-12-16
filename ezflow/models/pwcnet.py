@@ -60,8 +60,9 @@ class PWCNet(BaseModule):
 
         Returns
         -------
-        torch.Tensor
-            Flow from img1 to img2
+        :class:`dict`
+            <flow_preds> torch.Tensor : intermediate flow predications from img1 to img2
+            <flow_upsampled> torch.Tensor : if model is in eval state, return upsampled flow
         """
 
         H, W = img1.shape[-2:]

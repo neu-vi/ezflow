@@ -52,8 +52,9 @@ class FlowNetS(BaseModule):
 
         Returns
         -------
-        torch.Tensor
-            Flow from img1 to img2
+        :class:`dict`
+            <flow_preds> torch.Tensor : intermediate flow predications from img1 to img2
+            <flow_upsampled> torch.Tensor : if model is in eval state, return upsampled flow
         """
 
         H, W = img1.shape[-2:]
@@ -73,7 +74,9 @@ class FlowNetS(BaseModule):
         flow = flow_preds[0]
 
         H_, W_ = flow.shape[-2:]
-        flow = F.interpolate(flow, img1.shape[-2:], mode="bilinear", align_corners=True)
+        flow = F.interpolate(
+            flow, img1.shape[-2:], mode="bilinear", align_corners=False
+        )
         flow_u = flow[:, 0, :, :] * (W / W_)
         flow_v = flow[:, 1, :, :] * (H / H_)
         flow = torch.stack([flow_u, flow_v], dim=1)

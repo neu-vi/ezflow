@@ -250,8 +250,9 @@ class DICL(BaseModule):
 
         Returns
         -------
-        torch.Tensor
-            Flow from img1 to img2
+        :class:`dict`
+            <flow_preds> torch.Tensor : intermediate flow predications from img1 to img2
+            <flow_upsampled> torch.Tensor : if model is in eval state, return upsampled flow
         """
 
         _, x2, x3, x4, x5, x6 = self.feature_net(img1)
