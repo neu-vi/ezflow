@@ -104,7 +104,7 @@ def color_transform(
     hue=0.5 / 3.14,
 ):
     """
-    Photometric augmentation
+    Photometric augmentation borrowed from RAFT https://github.com/princeton-vl/RAFT/blob/master/core/utils/augmentor.py
 
     Parameters
     -----------
@@ -112,6 +112,8 @@ def color_transform(
         First of the pair of images
     img2 : PIL Image or numpy.ndarray
         Second of the pair of images
+    enabled : bool, default: False
+        If True, applies color transform
     asymmetric_color_aug_prob : float
         Probability of applying asymetric color jitter augmentation
     brightness : float
@@ -151,13 +153,16 @@ def color_transform(
 
 def eraser_transform(img1, img2, enabled=False, bounds=[50, 100], aug_prob=0.5):
     """
-    Occlusion augmentation
+    Occlusion augmentation borrowed from RAFT https://github.com/princeton-vl/RAFT/blob/master/core/utils/augmentor.py
+
     Parameters
     -----------
     img1 : PIL Image or numpy.ndarray
         First of the pair of images
     img2 : PIL Image or numpy.ndarray
         Second of the pair of images
+    enabled : bool, default: False
+        If True, applies eraser transform
     bounds : :obj:`list` of :obj:`int`
         Bounds of the eraser
     aug_prob : float
@@ -202,7 +207,9 @@ def spatial_transform(
     max_scale=0.5,
 ):
     """
-    Spatial augmentation
+    Simple set of spatial augmentation borrowed from RAFT https://github.com/princeton-vl/RAFT/blob/master/core/utils/augmentor.py
+
+    Includes random scaling and stretch.
 
     Parameters
     -----------
@@ -214,6 +221,8 @@ def spatial_transform(
         Flow field
     crop_size : :obj:`list` of :obj:`int`
         Size of the crop
+    enabled : bool, default: False
+        If True, applies spatial transform
     aug_prob : float
         Probability of applying the augmentation
     stretch_prob : float
@@ -224,12 +233,6 @@ def spatial_transform(
         Minimum scale factor
     max_scale : float
         Maximum scale factor
-    flip : bool
-        Whether to apply the flip transform
-    h_flip_prob : float
-        Probability of applying the horizontal flip transform
-    v_flip_prob : float
-        Probability of applying the vertical flip transform
 
     Returns
     -------
@@ -275,6 +278,34 @@ def spatial_transform(
 
 
 def flip_transform(img1, img2, flow, enabled=False, h_flip_prob=0.5, v_flip_prob=0.1):
+    """
+    Flip augmentation borrowed from RAFT https://github.com/princeton-vl/RAFT/blob/master/core/utils/augmentor.py
+
+    Parameters
+    -----------
+    img1 : PIL Image or numpy.ndarray
+        First of the pair of images
+    img2 : PIL Image or numpy.ndarray
+        Second of the pair of images
+    flow : numpy.ndarray
+        Flow field
+    enabled : bool, default: False
+        If True, applies flip transform
+    h_flip_prob : float, default=0.5
+        Probability of applying the horizontal flip transform
+    v_flip_prob : float, default=0.1
+        Probability of applying the vertical flip transform
+
+    Returns
+    -------
+    img1 : PIL Image or numpy.ndarray
+        Flipped image 1
+    img2 : PIL Image or numpy.ndarray
+        Flipped image 2
+    flow : numpy.ndarray
+        Flipped flow field
+    """
+
     if not enabled:
         return img1, img2, flow
 
@@ -460,6 +491,30 @@ class Normalize:
 
 
 def noise_transform(img1, img2, enabled=False, aug_prob=0.5, noise_std_range=0.06):
+    """
+    Applies random noise augmentation from a gaussian distribution borrowed from VCN:
+    https://github.com/gengshan-y/VCN/blob/master/dataloader/flow_transforms.py
+
+    Parameters
+    -----------
+    img1 : PIL Image or numpy.ndarray
+        First of the pair of images
+    img2 : PIL Image or numpy.ndarray
+        Second of the pair of images
+    enabled : bool, default: False
+        If True, applies noise transform
+    aug_prob : float
+        Probability of applying the augmentation
+    noise_std_range : float
+        Standard deviation of the noise
+
+    Returns
+    -------
+    img1 : PIL Image or numpy.ndarray
+        Augmented image 1
+    img2 : PIL Image or numpy.ndarray
+        Augmented image 2
+    """
 
     if not enabled:
         return img1, img2
@@ -480,15 +535,52 @@ def noise_transform(img1, img2, enabled=False, aug_prob=0.5, noise_std_range=0.0
 
 
 class AdvancedSpatialTransform(object):
+    """
+    Advanced set of spatial transformations borrowed from:
+
+    1. VCN: https://github.com/gengshan-y/VCN/blob/master/dataloader/flow_transforms.py
+    2. Autoflow: https://github.com/google-research/opticalflow-autoflow/blob/main/src/dataset_lib/augmentations/spatial_aug.py
+
+    This set of augmentations include random scaling, stretch, rotation, translation and out-of-boundary cropping.
+
+    Parameters
+    -----------
+    crop_size : :obj:`list` of :obj:`int`
+        Size of the crop
+    enabled : bool, default: False
+        If True, applies flip transform
+    scale1 : float, default : 0.3
+        Scale factor 1
+    scale1 : float, default : 0.1
+        Scale factor 2
+    rotate : float, default : 0.4
+        Rotate factor
+    translate : float, default : 0.4
+        Translate factor
+    stretch : float, default : 0.3
+        Stretch factor
+    h_flip_prob : float, default=0.5
+        Probability of applying the horizontal flip transform
+
+    Returns
+    -------
+    img1 : PIL Image or numpy.ndarray
+        Flipped image 1
+    img2 : PIL Image or numpy.ndarray
+        Flipped image 2
+    flow : numpy.ndarray
+        Flipped flow field
+    """
+
     def __init__(
         self,
         crop,
+        enabled=False,
         scale1=0.3,
         scale2=0.1,
         rotate=0.4,
         translate=0.4,
         stretch=0.3,
-        enabled=False,
         h_flip_prob=0.5,
         schedule_coeff=1,
         order=1,
@@ -564,6 +656,25 @@ class AdvancedSpatialTransform(object):
         return vgrid
 
     def __call__(self, img1, img2, target):
+        """
+        Parameters
+        -----------
+        img1 : PIL Image or numpy.ndarray
+            First of the pair of images
+        img2 : PIL Image or numpy.ndarray
+            Second of the pair of images
+        target : numpy.ndarray
+            Flow field
+
+        Returns
+        -------
+        img1 : PIL Image or numpy.ndarray
+            Flipped image 1
+        img2 : PIL Image or numpy.ndarray
+            Flipped image 2
+        flow : numpy.ndarray
+            Flipped flow field
+        """
         if not self.enabled:
             return img1, img2, target
 

@@ -11,12 +11,19 @@ class FlowAugmentor:
     ----------
     crop_size : int
         Size of the crop to be applied to the images.
-    color_aug_params : dict
-        Parameters for the color augmentation.
     eraser_aug_params : dict
         Parameters for the eraser augmentation.
+    noise_aug_params : dict
+        Parameters for the noise augmentation.
+    flip_aug_params : dict
+        Parameters for the flip augmentation.
+    color_aug_params : dict
+        Parameters for the color augmentation.
     spatial_aug_params : dict
         Parameters for the spatial augmentation.
+    advanced_spatial_aug_params : dict
+        Parameters for the spatial augmentation.
+        If both spatial and advanced_spatial augmentations are enabled, the advanced spatial augmentations are used.
     """
 
     def __init__(
