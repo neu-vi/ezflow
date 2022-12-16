@@ -11,6 +11,12 @@ class ContextNetwork(nn.Module):
     """
     PWCNet Context Network decoder
 
+    Parameters
+    ----------
+    in_channels: int, default: 565
+        Number of input channels
+    config : List[int], default : [128, 128, 96, 64, 32]
+        List containing all output channels of the decoder.
     """
 
     @configurable

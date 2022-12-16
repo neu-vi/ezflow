@@ -11,6 +11,25 @@ from .conv_decoder import ConvDecoder
 
 @DECODER_REGISTRY.register()
 class PyramidDecoder(nn.Module):
+    """
+    Applies a 2D Convolutional decoder to regress the optical flow
+    from the intermediate outputs convolutions of the encoder.
+    Used in **PWCNet** (https://arxiv.org/abs/1709.02371)
+
+    Parameters
+    ----------
+    config : List[int], default : [128, 128, 96, 64, 32]
+        List containing all output channels of the decoder.
+    to_flow : bool, default : True
+        If True, regresses the flow of shape N x 2 x H x W.
+    max_displacement: int, default: 4
+        Maximum displacement for cost volume computation.
+    pad_size: int, default: 0
+        Pad size for cost volume computation.
+    flow_scale_factor: float, default: 20.0
+        Scale factor for upscaling flow predictions.
+    """
+
     @configurable
     def __init__(
         self,
@@ -83,6 +102,26 @@ class PyramidDecoder(nn.Module):
         return self.leaky_relu(corr)
 
     def forward(self, feature_pyramid1, feature_pyramid2):
+        """
+        Performs forward pass.
+
+        Parameters
+        ----------
+        feature_pyramid1 : torch.Tensor
+            Input feature map of image 1
+
+        feature_pyramid2 : torch.Tensor
+            Input feature map of image 2
+
+        Returns
+        -------
+        List[torch.Tensor]
+            A List containing tensors of shape N x 2 x H x W representing the flow
+
+        List[torch.Tensor]
+            A List containing tensors of shape N x output_channel x H x W
+        """
+
         up_flow, up_features = None, None
         up_flow_scale = self.flow_scale_factor * 2 ** (-(len(self.config)))
 

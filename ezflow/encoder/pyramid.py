@@ -45,6 +45,19 @@ class PyramidEncoder(nn.Module):
         }
 
     def forward(self, img):
+        """
+        Performs forward pass.
+
+        Parameters
+        ----------
+        img : torch.Tensor
+            Input tensor
+
+        Returns
+        -------
+        List[torch.Tensor],
+            List of all the output convolutions from each encoder layer
+        """
 
         feature_pyramid = []
         x = img
