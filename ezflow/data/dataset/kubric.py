@@ -17,13 +17,14 @@ class Kubric(BaseDataset):
     Dataset Class for preparing the Kubric 'movi-f' split of
     optical flow synthetic dataset  for training and validation.
     https://arxiv.org/abs/2203.03570
-    https://github.com/google-research/kubric
+    https://github.com/google-research/kubric/tree/main/challenges/optical_flow
 
 
     Note that in order to use this dataset class the Kubric Dataset
-    must be in the Sintel directory structure. Please follow the scripts
+    must be in the Sintel directory structure. Please follow the script
     provided in the repository mentioned below to convert .tfrecords to
     images and flow fields arranged in the Sintel Directory structure.
+    https://github.com/prajnan93/kubric-flow
 
     The tfrecords conversion is not provided with the ezflow package
     as it requires tensorflow installation.
