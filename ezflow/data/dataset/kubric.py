@@ -1,24 +1,52 @@
+import os
+import os.path as osp
 import random
+from glob import glob
 
 import numpy as np
 import torch
 import torch.utils.data as data
-import torchvision.transforms as transforms
 
-from ...functional import Normalize, crop
+from ...functional import FlowAugmentor, Normalize, crop
 from ...utils import read_flow, read_image
+from .base_dataset import BaseDataset
 
 
-class BaseDataset(data.Dataset):
+class Kubric(BaseDataset):
     """
-    Base dataset for reading synthetic optical flow data.
+    Dataset Class for preparing the Kubric 'movi-f' split of
+    optical flow synthetic dataset  for training and validation.
+    https://arxiv.org/abs/2203.03570
+    https://github.com/google-research/kubric/tree/main/challenges/optical_flow
+
+
+    Note that in order to use this dataset class the Kubric Dataset
+    must be in the Sintel directory structure. Please follow the script
+    provided in the repository mentioned below to convert .tfrecords to
+    images and flow fields arranged in the Sintel Directory structure.
+    https://github.com/prajnan93/kubric-flow
+
+    The tfrecords conversion is not provided with the ezflow package
+    as it requires tensorflow installation.
+
 
     Parameters
     ----------
-    init_seed : bool, default : False
-        If True, sets random seed to the worker
+    root_dir : str
+        path of the root directory for the MPI Sintel datasets
+    split : str, default : "training"
+        specify the training or validation split
+    swap_column_to_row : bool, default : True
+        If True, swaps column major to row major of the flow map.
+        The optical flow fields were rendered in column major in the earlier versions.
+        Set this parameter to False if newer versions are available in row major.
+        More info in GitHub issue:https://github.com/google-research/kubric/issues/152
+    use_backward_flow : bool, default : False
+        returns backward optical flow field
     is_prediction : bool, default : False
-        If True,   If True, only image data are loaded for prediction otherwise both images and flow data are loaded
+        If True, only image data are loaded for prediction otherwise both images and flow data are loaded
+    init_seed : bool, default : False
+        If True, sets random seed to worker
     append_valid_mask : bool, default :  False
         If True, appends the valid flow mask to the original flow mask at dim=0
     crop: bool, default : True
@@ -27,9 +55,9 @@ class BaseDataset(data.Dataset):
         The size of the image crop
     crop_type : :obj:`str`, default : 'center'
         The type of croppping to be performed, one of "center", "random"
-    augment : bool, default : False
+    augment : bool, default : True
         If True, applies data augmentation
-    aug_params : :obj:`dict`
+    aug_params : :obj:`dict`, optional
         The parameters for data augmentation
     norm_params : :obj:`dict`, optional
         The parameters for normalization
@@ -37,8 +65,12 @@ class BaseDataset(data.Dataset):
 
     def __init__(
         self,
-        init_seed=False,
+        root_dir,
+        split="training",
+        swap_column_to_row=True,
+        use_backward_flow=False,
         is_prediction=False,
+        init_seed=False,
         append_valid_mask=False,
         crop=False,
         crop_size=(256, 256),
@@ -52,24 +84,48 @@ class BaseDataset(data.Dataset):
             "spatial_aug_params": {"enabled": False},
             "advanced_spatial_aug_params": {"enabled": False},
         },
-        sparse_transform=False,
         norm_params={"use": False},
     ):
+        super(Kubric, self).__init__(
+            init_seed=init_seed,
+            is_prediction=is_prediction,
+            append_valid_mask=append_valid_mask,
+            crop=crop,
+            crop_size=crop_size,
+            crop_type=crop_type,
+            augment=augment,
+            aug_params=aug_params,
+            sparse_transform=False,
+            norm_params=norm_params,
+        )
+
+        assert (
+            split.lower() == "training" or split.lower() == "validation"
+        ), "Incorrect split values. Accepted split values: training, validation"
 
         self.is_prediction = is_prediction
-        self.init_seed = init_seed
         self.append_valid_mask = append_valid_mask
-        self.crop = crop
-        self.crop_size = crop_size
-        self.crop_type = crop_type
-        self.sparse_transform = sparse_transform
+        self.swap = swap_column_to_row
 
-        self.augment = augment
-        self.augmentor = None
+        if augment:
+            self.augmentor = FlowAugmentor(crop_size=crop_size, **aug_params)
 
-        self.flow_list = []
-        self.image_list = []
-        self.normalize = Normalize(**norm_params)
+        split = split.lower()
+
+        image_root = osp.join(root_dir, split, "images")
+
+        if use_backward_flow:
+            flow_root = osp.join(root_dir, split, "backward_flow")
+        else:
+            flow_root = osp.join(root_dir, split, "forward_flow")
+
+        for scene in os.listdir(image_root):
+            image_list = sorted(glob(osp.join(image_root, scene, "*.png")))
+            for i in range(len(image_list) - 1):
+                self.image_list += [[image_list[i], image_list[i + 1]]]
+
+            if not self.is_prediction:
+                self.flow_list += sorted(glob(osp.join(flow_root, scene, "*.flo")))
 
     def __getitem__(self, index):
         """
@@ -102,9 +158,22 @@ class BaseDataset(data.Dataset):
 
         img1 = read_image(self.image_list[index][0])
         img2 = read_image(self.image_list[index][1])
+        flow, valid = read_flow(self.flow_list[index])
 
+        flow = np.array(flow).astype(np.float32)
         img1 = np.array(img1).astype(np.uint8)
         img2 = np.array(img2).astype(np.uint8)
+
+        if self.swap:
+            flow_temp = np.zeros_like(flow)
+
+            # Swap column major to row_major
+
+            flow_temp[..., 0] = flow[..., 1]
+            flow_temp[..., 1] = flow[..., 0]
+
+            del flow
+            flow = flow_temp
 
         if len(img1.shape) == 2:  # grayscale images
             img1 = np.tile(img1[..., None], (1, 1, 3))
@@ -121,9 +190,6 @@ class BaseDataset(data.Dataset):
             img1, img2 = self.normalize(img1, img2)
 
             return img1, img2
-
-        flow, valid = read_flow(self.flow_list[index])
-        flow = np.array(flow).astype(np.float32)
 
         if self.augment is True and self.augmentor is not None:
             img1, img2, flow, valid = self.augmentor(img1, img2, flow, valid)
@@ -156,19 +222,3 @@ class BaseDataset(data.Dataset):
             flow = torch.cat([flow, valid], dim=0)
 
         return (img1, img2), flow
-
-    def __rmul__(self, v):
-        """
-        Returns an instance of the dataset after multiplying with v.
-
-        """
-        self.flow_list = v * self.flow_list
-        self.image_list = v * self.image_list
-        return self
-
-    def __len__(self):
-        """
-        Return length of the dataset.
-
-        """
-        return len(self.image_list)

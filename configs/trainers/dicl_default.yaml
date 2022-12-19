@@ -1,5 +1,0 @@
-_BASE_: "./base.yaml"
-CRITERION:
-  NAME: "MultiScaleLoss"
-  PARAMS: null
-      

@@ -45,6 +45,19 @@ class PyramidEncoder(nn.Module):
         }
 
     def forward(self, img):
+        """
+        Performs forward pass.
+
+        Parameters
+        ----------
+        img : torch.Tensor
+            Input tensor
+
+        Returns
+        -------
+        List[torch.Tensor],
+            List of all the output convolutions from each encoder layer
+        """
 
         feature_pyramid = []
         x = img
@@ -53,7 +66,5 @@ class PyramidEncoder(nn.Module):
 
             x = self.encoder[i](x)
             feature_pyramid.append(x)
-
-        feature_pyramid.reverse()
 
         return feature_pyramid

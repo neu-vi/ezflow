@@ -359,6 +359,33 @@ class DataloaderCreator:
             )
         )
 
+    def add_Kubric(self, root_dir, split="training", augment=False, **kwargs):
+        """
+        Adds the Kubric dataset to the DataloaderCreator object.
+
+        Parameters
+        ----------
+        root_dir : str
+            path of the root directory for the Monkaa dataset in SceneFlow
+        augment : bool, default : True
+            If True, applies data augmentation
+        **kwargs
+            Arbitrary keyword arguments for augmentation
+            specifying crop_size and the probability of
+            color, eraser and spatial transformation
+        """
+        self.dataset_list.append(
+            Kubric(
+                root_dir,
+                split=split,
+                init_seed=self.init_seed,
+                is_prediction=self.is_prediction,
+                append_valid_mask=self.append_valid_mask,
+                augment=augment,
+                **kwargs,
+            )
+        )
+
     def get_dataloader(self, rank=0):
         """
         Gets the Dataloader for the added datasets.

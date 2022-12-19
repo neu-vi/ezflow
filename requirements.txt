@@ -1,6 +1,6 @@
 absl-py==0.13.0
 alabaster==0.7.12
-antlr4-python3-runtime==4.9
+antlr4-python3-runtime==4.8
 appdirs==1.4.4
 argh==0.26.2
 arrow==0.15.1

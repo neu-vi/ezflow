@@ -228,9 +228,11 @@ class TestTrainer(TestCase):
     @mock.patch("ezflow.engine.trainer.SummaryWriter")
     @mock.patch("ezflow.engine.trainer.os")
     def test_epoch_trainer(self, mock_os, mock_writer, mock_save_model):
-        trainer = Trainer(
-            self.training_cfg, self.mock_model, self.train_loader, self.val_loader
+        cfg = get_training_cfg(
+            cfg_path="./tests/configs/custom_loss_trainer.yaml", custom=True
         )
+
+        trainer = Trainer(cfg, self.mock_model, self.train_loader, self.val_loader)
         trainer._trainer = Trainer._epoch_trainer
 
         trainer.train()
@@ -241,7 +243,6 @@ class TestTrainer(TestCase):
 
         del trainer
 
-        cfg = self.training_cfg
         cfg.VALIDATE_ON = "loss"
         trainer = Trainer(cfg, self.mock_model, self.train_loader, self.val_loader)
         trainer._trainer = Trainer._epoch_trainer
@@ -258,7 +259,9 @@ class TestTrainer(TestCase):
     @mock.patch("ezflow.engine.trainer.SummaryWriter")
     @mock.patch("ezflow.engine.trainer.os")
     def test_step_trainer(self, mock_os, mock_writer, mock_save_model):
-        cfg = self.training_cfg
+        cfg = get_training_cfg(
+            cfg_path="./tests/configs/custom_loss_trainer.yaml", custom=True
+        )
         cfg.NUM_STEPS = 1
 
         trainer = Trainer(cfg, self.mock_model, self.train_loader, self.val_loader)
@@ -309,9 +312,11 @@ class TestDistributedTrainer(TestCase):
 
         del trainer
 
+    @mock.patch.object(torch.distributed, "barrier")
     @mock.patch.object(torch.distributed, "init_process_group")
     @mock.patch.object(torch, "device", return_value=torch.device)
     @mock.patch.object(torch.cuda, "is_available", return_value=True)
+    @mock.patch.object(torch.cuda, "set_device")
     @mock.patch.object(torch.cuda, "empty_cache")
     @mock.patch.object(torch.cuda, "device_count", return_value=2)
     @mock.patch("ezflow.engine.trainer.os")
@@ -320,9 +325,11 @@ class TestDistributedTrainer(TestCase):
         mock_os,
         mock_device_count,
         mock_empty_cache,
+        mock_torch_cuda_set_device,
         mock_cuda_available,
         mock_torch_device,
         mock_init_process_group,
+        mock_dist_barrier,
     ):
         trainer = DistributedTrainer(
             self.training_cfg,
@@ -332,7 +339,7 @@ class TestDistributedTrainer(TestCase):
         )
 
         trainer._setup_device(rank=0)
-
+        mock_torch_cuda_set_device.assert_called_with(0)
         mock_torch_device.assert_called_with(0)
         assert trainer.local_rank == 0
 
@@ -347,6 +354,7 @@ class TestDistributedTrainer(TestCase):
         del trainer
 
     @mock.patch.object(torch.distributed, "destroy_process_group")
+    @mock.patch.object(torch.distributed, "barrier")
     @mock.patch.object(DistributedTrainer, "_setup_model")
     @mock.patch.object(DistributedTrainer, "_setup_training")
     @mock.patch.object(DistributedTrainer, "_epoch_trainer")
@@ -363,6 +371,7 @@ class TestDistributedTrainer(TestCase):
         mock_trainer,
         mock_setup_training,
         mock_setup_model,
+        mock_dist_barrier,
         mock_dist_cleanup,
     ):
         trainer = DistributedTrainer(
@@ -383,6 +392,7 @@ class TestDistributedTrainer(TestCase):
             rank=0, loss_fn=None, optimizer=None, scheduler=None
         )
         mock_trainer.assert_called_with(None, None)
+        mock_dist_barrier.assert_called()
         mock_dist_cleanup.assert_called()
 
         del trainer

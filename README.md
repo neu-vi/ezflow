@@ -56,6 +56,7 @@ pip install ezflow
 - [x] [FlyingChairs](https://lmb.informatik.uni-freiburg.de/resources/datasets/FlyingChairs.en.html#flyingchairs)
 - [x] [HD1K](http://hci-benchmark.iwr.uni-heidelberg.de/)
 - [x] [KITTI](http://www.cvlibs.net/datasets/kitti/eval_scene_flow.php?benchmark=flow)
+- [x] [Kubric](https://github.com/google-research/kubric)
 - [x] [MPI Sintel](http://sintel.is.tue.mpg.de/)
 - [x] [SceneFlow Monkaa](https://lmb.informatik.uni-freiburg.de/resources/datasets/SceneFlowDatasets.en.html)
 - [x] [SceneFlow Driving](https://lmb.informatik.uni-freiburg.de/resources/datasets/SceneFlowDatasets.en.html)

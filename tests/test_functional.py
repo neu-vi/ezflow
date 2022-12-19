@@ -42,27 +42,71 @@ def test_FlowAugmentor():
 
     augmentor = FlowAugmentor(
         crop_size=(224, 224),
-        color_aug_params={"aug_prob": 1.0},
-        eraser_aug_params={"aug_prob": 1.0},
-        spatial_aug_params={
-            "aug_prob": 1.0,
-            "h_flip_prob": 1.0,
-            "v_flip_prob": 1.0,
-            "stretch_prob": 1.0,
+        noise_aug_params={"enabled": True, "aug_prob": 1.0},
+        eraser_aug_params={"enabled": True, "aug_prob": 1.0},
+        color_aug_params={"enabled": True, "asymmetric_color_aug_prob": 1.0},
+        flip_aug_params={"enabled": True, "h_flip_prob": 1.0, "v_flip_prob": 1.0},
+        spatial_aug_params={"enabled": True, "aug_prob": 1.0, "stretch_prob": 1.0},
+        advanced_spatial_aug_params={"enabled": False},
+    )
+    _ = augmentor(img1, img2, flow)
+
+    augmentor = FlowAugmentor(
+        crop_size=(224, 224),
+        noise_aug_params={"enabled": True, "aug_prob": 1.0},
+        eraser_aug_params={"enabled": True, "aug_prob": 1.0},
+        color_aug_params={"enabled": True, "asymmetric_color_aug_prob": 0.0},
+        flip_aug_params={"enabled": True, "h_flip_prob": 1.0, "v_flip_prob": 1.0},
+        spatial_aug_params={"enabled": False},
+        advanced_spatial_aug_params={
+            "enabled": True,
+            "scale1": 0.3,
+            "scale2": 0.1,
+            "rotate": 0.4,
+            "translate": 0.4,
+            "stretch": 0.3,
+            "enable_out_of_boundary_crop": False,
         },
     )
     _ = augmentor(img1, img2, flow)
 
     augmentor = FlowAugmentor(
         crop_size=(224, 224),
-        color_aug_params={"aug_prob": 0.0},
-        eraser_aug_params={"aug_prob": 0.0},
-        spatial_aug_params={
-            "aug_prob": 0.0,
-            "h_flip_prob": 0.0,
-            "v_flip_prob": 0.0,
-            "stretch_prob": 0.0,
+        noise_aug_params={"enabled": True, "aug_prob": 1.0},
+        eraser_aug_params={"enabled": True, "aug_prob": 1.0},
+        color_aug_params={"enabled": True, "asymmetric_color_aug_prob": 0.0},
+        flip_aug_params={"enabled": True, "h_flip_prob": 1.0, "v_flip_prob": 1.0},
+        spatial_aug_params={"enabled": False},
+        advanced_spatial_aug_params={
+            "enabled": True,
+            "scale1": 0.3,
+            "scale2": 0.1,
+            "rotate": 0.4,
+            "translate": 0.4,
+            "stretch": 0.3,
+            "enable_out_of_boundary_crop": True,
         },
+    )
+    _ = augmentor(img1, img2, flow)
+
+    augmentor = FlowAugmentor(
+        crop_size=(224, 224),
+        color_aug_params={"enabled": False},
+        eraser_aug_params={"enabled": False},
+        noise_aug_params={"enabled": False},
+        flip_aug_params={"enabled": False},
+        spatial_aug_params={"enabled": False},
+        advanced_spatial_aug_params={"enabled": False},
+    )
+    _ = augmentor(img1, img2, flow)
+
+    augmentor = FlowAugmentor(
+        crop_size=(224, 224),
+        noise_aug_params={"enabled": True, "aug_prob": 0.0},
+        eraser_aug_params={"enabled": True, "aug_prob": 0.0},
+        color_aug_params={"enabled": True, "asymmetric_color_aug_prob": 0.0},
+        flip_aug_params={"enabled": True, "h_flip_prob": 0.0, "v_flip_prob": 0.0},
+        spatial_aug_params={"enabled": True, "aug_prob": 0.0, "stretch_prob": 0.0},
     )
     _ = augmentor(img1, img2, flow)
 
@@ -75,17 +119,17 @@ def test_SparseFlowAugmentor():
 
     augmentor = SparseFlowAugmentor(
         crop_size=(224, 224),
-        color_aug_params={"aug_prob": 1.0},
-        eraser_aug_params={"aug_prob": 1.0},
-        spatial_aug_params={"aug_prob": 1.0, "h_flip_prob": 1.0},
+        color_aug_params={"enabled": True, "asymmetric_color_aug_prob": 1.0},
+        eraser_aug_params={"enabled": True, "aug_prob": 1.0},
+        spatial_aug_params={"enabled": True, "aug_prob": 1.0, "h_flip_prob": 1.0},
     )
     _ = augmentor(img1, img2, flow, valid)
 
     augmentor = SparseFlowAugmentor(
         crop_size=(224, 224),
-        color_aug_params={"aug_prob": 0.0},
-        eraser_aug_params={"aug_prob": 0.0},
-        spatial_aug_params={"aug_prob": 0.0, "h_flip_prob": 0.0},
+        color_aug_params={"enabled": True, "asymmetric_color_aug_prob": 0.0},
+        eraser_aug_params={"enabled": True, "aug_prob": 0.0},
+        spatial_aug_params={"enabled": True, "aug_prob": 0.0, "h_flip_prob": 0.0},
     )
     _ = augmentor(img1, img2, flow, valid)
 
@@ -104,61 +148,40 @@ def test_SequenceLoss():
 
 def test_MultiScaleLoss():
 
-    loss_fn = MultiScaleLoss()
+    loss_fn = MultiScaleLoss(norm="l1")
     _ = loss_fn(flow_pred, flow_gt)
     del loss_fn
 
     valid_mask = torch.randn(4, 1, 256, 256)
     flow_target = torch.cat([flow_gt, valid_mask], dim=1)
 
-    loss_fn = MultiScaleLoss()
+    loss_fn = MultiScaleLoss(norm="l1")
     _ = loss_fn(flow_pred, flow_target)
     del loss_fn
 
+    loss_fn = MultiScaleLoss(norm="l2")
+    _ = loss_fn(flow_pred, flow_gt)
+    del loss_fn
 
-def test_Augmentor():
-    augmentor = FlowAugmentor(
-        crop_size=(224, 224),
-        color_aug_params={"aug_prob": 1.0},
-        eraser_aug_params={"aug_prob": 1.0},
-        spatial_aug_params={
-            "aug_prob": 1.0,
-            "h_flip_prob": 1.0,
-            "v_flip_prob": 1.0,
-            "stretch_prob": 1.0,
-        },
-        translate_params={
-            "aug_prob": 1.0,
-            "translate": 20,
-        },
-        rotate_params={
-            "aug_prob": 1.0,
-            "degrees": 20,
-            "delta": 5,
-        },
-    )
-    _ = augmentor(img1, img2, flow)
+    loss_fn = MultiScaleLoss(norm="robust")
+    _ = loss_fn(flow_pred, flow_gt)
+    del loss_fn
 
-    augmentor = FlowAugmentor(
-        crop_size=(224, 224),
-        color_aug_params={"aug_prob": 0.0},
-        eraser_aug_params={"aug_prob": 0.0},
-        spatial_aug_params={
-            "aug_prob": 0.0,
-            "h_flip_prob": 0.0,
-            "v_flip_prob": 0.0,
-            "stretch_prob": 0.0,
-        },
-        translate_params={
-            "aug_prob": 0.0,
-        },
-        rotate_params={
-            "aug_prob": 0.0,
-        },
-    )
-    _ = augmentor(img1, img2, flow)
+    loss_fn = MultiScaleLoss(resize_flow="upsample")
+    _ = loss_fn(flow_pred, flow_gt)
+    del loss_fn
 
-    del augmentor
+    loss_fn = MultiScaleLoss(resize_flow="downsample")
+    _ = loss_fn(flow_pred, flow_gt)
+    del loss_fn
+
+    loss_fn = MultiScaleLoss(average="mean")
+    _ = loss_fn(flow_pred, flow_gt)
+    del loss_fn
+
+    loss_fn = MultiScaleLoss(average="sum")
+    _ = loss_fn(flow_pred, flow_gt)
+    del loss_fn
 
 
 def test_normalize():

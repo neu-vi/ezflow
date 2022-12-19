@@ -68,6 +68,7 @@ class BasicBlock(nn.Module):
             if stride != 1:
                 norm3 = nn.Identity()
 
+        # Change required
         if activation.lower() == "leakyrelu":
             self.activation = nn.LeakyReLU(negative_slope=0.1, inplace=True)
         else:

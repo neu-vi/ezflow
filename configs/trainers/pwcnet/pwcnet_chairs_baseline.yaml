@@ -1,0 +1,33 @@
+_BASE_: "../_base_/chairs_baseline.yaml"
+TARGET_SCALE_FACTOR: 20.0
+DATA:
+  BATCH_SIZE: 8
+  TRAIN_CROP_SIZE: [384, 448]
+  VAL_CROP_SIZE: [384, 448]
+  APPEND_VALID_MASK: False
+  NORM_PARAMS: {"use": True, "mean":[0.0, 0.0, 0.0], "std":[255.0, 255.0, 255.0]}
+SCHEDULER:
+  USE: True
+  NAME: OneCycleLR
+  PARAMS:
+    max_lr: 0.0004
+    total_steps: 1200100
+    pct_start: 0.05
+    cycle_momentum: False
+    anneal_strategy: linear
+CRITERION:
+  CUSTOM: True
+  NAME: MultiScaleLoss
+  PARAMS:
+    norm: "l2" 
+    weights: [0.32, 0.08, 0.02, 0.01, 0.005]
+    average: "sum"
+    resize_flow: "downsample"
+EPOCHS: null
+NUM_STEPS: 1200100
+LOG_DIR: "./logs"
+CKPT_DIR: "./ckpts"
+LOG_ITERATIONS_INTERVAL: 100
+CKPT_INTERVAL: 100000
+VALIDATE_INTERVAL: 10000
+VALIDATE_ON: metric

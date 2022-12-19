@@ -1,8 +1,17 @@
+from __future__ import division
+
+import numbers
+import pdb
+import random
+
 import cv2
 import numpy as np
 import scipy.ndimage as ndimage
+import torch
+import torchvision
 import torchvision.transforms as transforms
 from PIL import Image
+from torch.nn import functional as F
 from torchvision.transforms import ColorJitter
 
 
@@ -87,14 +96,15 @@ def crop(
 def color_transform(
     img1,
     img2,
-    aug_prob=0.2,
+    enabled=False,
+    asymmetric_color_aug_prob=0.2,
     brightness=0.4,
     contrast=0.4,
     saturation=0.4,
     hue=0.5 / 3.14,
 ):
     """
-    Photometric augmentation
+    Photometric augmentation borrowed from RAFT https://github.com/princeton-vl/RAFT/blob/master/core/utils/augmentor.py
 
     Parameters
     -----------
@@ -102,8 +112,10 @@ def color_transform(
         First of the pair of images
     img2 : PIL Image or numpy.ndarray
         Second of the pair of images
-    aug_prob : float
-        Probability of applying the augmentation
+    enabled : bool, default: False
+        If True, applies color transform
+    asymmetric_color_aug_prob : float
+        Probability of applying asymetric color jitter augmentation
     brightness : float
         Brightness augmentation factor
     contrast : float
@@ -120,12 +132,14 @@ def color_transform(
     img2 : PIL Image or numpy.ndarray
         Augmented image 2
     """
+    if not enabled:
+        return img1, img2
 
     aug = ColorJitter(
         brightness=brightness, contrast=contrast, saturation=saturation, hue=hue
     )
 
-    if np.random.rand() < aug_prob:
+    if np.random.rand() < asymmetric_color_aug_prob:
         img1 = np.array(aug(Image.fromarray(img1)), dtype=np.uint8)
         img2 = np.array(aug(Image.fromarray(img2)), dtype=np.uint8)
 
@@ -137,15 +151,18 @@ def color_transform(
     return img1, img2
 
 
-def eraser_transform(img1, img2, bounds=[50, 100], aug_prob=0.5):
+def eraser_transform(img1, img2, enabled=False, bounds=[50, 100], aug_prob=0.5):
     """
-    Occlusion augmentation
+    Occlusion augmentation borrowed from RAFT https://github.com/princeton-vl/RAFT/blob/master/core/utils/augmentor.py
+
     Parameters
     -----------
     img1 : PIL Image or numpy.ndarray
         First of the pair of images
     img2 : PIL Image or numpy.ndarray
         Second of the pair of images
+    enabled : bool, default: False
+        If True, applies eraser transform
     bounds : :obj:`list` of :obj:`int`
         Bounds of the eraser
     aug_prob : float
@@ -158,6 +175,8 @@ def eraser_transform(img1, img2, bounds=[50, 100], aug_prob=0.5):
     img2 : PIL Image or numpy.ndarray
         Augmented image 2
     """
+    if not enabled:
+        return img1, img2
 
     H, W = img1.shape[:2]
 
@@ -180,17 +199,17 @@ def spatial_transform(
     img2,
     flow,
     crop_size,
+    enabled=False,
     aug_prob=0.8,
     stretch_prob=0.8,
     max_stretch=0.2,
     min_scale=-0.2,
     max_scale=0.5,
-    flip=True,
-    h_flip_prob=0.5,
-    v_flip_prob=0.1,
 ):
     """
-    Spatial augmentation
+    Simple set of spatial augmentation borrowed from RAFT https://github.com/princeton-vl/RAFT/blob/master/core/utils/augmentor.py
+
+    Includes random scaling and stretch.
 
     Parameters
     -----------
@@ -202,6 +221,8 @@ def spatial_transform(
         Flow field
     crop_size : :obj:`list` of :obj:`int`
         Size of the crop
+    enabled : bool, default: False
+        If True, applies spatial transform
     aug_prob : float
         Probability of applying the augmentation
     stretch_prob : float
@@ -212,12 +233,6 @@ def spatial_transform(
         Minimum scale factor
     max_scale : float
         Maximum scale factor
-    flip : bool
-        Whether to apply the flip transform
-    h_flip_prob : float
-        Probability of applying the horizontal flip transform
-    v_flip_prob : float
-        Probability of applying the vertical flip transform
 
     Returns
     -------
@@ -228,9 +243,10 @@ def spatial_transform(
     flow : numpy.ndarray
         Augmented flow field
     """
+    if not enabled:
+        return img1, img2, flow
 
     H, W = img1.shape[:2]
-    min_scale = np.maximum((crop_size[0] + 8) / float(H), (crop_size[1] + 8) / float(W))
 
     scale = 2 ** np.random.uniform(min_scale, max_scale)
     scale_x = scale
@@ -239,6 +255,8 @@ def spatial_transform(
     if np.random.rand() < stretch_prob:
         scale_x *= 2 ** np.random.uniform(-max_stretch, max_stretch)
         scale_y *= 2 ** np.random.uniform(-max_stretch, max_stretch)
+
+    min_scale = np.maximum((crop_size[0] + 8) / float(H), (crop_size[1] + 8) / float(W))
 
     scale_x = np.clip(scale_x, min_scale, None)
     scale_y = np.clip(scale_y, min_scale, None)
@@ -256,16 +274,50 @@ def spatial_transform(
         )
         flow = flow * [scale_x, scale_y]
 
-    if flip:
-        if np.random.rand() < h_flip_prob:
-            img1 = img1[:, ::-1]
-            img2 = img2[:, ::-1]
-            flow = flow[:, ::-1] * [-1.0, 1.0]
+    return img1, img2, flow
 
-        if np.random.rand() < v_flip_prob:
-            img1 = img1[::-1, :]
-            img2 = img2[::-1, :]
-            flow = flow[::-1, :] * [1.0, -1.0]
+
+def flip_transform(img1, img2, flow, enabled=False, h_flip_prob=0.5, v_flip_prob=0.1):
+    """
+    Flip augmentation borrowed from RAFT https://github.com/princeton-vl/RAFT/blob/master/core/utils/augmentor.py
+
+    Parameters
+    -----------
+    img1 : PIL Image or numpy.ndarray
+        First of the pair of images
+    img2 : PIL Image or numpy.ndarray
+        Second of the pair of images
+    flow : numpy.ndarray
+        Flow field
+    enabled : bool, default: False
+        If True, applies flip transform
+    h_flip_prob : float, default=0.5
+        Probability of applying the horizontal flip transform
+    v_flip_prob : float, default=0.1
+        Probability of applying the vertical flip transform
+
+    Returns
+    -------
+    img1 : PIL Image or numpy.ndarray
+        Flipped image 1
+    img2 : PIL Image or numpy.ndarray
+        Flipped image 2
+    flow : numpy.ndarray
+        Flipped flow field
+    """
+
+    if not enabled:
+        return img1, img2, flow
+
+    if np.random.rand() < h_flip_prob:
+        img1 = img1[:, ::-1]
+        img2 = img2[:, ::-1]
+        flow = flow[:, ::-1] * [-1.0, 1.0]
+
+    if np.random.rand() < v_flip_prob:
+        img1 = img1[::-1, :]
+        img2 = img2[::-1, :]
+        flow = flow[::-1, :] * [1.0, -1.0]
 
     return img1, img2, flow
 
@@ -332,6 +384,7 @@ def sparse_spatial_transform(
     flow,
     valid,
     crop_size,
+    enabled=False,
     aug_prob=0.8,
     min_scale=-0.2,
     max_scale=0.5,
@@ -377,6 +430,9 @@ def sparse_spatial_transform(
     valid : numpy.ndarray
         Valid flow field
     """
+    if not enabled:
+        return img1, img2, flow, valid
+
     H, W = img1.shape[:2]
     min_scale = np.maximum((crop_size[0] + 1) / float(H), (crop_size[1] + 1) / float(W))
 
@@ -402,144 +458,6 @@ def sparse_spatial_transform(
             valid = valid[:, ::-1]
 
     return img1, img2, flow, valid
-
-
-def translate_transform(
-    img1,
-    img2,
-    flow,
-    aug_prob=0.8,
-    translate=10,
-):
-    """
-    Translation augmentation.
-
-    Parameters
-    -----------
-    img1 : PIL Image or numpy.ndarray
-        First of the pair of images
-    img2 : PIL Image or numpy.ndarray
-        Second of the pair of images
-    flow : numpy.ndarray
-        Flow field
-    aug_prob : float
-        Probability of applying the augmentation
-    translate : int
-        Pixels by which image will be translated
-
-    Returns
-    -------
-    img1 : PIL Image or numpy.ndarray
-        Augmented image 1
-    img2 : PIL Image or numpy.ndarray
-        Augmented image 2
-    flow : numpy.ndarray
-        Augmented flow field
-    """
-    H, W = img1.shape[:2]
-
-    max_t_x = translate
-    max_t_y = translate
-
-    t_x = np.random.randint(-1 * max_t_x, max_t_x)
-    t_y = np.random.randint(-1 * max_t_y, max_t_y)
-
-    if t_x == 0 and t_y == 0:
-        return img1, img2, flow
-
-    if np.random.rand() < aug_prob:
-
-        x1, x2, x3, x4 = max(0, t_x), min(W + t_x, W), max(0, -t_x), min(W - t_x, W)
-        y1, y2, y3, y4 = max(0, t_y), min(H + t_y, H), max(0, -t_y), min(H - t_y, H)
-
-        img1 = img1[y1:y2, x1:x2]
-        img2 = img2[y3:y4, x3:x4]
-        flow = flow[y1:y2, x1:x2]
-        flow[:, :, 0] += t_x
-        flow[:, :, 1] += t_y
-
-    return img1, img2, flow
-
-
-def rotate_transform(
-    img1,
-    img2,
-    flow,
-    aug_prob=0.8,
-    degrees=10,
-    delta=0,
-):
-    """
-    Rotation augmentation.
-    (Referenced from Clement Picard)
-
-    Parameters
-    -----------
-    img1 : PIL Image or numpy.ndarray
-        First of the pair of images
-    img2 : PIL Image or numpy.ndarray
-        Second of the pair of images
-    flow : numpy.ndarray
-        Flow field
-    aug_prob : float
-        Probability of applying the augmentation
-    degrees : int
-        Angle by which image is to rotated
-    delta: int
-        Assigns angle range of degrees-delta to degrees+delta
-
-    Returns
-    -------
-    img1 : PIL Image or numpy.ndarray
-        Augmented image 1
-    img2 : PIL Image or numpy.ndarray
-        Augmented image 2
-    flow : numpy.ndarray
-        Augmented flow field
-    """
-
-    angle = np.random.uniform(-degrees, degrees)
-    diff = np.random.uniform(-delta, delta)
-    angle1 = angle - diff / 2
-    angle2 = angle + diff / 2
-    angle1_rad = angle1 * np.pi / 180
-    diff_rad = diff * np.pi / 180
-
-    H, W = img1.shape[:2]
-
-    warped_coords = np.mgrid[:W, :H].T + flow
-    warped_coords -= np.array([W / 2, H / 2])
-
-    warped_coords_rot = np.zeros_like(flow)
-
-    warped_coords_rot[..., 0] = (np.cos(diff_rad) - 1) * warped_coords[..., 0] + np.sin(
-        diff_rad
-    ) * warped_coords[..., 1]
-
-    warped_coords_rot[..., 1] = (
-        -np.sin(diff_rad) * warped_coords[..., 0]
-        + (np.cos(diff_rad) - 1) * warped_coords[..., 1]
-    )
-
-    if np.random.rand() < aug_prob:
-
-        flow += warped_coords_rot
-
-        img1 = ndimage.interpolation.rotate(img1, angle1, reshape=False, order=2)
-        img2 = ndimage.interpolation.rotate(img2, angle2, reshape=False, order=2)
-        flow = ndimage.interpolation.rotate(flow, angle1, reshape=False, order=2)
-
-        target_ = np.copy(flow)
-        flow[:, :, 0] = (
-            np.cos(angle1_rad) * target_[:, :, 0]
-            + np.sin(angle1_rad) * target_[:, :, 1]
-        )
-        flow[:, :, 1] = (
-            -np.sin(angle1_rad) * target_[:, :, 0]
-            + np.cos(angle1_rad) * target_[:, :, 1]
-        )
-
-    return img1, img2, flow
 
 
 class Normalize:
@@ -570,3 +488,389 @@ class Normalize:
         if self.use:
             return self.normalize(img1), self.normalize(img2)
         return img1, img2
+
+
+def noise_transform(img1, img2, enabled=False, aug_prob=0.5, noise_std_range=0.06):
+    """
+    Applies random noise augmentation from a gaussian distribution borrowed from VCN:
+    https://github.com/gengshan-y/VCN/blob/master/dataloader/flow_transforms.py
+
+    Parameters
+    -----------
+    img1 : PIL Image or numpy.ndarray
+        First of the pair of images
+    img2 : PIL Image or numpy.ndarray
+        Second of the pair of images
+    enabled : bool, default: False
+        If True, applies noise transform
+    aug_prob : float
+        Probability of applying the augmentation
+    noise_std_range : float
+        Standard deviation of the noise
+
+    Returns
+    -------
+    img1 : PIL Image or numpy.ndarray
+        Augmented image 1
+    img2 : PIL Image or numpy.ndarray
+        Augmented image 2
+    """
+
+    if not enabled:
+        return img1, img2
+
+    if np.random.rand() < aug_prob:
+        noise = np.random.uniform(0, noise_std_range * 255.0)
+
+        img1 = img1.astype(np.float64)
+        img2 = img2.astype(np.float64)
+
+        img1 += np.random.normal(0, noise, img1.shape)
+        img2 += np.random.normal(0, noise, img2.shape)
+
+        img1 = np.clip(img1, 0.0, 255.0)
+        img2 = np.clip(img2, 0.0, 255.0)
+
+    return img1, img2
+
+
+class AdvancedSpatialTransform(object):
+    """
+    Advanced set of spatial transformations borrowed from:
+
+    1. VCN: https://github.com/gengshan-y/VCN/blob/master/dataloader/flow_transforms.py
+    2. Autoflow: https://github.com/google-research/opticalflow-autoflow/blob/main/src/dataset_lib/augmentations/spatial_aug.py
+
+    This set of augmentations include random scaling, stretch, rotation, translation and out-of-boundary cropping.
+
+    Parameters
+    -----------
+    crop_size : :obj:`list` of :obj:`int`
+        Size of the crop
+    enabled : bool, default: False
+        If True, applies flip transform
+    scale1 : float, default : 0.3
+        Scale factor 1
+    scale1 : float, default : 0.1
+        Scale factor 2
+    rotate : float, default : 0.4
+        Rotate factor
+    translate : float, default : 0.4
+        Translate factor
+    stretch : float, default : 0.3
+        Stretch factor
+    h_flip_prob : float, default=0.5
+        Probability of applying the horizontal flip transform
+
+    Returns
+    -------
+    img1 : PIL Image or numpy.ndarray
+        Flipped image 1
+    img2 : PIL Image or numpy.ndarray
+        Flipped image 2
+    flow : numpy.ndarray
+        Flipped flow field
+    """
+
+    def __init__(
+        self,
+        crop,
+        enabled=False,
+        scale1=0.3,
+        scale2=0.1,
+        rotate=0.4,
+        translate=0.4,
+        stretch=0.3,
+        h_flip_prob=0.5,
+        schedule_coeff=1,
+        order=1,
+        enable_out_of_boundary_crop=False,
+    ):
+        self.enabled = enabled
+        self.crop = crop
+        self.scale = [scale1, 0.03, scale2]
+        self.rot = [rotate, 0.03] if rotate != 0 else None
+        self.trans = [translate, 0.03] if translate != 0 else None
+        self.squeeze = [stretch, 0.0] if stretch != 0 else None
+        self.h_flip_prob = h_flip_prob
+        self.t = np.zeros(6)
+        self.schedule_coeff = schedule_coeff
+        self.order = order
+        self.black = enable_out_of_boundary_crop
+
+    def to_identity(self):
+        self.t[0] = 1
+        self.t[2] = 0
+        self.t[4] = 0
+        self.t[1] = 0
+        self.t[3] = 1
+        self.t[5] = 0
+
+    def left_multiply(self, u0, u1, u2, u3, u4, u5):
+        result = np.zeros(6)
+        result[0] = self.t[0] * u0 + self.t[1] * u2
+        result[1] = self.t[0] * u1 + self.t[1] * u3
+
+        result[2] = self.t[2] * u0 + self.t[3] * u2
+        result[3] = self.t[2] * u1 + self.t[3] * u3
+
+        result[4] = self.t[4] * u0 + self.t[5] * u2 + u4
+        result[5] = self.t[4] * u1 + self.t[5] * u3 + u5
+        self.t = result
+
+    def inverse(self):
+        result = np.zeros(6)
+        a = self.t[0]
+        c = self.t[2]
+        e = self.t[4]
+        b = self.t[1]
+        d = self.t[3]
+        f = self.t[5]
+
+        denom = a * d - b * c
+
+        result[0] = d / denom
+        result[1] = -b / denom
+        result[2] = -c / denom
+        result[3] = a / denom
+        result[4] = (c * f - d * e) / denom
+        result[5] = (b * e - a * f) / denom
+
+        return result
+
+    def grid_transform(self, meshgrid, t, normalize=True, gridsize=None):
+        if gridsize is None:
+            h, w = meshgrid[0].shape
+        else:
+            h, w = gridsize
+        vgrid = torch.cat(
+            [
+                (meshgrid[0] * t[0] + meshgrid[1] * t[2] + t[4])[:, :, np.newaxis],
+                (meshgrid[0] * t[1] + meshgrid[1] * t[3] + t[5])[:, :, np.newaxis],
+            ],
+            -1,
+        )
+        if normalize:
+            vgrid[:, :, 0] = 2.0 * vgrid[:, :, 0] / max(w - 1, 1) - 1.0
+            vgrid[:, :, 1] = 2.0 * vgrid[:, :, 1] / max(h - 1, 1) - 1.0
+        return vgrid
+
+    def __call__(self, img1, img2, target):
+        """
+        Parameters
+        -----------
+        img1 : PIL Image or numpy.ndarray
+            First of the pair of images
+        img2 : PIL Image or numpy.ndarray
+            Second of the pair of images
+        target : numpy.ndarray
+            Flow field
+
+        Returns
+        -------
+        img1 : PIL Image or numpy.ndarray
+            Flipped image 1
+        img2 : PIL Image or numpy.ndarray
+            Flipped image 2
+        flow : numpy.ndarray
+            Flipped flow field
+        """
+        if not self.enabled:
+            return img1, img2, target
+
+        inputs = [img1, img2]
+        h, w, _ = inputs[0].shape
+        th, tw = self.crop
+        meshgrid = torch.meshgrid([torch.Tensor(range(th)), torch.Tensor(range(tw))])[
+            ::-1
+        ]
+        cornergrid = torch.meshgrid(
+            [torch.Tensor([0, th - 1]), torch.Tensor([0, tw - 1])]
+        )[::-1]
+
+        for i in range(50):
+            # im0
+            self.to_identity()
+
+            if np.random.binomial(1, self.h_flip_prob):
+                mirror = True
+            else:
+                mirror = False
+
+            if mirror:
+                self.left_multiply(-1, 0, 0, 1, 0.5 * tw, -0.5 * th)
+            else:
+                self.left_multiply(1, 0, 0, 1, -0.5 * tw, -0.5 * th)
+            scale0 = 1
+            scale1 = 1
+            squeeze0 = 1
+            squeeze1 = 1
+            if not self.rot is None:
+                rot0 = np.random.uniform(-self.rot[0], +self.rot[0])
+                rot1 = (
+                    np.random.uniform(
+                        -self.rot[1] * self.schedule_coeff,
+                        self.rot[1] * self.schedule_coeff,
+                    )
+                    + rot0
+                )
+                self.left_multiply(
+                    np.cos(rot0), np.sin(rot0), -np.sin(rot0), np.cos(rot0), 0, 0
+                )
+            if not self.trans is None:
+                trans0 = np.random.uniform(-self.trans[0], +self.trans[0], 2)
+                trans1 = (
+                    np.random.uniform(
+                        -self.trans[1] * self.schedule_coeff,
+                        +self.trans[1] * self.schedule_coeff,
+                        2,
+                    )
+                    + trans0
+                )
+                self.left_multiply(1, 0, 0, 1, trans0[0] * tw, trans0[1] * th)
+            if not self.squeeze is None:
+                squeeze0 = np.exp(np.random.uniform(-self.squeeze[0], self.squeeze[0]))
+                squeeze1 = (
+                    np.exp(
+                        np.random.uniform(
+                            -self.squeeze[1] * self.schedule_coeff,
+                            self.squeeze[1] * self.schedule_coeff,
+                        )
+                    )
+                    * squeeze0
+                )
+            if not self.scale is None:
+                scale0 = np.exp(
+                    np.random.uniform(
+                        self.scale[2] - self.scale[0], self.scale[2] + self.scale[0]
+                    )
+                )
+                scale1 = (
+                    np.exp(
+                        np.random.uniform(
+                            -self.scale[1] * self.schedule_coeff,
+                            self.scale[1] * self.schedule_coeff,
+                        )
+                    )
+                    * scale0
+                )
+            self.left_multiply(
+                1.0 / (scale0 * squeeze0), 0, 0, 1.0 / (scale0 / squeeze0), 0, 0
+            )
+
+            self.left_multiply(1, 0, 0, 1, 0.5 * w, 0.5 * h)
+            transmat0 = self.t.copy()
+
+            # im1
+            self.to_identity()
+            if mirror:
+                self.left_multiply(-1, 0, 0, 1, 0.5 * tw, -0.5 * th)
+            else:
+                self.left_multiply(1, 0, 0, 1, -0.5 * tw, -0.5 * th)
+            if not self.rot is None:
+                self.left_multiply(
+                    np.cos(rot1), np.sin(rot1), -np.sin(rot1), np.cos(rot1), 0, 0
+                )
+            if not self.trans is None:
+                self.left_multiply(1, 0, 0, 1, trans1[0] * tw, trans1[1] * th)
+            self.left_multiply(
+                1.0 / (scale1 * squeeze1), 0, 0, 1.0 / (scale1 / squeeze1), 0, 0
+            )
+            self.left_multiply(1, 0, 0, 1, 0.5 * w, 0.5 * h)
+            transmat1 = self.t.copy()
+            transmat1_inv = self.inverse()
+
+            if self.black:
+                # black augmentation, allowing 0 values in the input images
+                # https://github.com/lmb-freiburg/flownet2/blob/master/src/caffe/layers/black_augmentation_layer.cu
+                break
+            else:
+                if (
+                    (
+                        self.grid_transform(
+                            cornergrid, transmat0, gridsize=[float(h), float(w)]
+                        ).abs()
+                        > 1
+                    ).sum()
+                    + (
+                        self.grid_transform(
+                            cornergrid, transmat1, gridsize=[float(h), float(w)]
+                        ).abs()
+                        > 1
+                    ).sum()
+                ) == 0:
+                    break
+        if i == 49:
+            # print("max_iter in augmentation")
+            self.to_identity()
+            self.left_multiply(1, 0, 0, 1, -0.5 * tw, -0.5 * th)
+            self.left_multiply(1, 0, 0, 1, 0.5 * w, 0.5 * h)
+            transmat0 = self.t.copy()
+            transmat1 = self.t.copy()
+
+        # do the real work
+        vgrid = self.grid_transform(meshgrid, transmat0, gridsize=[float(h), float(w)])
+        inputs_0 = F.grid_sample(
+            torch.Tensor(inputs[0]).permute(2, 0, 1)[np.newaxis], vgrid[np.newaxis]
+        )[0].permute(1, 2, 0)
+        if self.order == 0:
+            target_0 = F.grid_sample(
+                torch.Tensor(target).permute(2, 0, 1)[np.newaxis],
+                vgrid[np.newaxis],
+                mode="nearest",
+            )[0].permute(1, 2, 0)
+        else:
+            target_0 = F.grid_sample(
+                torch.Tensor(target).permute(2, 0, 1)[np.newaxis], vgrid[np.newaxis]
+            )[0].permute(1, 2, 0)
+
+        mask_0 = target[:, :, 2:3].copy()
+        mask_0[mask_0 == 0] = np.nan
+        if self.order == 0:
+            mask_0 = F.grid_sample(
+                torch.Tensor(mask_0).permute(2, 0, 1)[np.newaxis],
+                vgrid[np.newaxis],
+                mode="nearest",
+            )[0].permute(1, 2, 0)
+        else:
+            mask_0 = F.grid_sample(
+                torch.Tensor(mask_0).permute(2, 0, 1)[np.newaxis], vgrid[np.newaxis]
+            )[0].permute(1, 2, 0)
+        mask_0[torch.isnan(mask_0)] = 0
+
+        vgrid = self.grid_transform(meshgrid, transmat1, gridsize=[float(h), float(w)])
+        inputs_1 = F.grid_sample(
+            torch.Tensor(inputs[1]).permute(2, 0, 1)[np.newaxis], vgrid[np.newaxis]
+        )[0].permute(1, 2, 0)
+
+        # flow
+        pos = target_0[:, :, :2] + self.grid_transform(
+            meshgrid, transmat0, normalize=False
+        )
+        pos = self.grid_transform(pos.permute(2, 0, 1), transmat1_inv, normalize=False)
+        if target_0.shape[2] >= 4:
+            # scale
+            exp = target_0[:, :, 3:] * scale1 / scale0
+            target = torch.cat(
+                [
+                    (pos[:, :, 0] - meshgrid[0]).unsqueeze(-1),
+                    (pos[:, :, 1] - meshgrid[1]).unsqueeze(-1),
+                    mask_0,
+                    exp,
+                ],
+                -1,
+            )
+        else:
+            target = torch.cat(
+                [
+                    (pos[:, :, 0] - meshgrid[0]).unsqueeze(-1),
+                    (pos[:, :, 1] - meshgrid[1]).unsqueeze(-1),
+                    mask_0,
+                ],
+                -1,
+            )
+        #                               target_0[:,:,2].unsqueeze(-1) ], -1)
+        inputs = [np.asarray(inputs_0), np.asarray(inputs_1)]
+        target = np.asarray(target)
+
+        return inputs[0], inputs[1], target
