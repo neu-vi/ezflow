@@ -1,0 +1,31 @@
+_BASE_: "../_base_/things_baseline.yaml"
+FREEZE_BATCH_NORM: True
+DATA:
+  BATCH_SIZE: 6
+  TRAIN_CROP_SIZE: [400, 720]
+  VAL_CROP_SIZE: [400, 720]
+  APPEND_VALID_MASK: True
+  NORM_PARAMS: {"use": True, "mean":[127.5, 127.5, 127.5], "std":[127.5, 127.5, 127.5]}
+SCHEDULER:
+  USE: True
+  NAME: OneCycleLR
+  PARAMS:
+    max_lr: 0.000125
+    total_steps: 100100
+    pct_start: 0.05
+    cycle_momentum: False
+    anneal_strategy: linear
+CRITERION:
+  CUSTOM: True
+  NAME: SequenceLoss
+  PARAMS: 
+    gamma: 0.8
+    max_flow: 400.0
+EPOCHS: null
+NUM_STEPS: 100100
+LOG_DIR: "./logs"
+CKPT_DIR: "./ckpts"
+LOG_ITERATIONS_INTERVAL: 100
+CKPT_INTERVAL: 20000
+VALIDATE_INTERVAL: 1000
+VALIDATE_ON: metric

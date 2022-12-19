@@ -1,0 +1,89 @@
+DATA:
+  TRAIN_DATASET:
+    NAME: "flyingchairs"
+    ROOT_DIR: "./Datasets/FlyingChairs_release/data"
+  VAL_DATASET:
+    NAME: "flyingchairs"
+    ROOT_DIR: "./Datasets/FlyingChairs_release/data" 
+  NUM_WORKERS: 4
+  PIN_MEMORY: True
+  APPEND_VALID_MASK: False
+  SHUFFLE: True
+  AUGMENTATION:
+    # Augmentation Settings borrowed from RAFT
+    USE: True
+    PARAMS:
+      TRAINING:
+        COLOR_AUG_PARAMS: {
+          "enabled": True,
+          "asymmetric_color_aug_prob": 0.2, 
+          "brightness": 0.4, 
+          "contrast": 0.4, 
+          "saturation": 0.4, 
+          "hue": 0.15915494309189535
+        }
+        ERASER_AUG_PARAMS: {
+          "enabled": True,
+          "aug_prob": 0.5,
+          "bounds": [50, 100]
+        }
+        NOISE_AUG_PARAMS: {
+          "enabled": False,
+          "aug_prob": 0.5,
+          "noise_std_range": 0.06 
+        }
+        FLIP_AUG_PARAMS: {
+          "enabled": True, 
+          "h_flip_prob": 0.5, 
+          "v_flip_prob": 0.1
+        }
+        SPATIAL_AUG_PARAMS: {
+          "enabled": True,
+          "aug_prob": 0.8, 
+          "stretch_prob": 0.8, 
+          "min_scale": -0.1, 
+          "max_scale": 1.0, 
+          "max_stretch": 0.2, 
+        }
+        ADVANCED_SPATIAL_AUG_PARAMS: {
+          "enabled": False,
+          "scale1": 0.0,
+          "scale2": 0.0,
+          "stretch": 0.0,
+          "rotate": 0.0,
+          "translate": 0.0,
+          "enable_out_of_boundary_crop": False
+        }
+      VALIDATION:
+        SPATIAL_AUG_PARAMS: {"enabled": False}
+        COLOR_AUG_PARAMS: {"enabled": False}
+        ERASER_AUG_PARAMS: {"enabled": False}
+        FLIP_AUG_PARAMS: {"enabled": False}
+        ADVANCED_SPATIAL_AUG_PARAMS : {"enabled": False}
+OPTIMIZER:
+  NAME: AdamW
+  LR: 0.0004
+  PARAMS:
+    weight_decay: 0.0001
+    betas: [0.9, 0.999]
+    eps: 1.e-08
+    amsgrad: False
+GRAD_CLIP: 
+  USE: True
+  VALUE: 1.0
+FREEZE_BATCH_NORM: False
+TARGET_SCALE_FACTOR: 1.0
+MIXED_PRECISION: False
+DEVICE: "0"
+DISTRIBUTED:
+  USE: False
+  WORLD_SIZE: 2
+  BACKEND: nccl
+  MASTER_ADDR: localhost
+  MASTER_PORT: "12355"
+EPOCHS: null
+NUM_STEPS: null
+RESUME_TRAINING:
+  CONSOLIDATED_CKPT: null
+  EPOCHS: null
+  START_EPOCH: null
