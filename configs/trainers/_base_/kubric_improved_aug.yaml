@@ -28,7 +28,7 @@ DATA:
           "bounds": [50, 100]
         }
         NOISE_AUG_PARAMS: {
-          "enabled": False,
+          "enabled": True,
           "aug_prob": 0.5,
           "noise_std_range": 0.06 
         }
