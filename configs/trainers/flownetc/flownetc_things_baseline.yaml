@@ -11,7 +11,7 @@ SCHEDULER:
   NAME: OneCycleLR
   PARAMS:
     max_lr: 0.000125
-    total_steps: 1200100
+    total_steps: 380100
     pct_start: 0.05
     cycle_momentum: False
     anneal_strategy: linear
@@ -34,7 +34,7 @@ DISTRIBUTED:
   MASTER_PORT: "12355"
   SYNC_BATCH_NORM: True
 EPOCHS: null
-NUM_STEPS: 1200100
+NUM_STEPS: 380100
 LOG_DIR: "./logs"
 CKPT_DIR: "./ckpts"
 LOG_ITERATIONS_INTERVAL: 100
