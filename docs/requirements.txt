@@ -22,7 +22,7 @@ click==8.0.1
 colorama==0.4.4
 cookiecutter==2.1.1
 coverage==5.5
-cryptography==3.4.8
+cryptography==41.0.0
 cycler==0.10.0
 distlib==0.3.2
 dnspython==1.16.0
