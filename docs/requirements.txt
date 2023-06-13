@@ -57,7 +57,7 @@ mypy-extensions==0.4.3
 networkx==2.6.2
 nodeenv==1.6.0
 numpy 
-oauthlib==3.2.1
+oauthlib==3.2.2
 olefile==0.46
 omegaconf 
 opencv-python==4.5.3.56
@@ -130,7 +130,7 @@ urllib3==1.26.6
 virtualenv==20.5.0
 watchdog==1.0.2
 webencodings==0.5.1
-Werkzeug==2.0.1
+Werkzeug==2.2.3
 whichcraft==0.6.1
 yacs==0.1.8
 zipp 
