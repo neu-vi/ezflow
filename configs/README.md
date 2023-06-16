@@ -1,9 +1,9 @@
 # Results and Pre-trained checkpoints
 ___
 
-## FlowNetC 
+## FlowNetC | [arXiv](https://arxiv.org/abs/1504.06852)
 
-[model config](./models/flownet_c.yaml) | [arXiv](https://arxiv.org/abs/1504.06852)
+[model config](./models/flownet_c.yaml) 
 
 | Training Dataset | Training Config                                                 | ckpts                                                                                  | Sintel Clean (training) | Sintel Final(training)| KITTI2015 AEPE | KITTI2015 F1-all |
 |------------------|-----------------------------------------------------------------|----------------------------------------------------------------------------------------|-------------------------|-----------------------|----------------|------------------|
@@ -13,9 +13,9 @@ ___
 
 ___
 
-## PWC-Net
+## PWC-Net | [arXiv](https://arxiv.org/abs/1709.02371)
 
-[model config](./models/pwcnet.yaml) | [arXiv](https://arxiv.org/abs/1709.02371)
+[model config](./models/pwcnet.yaml) 
 
 | Training Dataset | Training Config                                             | ckpts                                                                               | Sintel Clean (training) | Sintel Final(training)| KITTI2015 AEPE | KITTI2015 F1-all |
 |------------------|-------------------------------------------------------------|-------------------------------------------------------------------------------------|-------------------------|-----------------------|----------------|------------------|
@@ -26,9 +26,9 @@ ___
 
 ___
 
-## RAFT
+## RAFT | [arXiv](https://arxiv.org/abs/2003.12039)
 
-[model config](./models/raft.yaml) | [arXiv](https://arxiv.org/abs/2003.12039)
+[model config](./models/raft.yaml) 
 
 | Training Dataset | Training Config                                         | ckpts                                                                             | Sintel Clean (training) | Sintel Final(training)| KITTI2015 AEPE | KITTI2015 F1-all |
 |------------------|---------------------------------------------------------|-----------------------------------------------------------------------------------|-------------------------|-----------------------|----------------|------------------|
@@ -36,3 +36,10 @@ ___
 | Chairs -> Things | [config](./trainers/raft/raft_things_baseline.yaml)     | [download](https://jianghz.me/files/ezflow_ckpts/raft_chairs_things_step200k.pth) | 1.66                    | 2.75                  | 5.01           | 16.87%           |
 | Kubric           | [config](./trainers/raft/raft_kubric_improved_aug.yaml) | [download](https://jianghz.me/files/ezflow_ckpts/raft_kubric_step100k.pth)        | 2.12                    | 2.54                  | 6.01           | 17.35%           |
 
+___
+
+### Additional Informations
+
+- KITTI dataset has been evaluated with a center crop of size `1224 x 370`.
+- FlowNetC and PWC-Net uses `padding` of size `64` for evaluating on the KITTI2015 dataset.
+- RAFT uses `padding` of size `8` for evaluating on the Sintel and KITTI2015 datasets.
