@@ -55,6 +55,7 @@ dependencies:
   - pcre=8.45
   - pillow=8.3.1
   - pip=21.2.4
+  - pip-shims<=0.3.4
   - pthread-stubs=0.4
   - pycparser=2.20
   - pymongo=3.11.4
