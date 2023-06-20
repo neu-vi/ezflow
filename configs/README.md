@@ -38,7 +38,7 @@ ___
 
 ___
 
-### Additional Informations
+### Additional Information
 
 - KITTI dataset has been evaluated with a center crop of size `1224 x 370`.
 - FlowNetC and PWC-Net uses `padding` of size `64` for evaluating the KITTI2015 dataset.
