@@ -45,9 +45,9 @@ pip install ezflow
 
 - [x] [DICL](https://arxiv.org/abs/2010.14851)
 - [x] [FlowNetS](https://arxiv.org/abs/1504.06852)
-- [x] [FlowNetC](https://arxiv.org/abs/1504.06852)
-- [x] [PWCNet](https://arxiv.org/abs/1709.02371)
-- [x] [RAFT](https://arxiv.org/abs/2003.12039)
+- [x] [FlowNetC](https://arxiv.org/abs/1504.06852) ([3 checkpoints](./configs/README.md))
+- [x] [PWCNet](https://arxiv.org/abs/1709.02371) ([3 checkpoints](./configs/README.md)) 
+- [x] [RAFT](https://arxiv.org/abs/2003.12039) ([3 checkpoints](./configs/README.md))
 - [x] [VCN](https://papers.nips.cc/paper/2019/hash/bbf94b34eb32268ada57a3be5062fe7d-Abstract.html)
 
 ### Datasets supported
