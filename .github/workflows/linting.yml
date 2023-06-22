@@ -33,8 +33,4 @@ jobs:
     - name: Run pre-commit hooks
       run: |
         pre-commit install
-
-    # - name: Run pre-commit hooks
-    #   run: |
-    #     pre-commit install
-    #     pre-commit run -a
+        pre-commit run -a
