@@ -30,8 +30,7 @@ jobs:
         python -m pip install pre-commit
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
-    # - name: Run pre-commit hooks
-    #   run: |
-    #     ls 
-    #     pre-commit install
-    #     pre-commit run -a
+    - name: Run pre-commit hooks
+      run: |
+        pre-commit install
+        pre-commit run -a
