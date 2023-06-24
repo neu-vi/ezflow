@@ -1,10 +1,8 @@
 ### Results and Pre-trained checkpoints
 ___
 
-##### FlowNetC | [arXiv](https://arxiv.org/abs/1504.06852)
-
-[model config](./models/flownet_c.yaml) 
-
+#### FlowNetC | [model config](./models/flownet_c.yaml) | [arXiv](https://arxiv.org/abs/1504.06852)
+ 
 | Training Dataset | Training Config                                                 | ckpts                                                                                  | Sintel Clean (training) | Sintel Final(training)| KITTI2015 AEPE | KITTI2015 F1-all |
 |------------------|-----------------------------------------------------------------|----------------------------------------------------------------------------------------|-------------------------|-----------------------|----------------|------------------|
 | Chairs           | [config](./trainers/flownetc/flownetc_chairs_baseline.yaml)     | [download](https://jianghz.me/files/ezflow_ckpts/flownetc_chairs_step1200k.pth)        | 3.41                    | 4.94                  | 14.84          | 54.23%           |
@@ -13,9 +11,8 @@ ___
 
 ___
 
-##### PWC-Net | [arXiv](https://arxiv.org/abs/1709.02371)
-
-[model config](./models/pwcnet.yaml) 
+#### PWC-Net | [model config](./models/pwcnet.yaml) | [arXiv](https://arxiv.org/abs/1709.02371)
+ 
 
 | Training Dataset | Training Config                                             | ckpts                                                                               | Sintel Clean (training) | Sintel Final(training)| KITTI2015 AEPE | KITTI2015 F1-all |
 |------------------|-------------------------------------------------------------|-------------------------------------------------------------------------------------|-------------------------|-----------------------|----------------|------------------|
@@ -23,12 +20,9 @@ ___
 | Chairs -> Things | [config](./trainers/pwcnet/pwcnet_things_baseline.yaml)     | [download](https://jianghz.me/files/ezflow_ckpts/pwcnet_chairs_things_step2400k.pth)| 2.06                    | 3.43                  | 11.04          | 32.68%           |
 | Kubric           | [config](./trainers/pwcnet/pwcnet_kubric_improved_aug.yaml) | [download](https://jianghz.me/files/ezflow_ckpts/pwcnet_kubric_step1200k.pth)       | 3.08                    | 3.31                  | 9.83           | 21.94%           |
 
-
 ___
 
-##### RAFT | [arXiv](https://arxiv.org/abs/2003.12039)
-
-[model config](./models/raft.yaml) 
+#### RAFT | [model config](./models/raft.yaml) | [arXiv](https://arxiv.org/abs/2003.12039)
 
 | Training Dataset | Training Config                                         | ckpts                                                                             | Sintel Clean (training) | Sintel Final(training)| KITTI2015 AEPE | KITTI2015 F1-all |
 |------------------|---------------------------------------------------------|-----------------------------------------------------------------------------------|-------------------------|-----------------------|----------------|------------------|

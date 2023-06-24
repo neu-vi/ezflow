@@ -1,12 +1,6 @@
 repos:
-  - repo: https://github.com/asottile/seed-isort-config
-    rev: v1.9.4
-    hooks:
-        - id: seed-isort-config
-          args: [--exclude=^((examples|docs)/.*)$]
-
   - repo: https://github.com/timothycrosley/isort
-    rev: 5.4.2
+    rev: 5.11.5
     hooks:
         - id: isort
 
