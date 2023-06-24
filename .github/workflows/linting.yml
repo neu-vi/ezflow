@@ -7,37 +7,29 @@ on:
     branches: [ main ]
 
 jobs:
-  pre-commit:
+
+  build:  
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ['3.7', '3.8']
+
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-python@v3
-      - uses: pre-commit/action@v3.0.0
 
-# jobs:
+    - uses: actions/checkout@v2
 
-#   build:  
-#     runs-on: ubuntu-latest
-#     strategy:
-#       fail-fast: false
-#       matrix:
-#         python-version: ['3.7', '3.8']
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
 
-#     steps:
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
-#     - uses: actions/checkout@v2
-
-#     - name: Set up Python ${{ matrix.python-version }}
-#       uses: actions/setup-python@v2
-#       with:
-#         python-version: ${{ matrix.python-version }}
-
-#     - name: Install dependencies
-#       run: |
-#         python -m pip install --upgrade pip
-#         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-
-    # - name: Run pre-commit hooks
-    #   run: |
-    #     pre-commit install
-    #     pre-commit run -a
+    - name: Run pre-commit hooks
+      run: |
+        pre-commit install
+        pre-commit run -a
