@@ -1,7 +1,7 @@
-# Results and Pre-trained checkpoints
+### Results and Pre-trained checkpoints
 ___
 
-## FlowNetC | [arXiv](https://arxiv.org/abs/1504.06852)
+##### FlowNetC | [arXiv](https://arxiv.org/abs/1504.06852)
 
 [model config](./models/flownet_c.yaml) 
 
@@ -13,7 +13,7 @@ ___
 
 ___
 
-## PWC-Net | [arXiv](https://arxiv.org/abs/1709.02371)
+##### PWC-Net | [arXiv](https://arxiv.org/abs/1709.02371)
 
 [model config](./models/pwcnet.yaml) 
 
@@ -26,7 +26,7 @@ ___
 
 ___
 
-## RAFT | [arXiv](https://arxiv.org/abs/2003.12039)
+##### RAFT | [arXiv](https://arxiv.org/abs/2003.12039)
 
 [model config](./models/raft.yaml) 
 
@@ -38,7 +38,7 @@ ___
 
 ___
 
-### Additional Information
+#### Additional Information
 
 - KITTI dataset has been evaluated with a center crop of size `1224 x 370`.
 - FlowNetC and PWC-Net uses `padding` of size `64` for evaluating the KITTI2015 dataset.

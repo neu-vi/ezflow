@@ -40,6 +40,7 @@ python setup.py install
 pip install ezflow
 
 ```
+___
 
 ### Models supported
 
@@ -63,6 +64,10 @@ pip install ezflow
 - [x] [SceneFlow FlyingThings3D](https://lmb.informatik.uni-freiburg.de/resources/datasets/SceneFlowDatasets.en.html)
 - [x] [SceneFlow FlyingThings3D subset](https://lmb.informatik.uni-freiburg.de/resources/datasets/SceneFlowDatasets.en.html)
 
+___
+
+<!-- include: ./configs/README.md-->
+___
 ### References
 
 - [RAFT](https://github.com/princeton-vl/RAFT)
@@ -73,6 +78,8 @@ pip install ezflow
 - [detectron2](https://github.com/facebookresearch/detectron2)
 - [CorrelationLayer](https://github.com/oblime/CorrelationLayer)
 - [ptflow](https://github.com/hmorimitsu/ptlflow)
+
+
 
 
 <br>
