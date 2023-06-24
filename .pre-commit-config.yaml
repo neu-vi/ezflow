@@ -16,11 +16,20 @@ repos:
         - id: black
           language_version: python3
 
+ci:
+    autofix_commit_msg: |
+        [pre-commit.ci] auto fixes from pre-commit.com hooks
+
+        for more information, see https://pre-commit.ci
+    autofix_prs: true
+    autoupdate_branch: ''
+    autoupdate_commit_msg: '[pre-commit.ci] pre-commit autoupdate'
+    autoupdate_schedule: weekly
+    skip: []
+    submodules: false
+
+
   # - repo: https://gitlab.com/pycqa/flake8
   #   rev: 3.8.3
   #   hooks:
   #       - id: flake8
-
-pre-commit.ci:
-  autofix: true
-  autoupdate: true
