@@ -115,6 +115,7 @@ urllib3==1.26.6
 virtualenv==20.5.0
 watchdog==1.0.2
 webencodings==0.5.1
+werkzeug==2.0.1
 whichcraft==0.6.1
 yacs==0.1.8
 zipp
