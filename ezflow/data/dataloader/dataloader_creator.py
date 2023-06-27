@@ -39,7 +39,7 @@ class DataloaderCreator:
         batch_size,
         pin_memory=False,
         shuffle=True,
-        num_workers=0,
+        num_workers=2,
         drop_last=True,
         init_seed=False,
         append_valid_mask=False,
@@ -385,6 +385,20 @@ class DataloaderCreator:
                 **kwargs,
             )
         )
+
+    def add_dataset(self, dataset):
+        """
+        Add an optical flow dataset to the DataloaderCreator object.
+
+        Parameters
+        ----------
+        dataset : torch.utils.data.Dataset
+            the optical flow dataset
+        """
+        assert dataset is not None and isinstance(
+            dataset, BaseDataset
+        ), "Invalid dataset type."
+        self.dataset_list.append(dataset)
 
     def get_dataloader(self, rank=0):
         """
