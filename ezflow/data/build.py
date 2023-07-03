@@ -1,5 +1,4 @@
 from ..utils import Registry
-from .dataloader import DataloaderCreator
 
 DATASET_REGISTRY = Registry("DATASET_REGISTRY")
 
@@ -19,6 +18,7 @@ def build_dataloader(cfg, split="training", is_distributed=False, world_size=Non
     ezflow.data.DataloaderCreator
 
     """
+    from .dataloader import DataloaderCreator
     # TODO: assert mandatory config in cfg.data
 
     dataloader_creator = DataloaderCreator(
