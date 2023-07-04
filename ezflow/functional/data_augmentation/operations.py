@@ -53,7 +53,8 @@ def crop(
         Augmented image 2
     flow : numpy.ndarray
         Augmented flow field
-
+    valid : numpy.ndarray
+        Valid flow mask
     """
 
     if sparse_transform is True:
@@ -85,7 +86,9 @@ def crop(
 
     img1 = img1[y0 : y0 + crop_size[0], x0 : x0 + crop_size[1]]
     img2 = img2[y0 : y0 + crop_size[0], x0 : x0 + crop_size[1]]
-    flow = flow[y0 : y0 + crop_size[0], x0 : x0 + crop_size[1]]
+
+    if flow is not None:
+        flow = flow[y0 : y0 + crop_size[0], x0 : x0 + crop_size[1]]
 
     if sparse_transform is True:
         valid = valid[y0 : y0 + crop_size[0], x0 : x0 + crop_size[1]]
@@ -277,7 +280,7 @@ def spatial_transform(
     return img1, img2, flow
 
 
-def flip_transform(img1, img2, flow, enabled=False, h_flip_prob=0.5, v_flip_prob=0.1):
+def flip_transform(img1, img2, flow, valid=None, enabled=False, h_flip_prob=0.5, v_flip_prob=0.1):
     """
     Flip augmentation borrowed from RAFT https://github.com/princeton-vl/RAFT/blob/master/core/utils/augmentor.py
 
@@ -289,6 +292,8 @@ def flip_transform(img1, img2, flow, enabled=False, h_flip_prob=0.5, v_flip_prob
         Second of the pair of images
     flow : numpy.ndarray
         Flow field
+    valid : numpy.ndarray, default: None
+            Valid Flow field
     enabled : bool, default: False
         If True, applies flip transform
     h_flip_prob : float, default=0.5
@@ -304,22 +309,27 @@ def flip_transform(img1, img2, flow, enabled=False, h_flip_prob=0.5, v_flip_prob
         Flipped image 2
     flow : numpy.ndarray
         Flipped flow field
+    valid : numpy.ndarray, default: None
+            Valid Flow field
     """
 
     if not enabled:
-        return img1, img2, flow
+        return img1, img2, flow, valid
 
     if np.random.rand() < h_flip_prob:
         img1 = img1[:, ::-1]
         img2 = img2[:, ::-1]
         flow = flow[:, ::-1] * [-1.0, 1.0]
+        valid = valid[:, ::-1] if valid is not None else None
+
 
     if np.random.rand() < v_flip_prob:
         img1 = img1[::-1, :]
         img2 = img2[::-1, :]
         flow = flow[::-1, :] * [1.0, -1.0]
+        valid = valid[::-1, :] if valid is not None else None
 
-    return img1, img2, flow
+    return img1, img2, flow, valid
 
 
 def resize_sparse_flow_map(flow, valid, fx=1.0, fy=1.0):
@@ -449,13 +459,6 @@ def sparse_spatial_transform(
             img2, None, fx=scale_x, fy=scale_y, interpolation=cv2.INTER_LINEAR
         )
         flow, valid = resize_sparse_flow_map(flow, valid, fx=scale_x, fy=scale_y)
-
-    if flip:
-        if np.random.rand() < h_flip_prob:
-            img1 = img1[:, ::-1]
-            img2 = img2[:, ::-1]
-            flow = flow[:, ::-1] * [-1.0, 1.0]
-            valid = valid[:, ::-1]
 
     return img1, img2, flow, valid
 

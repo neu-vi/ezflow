@@ -3,8 +3,10 @@ from glob import glob
 
 from ...functional import FlowAugmentor
 from .base_dataset import BaseDataset
+from ..build import DATASET_REGISTRY
+from ...config import configurable
 
-
+@DATASET_REGISTRY.register()
 class FlyingThings3D(BaseDataset):
     """
     Dataset Class for preparing the Flying Things 3D Synthetic dataset for training and validation.
@@ -36,7 +38,7 @@ class FlyingThings3D(BaseDataset):
     norm_params : :obj:`dict`, optional
         The parameters for normalization
     """
-
+    @configurable
     def __init__(
         self,
         root_dir,
@@ -109,6 +111,24 @@ class FlyingThings3D(BaseDataset):
                             self.flow_list += [flows[i + 1]]
 
 
+    @classmethod
+    def from_config(cls, cfg):
+        return {
+            "root_dir": cfg.ROOT_DIR,
+            "split": cfg.SPLIT,
+            "dstype": cfg.DS_TYPE,
+            "is_prediction": cfg.IS_PREDICTION,
+            "init_seed": cfg.INIT_SEED,
+            "append_valid_mask": cfg.APPEND_VALID_MASK,
+            "crop": cfg.CROP.USE,
+            "crop_size": cfg.CROP.SIZE,
+            "crop_type": cfg.CROP.TYPE,
+            "augment": cfg.AUGMENTATION.USE,
+            "aug_params": cfg.AUGMENTATION.PARAMS,
+            "norm_params": cfg.NORM_PARAMS,
+        }
+
+@DATASET_REGISTRY.register()
 class FlyingThings3DSubset(BaseDataset):
     """
     Dataset Class for preparing the Flying Things 3D Subset Synthetic dataset for training and validation.
@@ -130,7 +150,7 @@ class FlyingThings3DSubset(BaseDataset):
     aug_param : :obj:`dict`, optional
         The parameters for data augmentation
     """
-
+    @configurable
     def __init__(
         self,
         root_dir,
@@ -138,24 +158,31 @@ class FlyingThings3DSubset(BaseDataset):
         is_prediction=False,
         init_seed=False,
         append_valid_mask=False,
+        crop=False,
+        crop_size=(256, 256),
+        crop_type="center",
         augment=True,
         aug_params={
-            "crop_size": (224, 224),
-            "color_aug_params": {"aug_prob": 0.2},
-            "eraser_aug_params": {"aug_prob": 0.5},
-            "spatial_aug_params": {"aug_prob": 0.8},
-            "translate_params": {"aug_prob": 0.8},
-            "rotate_params": {"aug_prob": 0.8},
+            "eraser_aug_params": {"enabled": False},
+            "noise_aug_params": {"enabled": False},
+            "flip_aug_params": {"enabled": False},
+            "color_aug_params": {"enabled": False},
+            "spatial_aug_params": {"enabled": False},
+            "advanced_spatial_aug_params": {"enabled": False},
         },
         norm_params={"use": False},
     ):
         super(FlyingThings3DSubset, self).__init__(
-            augment,
-            aug_params,
-            is_prediction,
-            init_seed,
-            append_valid_mask,
-            norm_params,
+            init_seed=init_seed,
+            is_prediction=is_prediction,
+            append_valid_mask=append_valid_mask,
+            crop=crop,
+            crop_size=crop_size,
+            crop_type=crop_type,
+            augment=augment,
+            aug_params=aug_params,
+            sparse_transform=False,
+            norm_params=norm_params,
         )
         assert (
             split.lower() == "training" or split.lower() == "validation"
@@ -199,3 +226,19 @@ class FlyingThings3DSubset(BaseDataset):
 
         self.image_list = image_list
         self.flow_list = flow_list
+
+    @classmethod
+    def from_config(cls, cfg):
+        return {
+            "root_dir": cfg.ROOT_DIR,
+            "split": cfg.SPLIT,
+            "is_prediction": cfg.IS_PREDICTION,
+            "init_seed": cfg.INIT_SEED,
+            "append_valid_mask": cfg.APPEND_VALID_MASK,
+            "crop": cfg.CROP.USE,
+            "crop_size": cfg.CROP.SIZE,
+            "crop_type": cfg.CROP.TYPE,
+            "augment": cfg.AUGMENTATION.USE,
+            "aug_params": cfg.AUGMENTATION.PARAMS,
+            "norm_params": cfg.NORM_PARAMS,
+        }

@@ -114,12 +114,13 @@ class BaseDataset(data.Dataset):
             img2 = img2[..., :3]
 
         if self.is_prediction:
-
+            if self.crop:
+                img1, img2, _, _ = crop(img1, img2, flow=None, valid=None, sparse_transform=False)
+                
             img1 = torch.from_numpy(img1).permute(2, 0, 1).float()
             img2 = torch.from_numpy(img2).permute(2, 0, 1).float()
 
             img1, img2 = self.normalize(img1, img2)
-
             return img1, img2
 
         flow, valid = read_flow(self.flow_list[index])

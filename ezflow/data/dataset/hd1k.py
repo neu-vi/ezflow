@@ -3,8 +3,10 @@ from glob import glob
 
 from ...functional import SparseFlowAugmentor
 from .base_dataset import BaseDataset
+from ..build import DATASET_REGISTRY
+from ...config import configurable
 
-
+@DATASET_REGISTRY.register()
 class HD1K(BaseDataset):
     """
     Dataset Class for preparing the HD1K dataset for training and validation.
@@ -32,7 +34,7 @@ class HD1K(BaseDataset):
     norm_params : :obj:`dict`, optional
         The parameters for normalization
     """
-
+    @configurable
     def __init__(
         self,
         root_dir,
@@ -89,3 +91,18 @@ class HD1K(BaseDataset):
                 self.image_list += [[images[i], images[i + 1]]]
 
             seq_ix += 1
+
+    @classmethod
+    def from_config(cls, cfg):
+        return {
+            "root_dir": cfg.ROOT_DIR,
+            "is_prediction": cfg.IS_PREDICTION,
+            "init_seed": cfg.INIT_SEED,
+            "append_valid_mask": cfg.APPEND_VALID_MASK,
+            "crop": cfg.CROP.USE,
+            "crop_size": cfg.CROP.SIZE,
+            "crop_type": cfg.CROP.TYPE,
+            "augment": cfg.AUGMENTATION.USE,
+            "aug_params": cfg.AUGMENTATION.PARAMS,
+            "norm_params": cfg.NORM_PARAMS,
+        }

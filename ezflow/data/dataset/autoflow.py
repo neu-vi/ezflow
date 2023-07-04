@@ -3,8 +3,10 @@ from glob import glob
 
 from ...functional import FlowAugmentor
 from .base_dataset import BaseDataset
+from ..build import DATASET_REGISTRY
+from ...config import configurable
 
-
+@DATASET_REGISTRY.register()
 class AutoFlow(BaseDataset):
     """
     Dataset Class for preparing the AutoFlow Synthetic dataset for training and validation.
@@ -32,7 +34,7 @@ class AutoFlow(BaseDataset):
     norm_params : :obj:`dict`, optional
         The parameters for normalization
     """
-
+    @configurable
     def __init__(
         self,
         root_dir,
@@ -89,3 +91,18 @@ class AutoFlow(BaseDataset):
                     for i in range(len(flows)):
                         self.flow_list += [flows[i]]
                         self.image_list += [[images[i], images[i + 1]]]
+
+    @classmethod
+    def from_config(cls, cfg):
+        return {
+            "root_dir": cfg.ROOT_DIR,
+            "is_prediction": cfg.IS_PREDICTION,
+            "init_seed": cfg.INIT_SEED,
+            "append_valid_mask": cfg.APPEND_VALID_MASK,
+            "crop": cfg.CROP.USE,
+            "crop_size": cfg.CROP.SIZE,
+            "crop_type": cfg.CROP.TYPE,
+            "augment": cfg.AUGMENTATION.USE,
+            "aug_params": cfg.AUGMENTATION.PARAMS,
+            "norm_params": cfg.NORM_PARAMS,
+        }    

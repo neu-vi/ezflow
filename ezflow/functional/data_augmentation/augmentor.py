@@ -114,7 +114,7 @@ class FlowAugmentor:
             img1, img2, flow, self.crop_size, **self.spatial_aug_params
         )
 
-        img1, img2, flow = flip_transform(img1, img2, flow, **self.flip_aug_params)
+        img1, img2, flow, _ = flip_transform(img1, img2, flow, **self.flip_aug_params)
 
         img1, img2 = noise_transform(img1, img2, **self.noise_aug_params)
         img1, img2 = eraser_transform(img1, img2, **self.eraser_aug_params)
@@ -141,6 +141,8 @@ class SparseFlowAugmentor(FlowAugmentor):
         Parameters for the eraser augmentation.
     spatial_aug_params : dict
         Parameters for the spatial augmentation.
+    flip_aug_params : dict
+        Parameters for the flip augmentation.
     """
 
     def __call__(self, img1, img2, flow, valid):
@@ -174,6 +176,8 @@ class SparseFlowAugmentor(FlowAugmentor):
         img1, img2, flow, valid = sparse_spatial_transform(
             img1, img2, flow, valid, self.crop_size, **self.spatial_aug_params
         )
+
+        img1, img2, flow, valid = flip_transform(img1, img2, flow, valid, **self.flip_aug_params)
 
         img1 = np.ascontiguousarray(img1)
         img2 = np.ascontiguousarray(img2)

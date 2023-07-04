@@ -3,8 +3,10 @@ from glob import glob
 
 from ...functional import SparseFlowAugmentor
 from .base_dataset import BaseDataset
+from ..build import DATASET_REGISTRY
+from ...config import configurable
 
-
+@DATASET_REGISTRY.register()
 class Kitti(BaseDataset):
     """
     Dataset Class for preparing the Kitti dataset for training and validation.
@@ -34,7 +36,7 @@ class Kitti(BaseDataset):
     norm_params : :obj:`dict`, optional
         The parameters for normalization
     """
-
+    @configurable
     def __init__(
         self,
         root_dir,
@@ -92,3 +94,19 @@ class Kitti(BaseDataset):
 
         if not self.is_prediction:
             self.flow_list += sorted(glob(osp.join(root_dir, "flow_occ/*_10.png")))
+
+    @classmethod
+    def from_config(cls, cfg):
+        return {
+            "root_dir": cfg.ROOT_DIR,
+            "split": cfg.SPLIT,
+            "is_prediction": cfg.IS_PREDICTION,
+            "init_seed": cfg.INIT_SEED,
+            "append_valid_mask": cfg.APPEND_VALID_MASK,
+            "crop": cfg.CROP.USE,
+            "crop_size": cfg.CROP.SIZE,
+            "crop_type": cfg.CROP.TYPE,
+            "augment": cfg.AUGMENTATION.USE,
+            "aug_params": cfg.AUGMENTATION.PARAMS,
+            "norm_params": cfg.NORM_PARAMS,
+        }

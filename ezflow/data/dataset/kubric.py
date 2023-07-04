@@ -10,8 +10,10 @@ import torch.utils.data as data
 from ...functional import FlowAugmentor, Normalize, crop
 from ...utils import read_flow, read_image
 from .base_dataset import BaseDataset
+from ..build import DATASET_REGISTRY
+from ...config import configurable
 
-
+@DATASET_REGISTRY.register()
 class Kubric(BaseDataset):
     """
     Dataset Class for preparing the Kubric 'movi-f' split of
@@ -62,7 +64,7 @@ class Kubric(BaseDataset):
     norm_params : :obj:`dict`, optional
         The parameters for normalization
     """
-
+    @configurable
     def __init__(
         self,
         root_dir,
@@ -126,6 +128,24 @@ class Kubric(BaseDataset):
 
             if not self.is_prediction:
                 self.flow_list += sorted(glob(osp.join(flow_root, scene, "*.flo")))
+
+    @classmethod
+    def from_config(cls, cfg):
+        return {
+            "root_dir": cfg.ROOT_DIR,
+            "split": cfg.SPLIT,
+            "swap_column_to_row": cfg.SWAP_COLUMN_TO_ROW,
+            "use_backward_flow": cfg.USE_BACKWARD_FLOW,
+            "is_prediction": cfg.IS_PREDICTION,
+            "init_seed": cfg.INIT_SEED,
+            "append_valid_mask": cfg.APPEND_VALID_MASK,
+            "crop": cfg.CROP.USE,
+            "crop_size": cfg.CROP.SIZE,
+            "crop_type": cfg.CROP.TYPE,
+            "augment": cfg.AUGMENTATION.USE,
+            "aug_params": cfg.AUGMENTATION.PARAMS,
+            "norm_params": cfg.NORM_PARAMS,
+        }   
 
     def __getitem__(self, index):
         """
