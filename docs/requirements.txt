@@ -35,7 +35,7 @@ flake8==3.9.2
 fvcore==0.1.5.post20210915
 google-auth==1.35.0
 google-auth-oauthlib==0.4.5
-grpcio==1.39.0
+grpcio==1.53.0
 identify==2.2.13
 idna==3.2
 imagesize==1.2.0

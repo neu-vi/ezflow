@@ -33,7 +33,7 @@ fett==0.3.2
 filelock==3.12.2
 flake8==3.9.2
 fvcore==0.1.5.post20210915
-grpcio==1.39.0
+grpcio==1.53.0
 identify==2.2.13
 idna==3.2
 imagesize==1.2.0
