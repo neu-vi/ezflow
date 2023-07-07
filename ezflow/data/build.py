@@ -34,12 +34,13 @@ def build_dataloader(cfg, split="training", is_distributed=False, world_size=Non
     )
 
     data_cfg = cfg.TRAIN_DATASET if split == "training" else cfg.VAL_DATASET
-    data_cfg.SPLIT = split
-    data_cfg.INIT_SEED = cfg.INIT_SEED
-    data_cfg.NORM_PARAMS = cfg.NORM_PARAMS
 
-    dataset = DATASET_REGISTRY.get(data_cfg.NAME)
-    dataset = dataset(data_cfg)
-    dataloader_creator.add_dataset(dataset)
+    for key in data_cfg:
+        data_cfg[key].SPLIT = split
+        data_cfg[key].INIT_SEED = cfg.INIT_SEED
+        data_cfg[key].NORM_PARAMS = cfg.NORM_PARAMS
+        
+        dataset = DATASET_REGISTRY.get(key)(data_cfg[key])
+        dataloader_creator.add_dataset(dataset)
 
     return dataloader_creator
