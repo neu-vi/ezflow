@@ -310,7 +310,7 @@ class FlyingThings3DSubset(BaseDataset):
         self.append_valid_mask = append_valid_mask
 
         if augment:
-            self.augmentor = FlowAugmentor(**aug_params)
+            self.augmentor = FlowAugmentor(crop_size=crop_size, **aug_params)
 
         if split.lower() == "training":
             split = "train"
