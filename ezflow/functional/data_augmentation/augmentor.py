@@ -177,7 +177,9 @@ class SparseFlowAugmentor(FlowAugmentor):
             img1, img2, flow, valid, self.crop_size, **self.spatial_aug_params
         )
 
-        img1, img2, flow, valid = flip_transform(img1, img2, flow, valid, **self.flip_aug_params)
+        img1, img2, flow, valid = flip_transform(
+            img1, img2, flow, valid, **self.flip_aug_params
+        )
 
         img1 = np.ascontiguousarray(img1)
         img2 = np.ascontiguousarray(img2)

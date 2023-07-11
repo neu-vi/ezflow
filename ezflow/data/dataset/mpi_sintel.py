@@ -2,10 +2,11 @@ import os
 import os.path as osp
 from glob import glob
 
-from ...functional import FlowAugmentor
-from .base_dataset import BaseDataset
-from ..build import DATASET_REGISTRY
 from ...config import configurable
+from ...functional import FlowAugmentor
+from ..build import DATASET_REGISTRY
+from .base_dataset import BaseDataset
+
 
 @DATASET_REGISTRY.register()
 class MPISintel(BaseDataset):
@@ -39,6 +40,7 @@ class MPISintel(BaseDataset):
     norm_params : :obj:`dict`, optional
         The parameters for normalization
     """
+
     @configurable
     def __init__(
         self,

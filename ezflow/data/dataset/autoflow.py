@@ -1,10 +1,11 @@
 import os.path as osp
 from glob import glob
 
-from ...functional import FlowAugmentor
-from .base_dataset import BaseDataset
-from ..build import DATASET_REGISTRY
 from ...config import configurable
+from ...functional import FlowAugmentor
+from ..build import DATASET_REGISTRY
+from .base_dataset import BaseDataset
+
 
 @DATASET_REGISTRY.register()
 class AutoFlow(BaseDataset):
@@ -34,6 +35,7 @@ class AutoFlow(BaseDataset):
     norm_params : :obj:`dict`, optional
         The parameters for normalization
     """
+
     @configurable
     def __init__(
         self,
@@ -105,4 +107,4 @@ class AutoFlow(BaseDataset):
             "augment": cfg.AUGMENTATION.USE,
             "aug_params": cfg.AUGMENTATION.PARAMS,
             "norm_params": cfg.NORM_PARAMS,
-        }    
+        }

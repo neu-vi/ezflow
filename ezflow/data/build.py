@@ -19,6 +19,7 @@ def build_dataloader(cfg, split="training", is_distributed=False, world_size=Non
 
     """
     from .dataloader import DataloaderCreator
+
     # TODO: assert mandatory config in cfg.data
 
     dataloader_creator = DataloaderCreator(
@@ -39,7 +40,7 @@ def build_dataloader(cfg, split="training", is_distributed=False, world_size=Non
         data_cfg[key].SPLIT = split
         data_cfg[key].INIT_SEED = cfg.INIT_SEED
         data_cfg[key].NORM_PARAMS = cfg.NORM_PARAMS
-        
+
         dataset = DATASET_REGISTRY.get(key)(data_cfg[key])
         dataloader_creator.add_dataset(dataset)
 

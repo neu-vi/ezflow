@@ -1,10 +1,11 @@
 import os.path as osp
 from glob import glob
 
-from ...functional import SparseFlowAugmentor
-from .base_dataset import BaseDataset
-from ..build import DATASET_REGISTRY
 from ...config import configurable
+from ...functional import SparseFlowAugmentor
+from ..build import DATASET_REGISTRY
+from .base_dataset import BaseDataset
+
 
 @DATASET_REGISTRY.register()
 class Kitti(BaseDataset):
@@ -36,6 +37,7 @@ class Kitti(BaseDataset):
     norm_params : :obj:`dict`, optional
         The parameters for normalization
     """
+
     @configurable
     def __init__(
         self,

@@ -1,10 +1,11 @@
 import os
 from glob import glob
 
-from ...functional import FlowAugmentor
-from .base_dataset import BaseDataset
-from ..build import DATASET_REGISTRY
 from ...config import configurable
+from ...functional import FlowAugmentor
+from ..build import DATASET_REGISTRY
+from .base_dataset import BaseDataset
+
 
 @DATASET_REGISTRY.register()
 class Monkaa(BaseDataset):
@@ -34,6 +35,7 @@ class Monkaa(BaseDataset):
     norm_params : :obj:`dict`, optional
         The parameters for normalization
     """
+
     @configurable
     def __init__(
         self,
@@ -99,7 +101,7 @@ class Monkaa(BaseDataset):
 
         self.image_list = image_list
         self.flow_list = flow_list
-        
+
     @classmethod
     def from_config(cls, cfg):
         return {

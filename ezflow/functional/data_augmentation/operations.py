@@ -280,7 +280,9 @@ def spatial_transform(
     return img1, img2, flow
 
 
-def flip_transform(img1, img2, flow, valid=None, enabled=False, h_flip_prob=0.5, v_flip_prob=0.1):
+def flip_transform(
+    img1, img2, flow, valid=None, enabled=False, h_flip_prob=0.5, v_flip_prob=0.1
+):
     """
     Flip augmentation borrowed from RAFT https://github.com/princeton-vl/RAFT/blob/master/core/utils/augmentor.py
 
@@ -321,7 +323,6 @@ def flip_transform(img1, img2, flow, valid=None, enabled=False, h_flip_prob=0.5,
         img2 = img2[:, ::-1]
         flow = flow[:, ::-1] * [-1.0, 1.0]
         valid = valid[:, ::-1] if valid is not None else None
-
 
     if np.random.rand() < v_flip_prob:
         img1 = img1[::-1, :]

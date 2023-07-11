@@ -115,9 +115,16 @@ class BaseDataset(data.Dataset):
 
         if self.is_prediction:
             if self.crop:
-                img1, img2, _, _ = crop(img1, img2, flow=None, valid=None, crop_size=self.crop_size,
-                    crop_type=self.crop_type, sparse_transform=False)
-            
+                img1, img2, _, _ = crop(
+                    img1,
+                    img2,
+                    flow=None,
+                    valid=None,
+                    crop_size=self.crop_size,
+                    crop_type=self.crop_type,
+                    sparse_transform=False,
+                )
+
             img1 = torch.from_numpy(img1).permute(2, 0, 1).float()
             img2 = torch.from_numpy(img2).permute(2, 0, 1).float()
 

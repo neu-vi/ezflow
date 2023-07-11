@@ -1,10 +1,11 @@
 import os.path as osp
 from glob import glob
 
-from ...functional import FlowAugmentor
-from .base_dataset import BaseDataset
-from ..build import DATASET_REGISTRY
 from ...config import configurable
+from ...functional import FlowAugmentor
+from ..build import DATASET_REGISTRY
+from .base_dataset import BaseDataset
+
 
 @DATASET_REGISTRY.register()
 class FlyingThings3D(BaseDataset):
@@ -38,6 +39,7 @@ class FlyingThings3D(BaseDataset):
     norm_params : :obj:`dict`, optional
         The parameters for normalization
     """
+
     @configurable
     def __init__(
         self,
@@ -113,7 +115,6 @@ class FlyingThings3D(BaseDataset):
                         elif direction == "into_past":
                             self.image_list += [[images[i + 1], images[i]]]
                             self.flow_list += [flows[i + 1]]
-
 
     @classmethod
     def from_config(cls, cfg):
@@ -245,7 +246,6 @@ class FlyingThings3DFinal(FlyingThings3D):
         }
 
 
-
 @DATASET_REGISTRY.register()
 class FlyingThings3DSubset(BaseDataset):
     """
@@ -268,6 +268,7 @@ class FlyingThings3DSubset(BaseDataset):
     aug_param : :obj:`dict`, optional
         The parameters for data augmentation
     """
+
     @configurable
     def __init__(
         self,

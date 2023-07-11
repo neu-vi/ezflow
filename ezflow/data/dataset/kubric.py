@@ -7,11 +7,12 @@ import numpy as np
 import torch
 import torch.utils.data as data
 
+from ...config import configurable
 from ...functional import FlowAugmentor, Normalize, crop
 from ...utils import read_flow, read_image
-from .base_dataset import BaseDataset
 from ..build import DATASET_REGISTRY
-from ...config import configurable
+from .base_dataset import BaseDataset
+
 
 @DATASET_REGISTRY.register()
 class Kubric(BaseDataset):
@@ -64,6 +65,7 @@ class Kubric(BaseDataset):
     norm_params : :obj:`dict`, optional
         The parameters for normalization
     """
+
     @configurable
     def __init__(
         self,
@@ -145,7 +147,7 @@ class Kubric(BaseDataset):
             "augment": cfg.AUGMENTATION.USE,
             "aug_params": cfg.AUGMENTATION.PARAMS,
             "norm_params": cfg.NORM_PARAMS,
-        }   
+        }
 
     def __getitem__(self, index):
         """
