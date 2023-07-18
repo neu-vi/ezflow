@@ -22,7 +22,9 @@ class BasicEncoder(nn.Module):
     p_dropout : float
         Dropout probability
     layer_config : list of int or tuple of int
-        Configuration of encoder's layers
+        Number of output features per layer
+    num_residual_layers : list of int or tuple of int
+        Number of residual blocks features per layer
     intermediate_features : bool
         Whether to return intermediate features to get a feature hierarchy
     """
@@ -35,7 +37,9 @@ class BasicEncoder(nn.Module):
         norm="batch",
         p_dropout=0.0,
         layer_config=(64, 96, 128),
+        num_residual_layers=(2, 2, 2),
         intermediate_features=False,
+        enable_output_layer=True,
     ):
         super(BasicEncoder, self).__init__()
 
@@ -76,14 +80,21 @@ class BasicEncoder(nn.Module):
                 stride = 2
 
             layers.append(
-                self._make_layer(start_channels, layer_config[i], stride, norm)
+                self._make_layer(
+                    start_channels,
+                    layer_config[i],
+                    stride,
+                    norm,
+                    num_residual_layers[i],
+                )
             )
             start_channels = layer_config[i]
 
-        layers.append(nn.Conv2d(layer_config[-1], out_channels, kernel_size=1))
+        if enable_output_layer:
+            layers.append(nn.Conv2d(layer_config[-1], out_channels, kernel_size=1))
 
         dropout = nn.Identity()
-        if self.training and p_dropout > 0:
+        if p_dropout > 0:
             dropout = nn.Dropout2d(p=p_dropout)
         layers.append(dropout)
 
@@ -93,12 +104,12 @@ class BasicEncoder(nn.Module):
 
         self._init_weights()
 
-    def _make_layer(self, in_channels, out_channels, stride, norm):
+    def _make_layer(self, in_channels, out_channels, stride, norm, num_layers=2):
+        layers = [BasicBlock(in_channels, out_channels, stride, norm)]
+        for _ in range(num_layers - 1):
+            layers.append(BasicBlock(out_channels, out_channels, stride=1, norm=norm))
 
-        layer1 = BasicBlock(in_channels, out_channels, stride, norm)
-        layer2 = BasicBlock(out_channels, out_channels, stride=1, norm=norm)
-
-        return nn.Sequential(*[layer1, layer2])
+        return nn.Sequential(*layers)
 
     def _init_weights(self):
 
@@ -119,12 +130,13 @@ class BasicEncoder(nn.Module):
             "norm": cfg.NORM,
             "p_dropout": cfg.P_DROPOUT,
             "layer_config": cfg.LAYER_CONFIG,
+            "num_residual_layers": cfg.NUM_RESIDUAL_LAYERS,
             "intermediate_features": cfg.INTERMEDIATE_FEATURES,
         }
 
     def forward(self, x):
 
-        if self.intermediate_features is True:
+        if self.intermediate_features:
 
             features = []
             for i in range(len(self.encoder)):
