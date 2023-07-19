@@ -27,7 +27,7 @@ class DCVNet(BaseModule):
 
         self.encoder = build_encoder(cfg.ENCODER)
 
-        # self.decoder = build_decoder(cfg.DECODER)
+        self.decoder = build_decoder(cfg.DECODER)
 
     def forward(self, img1, img2):
         """
@@ -46,7 +46,10 @@ class DCVNet(BaseModule):
             <flow_preds> torch.Tensor : intermediate flow predications from img1 to img2
             <flow_upsampled> torch.Tensor : if model is in eval state, return upsampled flow
         """
+        N, C, H, W = img1.shape
+        feat_map, context_map = self.encoder([img1, img2])
 
+        #####################################################
         flow_preds = []
         output = {"flow_preds": flow_preds}
 

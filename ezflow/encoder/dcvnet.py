@@ -66,9 +66,11 @@ class DCVNetBackbone(nn.Module):
             "num_residual_layers": cfg.NUM_RESIDUAL_LAYERS,
         }
 
-    def forward(self, x, nb_x):
-        concat_x = torch.cat((x, nb_x), dim=0)
-        feature_pyramid = self.encoder(concat_x)
+    def forward(self, x):
+        if isinstance(x, tuple) or isinstance(x, list):
+            x = torch.cat(x, dim=0)
+
+        feature_pyramid = self.encoder(x)
 
         # Use feature maps of downsampling size (H/2,W/2) and (H/8, W/8)
         context = [feature_pyramid[0], feature_pyramid[2]]
