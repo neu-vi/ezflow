@@ -4,7 +4,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from ..config import configurable
-from ..modules import build_module
+from ..modules import BaseModule, build_module
 from .build import DECODER_REGISTRY
 
 
