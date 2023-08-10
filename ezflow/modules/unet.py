@@ -36,7 +36,7 @@ class ASPPConv2D(nn.Module):
         Number of output channels produced by the ASPP module
     dilations: List of int, optional
         Spacing between convolution kernels
-    groups: int, optional
+    num_groups: int, optional
         Number of blocked connections from intput features to output features
     norm : str
         Type of normalization to use. Can be None, 'batch', 'group', 'instance'
@@ -50,7 +50,7 @@ class ASPPConv2D(nn.Module):
         hidden_dim=512,
         out_channels=512,
         dilations=(4, 8, 16),
-        groups=1,
+        num_groups=1,
         norm="none",
     ):
         super(ASPPConv2D, self).__init__()
@@ -64,7 +64,7 @@ class ASPPConv2D(nn.Module):
                 padding=0,
                 dilation=1,
                 bias=False,
-                groups=groups,
+                num_groups=num_groups,
             ),
             _get_norm_fn(hidden_dim, norm),
             nn.ReLU(inplace=True),
@@ -77,7 +77,7 @@ class ASPPConv2D(nn.Module):
                 padding=0,
                 dilation=1,
                 bias=False,
-                groups=groups,
+                num_groups=num_groups,
             ),
             _get_norm_fn(hidden_dim, norm),
             nn.ReLU(inplace=True),
@@ -90,7 +90,7 @@ class ASPPConv2D(nn.Module):
                 padding=dilations[0],
                 dilation=dilations[0],
                 bias=False,
-                groups=groups,
+                num_groups=num_groups,
             ),
             _get_norm_fn(hidden_dim, norm),
             nn.ReLU(inplace=True),
@@ -103,7 +103,7 @@ class ASPPConv2D(nn.Module):
                 padding=dilations[1],
                 dilation=dilations[1],
                 bias=False,
-                groups=groups,
+                num_groups=num_groups,
             ),
             _get_norm_fn(hidden_dim, norm),
             nn.ReLU(inplace=True),
@@ -116,7 +116,7 @@ class ASPPConv2D(nn.Module):
                 padding=dilations[2],
                 dilation=dilations[2],
                 bias=False,
-                groups=groups,
+                num_groups=num_groups,
             ),
             _get_norm_fn(hidden_dim, norm),
             nn.ReLU(inplace=True),
@@ -130,7 +130,7 @@ class ASPPConv2D(nn.Module):
                 padding=0,
                 dilation=1,
                 bias=False,
-                groups=groups,
+                num_groups=num_groups,
             ),
             _get_norm_fn(hidden_dim, norm),
             nn.ReLU(inplace=True),
@@ -144,7 +144,7 @@ class ASPPConv2D(nn.Module):
             "hidden_dim": cfg.HIDDEN_DIMS,
             "out_channels": cfg.OUT_CHANNELS,
             "dilations": cfg.DILATIONS,
-            "groups": cfg.GROUPS,
+            "num_groups": cfg.NUM_GROUPS,
             "norm": cfg.NORM,
         }
 
@@ -172,7 +172,7 @@ class UNetBase(BaseModule):
         hidden_dim,
         out_channels,
         bottle_neck_cfg,
-        groups=1,
+        num_groups=1,
         norm="none",
     ):
         super(UNetBase, self).__init__()
@@ -184,7 +184,7 @@ class UNetBase(BaseModule):
                 kernel_size=1,
                 padding=0,
                 stride=1,
-                groups=groups,
+                num_groups=num_groups,
             ),
             _get_norm_fn(hidden_dim, norm),
             nn.ReLU(),
@@ -194,7 +194,7 @@ class UNetBase(BaseModule):
                 kernel_size=3,
                 padding=1,
                 stride=1,
-                groups=groups,
+                num_groups=num_groups,
             ),
             _get_norm_fn(hidden_dim, norm),
             nn.ReLU(),
@@ -208,7 +208,7 @@ class UNetBase(BaseModule):
                 kernel_size=3,
                 padding=1,
                 stride=2,
-                groups=groups,
+                num_groups=num_groups,
             ),
             _get_norm_fn(hidden_dim * 2, norm),
             nn.ReLU(),
@@ -218,7 +218,7 @@ class UNetBase(BaseModule):
                 kernel_size=3,
                 padding=1,
                 stride=1,
-                groups=groups,
+                num_groups=num_groups,
             ),
             _get_norm_fn(hidden_dim * 2, norm),
             nn.ReLU(),
@@ -232,7 +232,7 @@ class UNetBase(BaseModule):
                 kernel_size=3,
                 padding=1,
                 stride=2,
-                groups=groups,
+                num_groups=num_groups,
             ),
             _get_norm_fn(hidden_dim * 2, norm),
             nn.ReLU(),
@@ -242,7 +242,7 @@ class UNetBase(BaseModule):
                 kernel_size=3,
                 padding=1,
                 stride=1,
-                groups=groups,
+                num_groups=num_groups,
             ),
             _get_norm_fn(hidden_dim * 2, norm),
             nn.ReLU(),
@@ -256,7 +256,7 @@ class UNetBase(BaseModule):
                 kernel_size=3,
                 padding=1,
                 stride=1,
-                groups=groups,
+                num_groups=num_groups,
             ),
             _get_norm_fn(hidden_dim * 2, norm),
             nn.ReLU(),
@@ -271,7 +271,7 @@ class UNetBase(BaseModule):
                 kernel_size=3,
                 padding=1,
                 stride=1,
-                groups=groups,
+                num_groups=num_groups,
             ),
             _get_norm_fn(hidden_dim * 2, norm),
             nn.ReLU(),
@@ -281,7 +281,7 @@ class UNetBase(BaseModule):
                 kernel_size=3,
                 padding=1,
                 stride=1,
-                groups=groups,
+                num_groups=num_groups,
             ),
             _get_norm_fn(hidden_dim * 2, norm),
             nn.ReLU(),
@@ -295,7 +295,7 @@ class UNetBase(BaseModule):
                 kernel_size=3,
                 padding=1,
                 stride=1,
-                groups=groups,
+                num_groups=num_groups,
             ),
             _get_norm_fn(hidden_dim, norm),
             nn.ReLU(),
@@ -305,7 +305,7 @@ class UNetBase(BaseModule):
                 kernel_size=3,
                 padding=1,
                 stride=1,
-                groups=groups,
+                num_groups=num_groups,
             ),
             _get_norm_fn(out_channels, norm),
             nn.ReLU(),
@@ -318,7 +318,7 @@ class UNetBase(BaseModule):
             "hidden_dim": cfg.HIDDEN_DIMS,
             "out_channels": cfg.OUT_CHANNELS,
             "bottle_neck_cfg": cfg.BOTTLE_NECK,
-            "groups": cfg.GROUPS,
+            "num_groups": cfg.NUM_GROUPS,
             "norm": cfg.NORM,
         }
 
@@ -350,7 +350,7 @@ class UNetLight(UNetBase):
         hidden_dim,
         out_channels,
         bottle_neck_cfg,
-        groups=1,
+        num_groups=1,
         norm="none",
     ):
         super(UNetLight, self).__init__(
@@ -358,7 +358,7 @@ class UNetLight(UNetBase):
             hidden_dim=hidden_dim,
             out_channels=out_channels,
             bottle_neck_cfg=bottle_neck_cfg,
-            groups=groups,
+            num_groups=num_groups,
             norm=norm,
         )
 
@@ -369,7 +369,7 @@ class UNetLight(UNetBase):
                 kernel_size=3,
                 padding=1,
                 stride=1,
-                groups=groups,
+                num_groups=num_groups,
             ),
             _get_norm_fn(hidden_dim, norm),
             nn.ReLU(),

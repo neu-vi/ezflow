@@ -4,7 +4,7 @@ import torch.nn.functional as F
 
 from ..decoder import build_decoder
 from ..encoder import build_encoder
-from ..modules import BaseModule
+from ..modules import BaseModule, build_module
 from ..similarity import build_similarity
 from .build import MODEL_REGISTRY
 

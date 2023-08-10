@@ -21,7 +21,7 @@ DECODER:
   IN_CHANNELS: [64, 128]
   COST_VOLUME_FILTER:
     NAME: DCVFilterGroupConvStemJoint_SingleStage
-    GROUPS: 1
+    NUM_GROUPS: 1
     NUM_DILATIONS: 7
     SEARCH_RANGE: _ # computed from cost volume list
     HIDDEN_DIM: 96
@@ -35,7 +35,7 @@ DECODER:
       IN_CHANNELS: _
       HIDDEN_DIM: 96
       OUT_CHANNELS: _
-      GROUPS: 1
+      NUM_GROUPS: 1
       NORM: none
       BOTTLE_NECK: 
         NAME: ASPPConv2D
@@ -43,7 +43,7 @@ DECODER:
         HIDDEN_DIM: 192
         OUT_CHANNELS: 192
         DILATIONS: [2, 4, 8]
-        GROUPS: 1
+        NUM_GROUPS: 1
         NORM: none
 
   

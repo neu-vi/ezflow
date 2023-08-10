@@ -5,42 +5,34 @@ import torch.nn.functional as F
 
 from ..config import configurable
 from ..modules import BaseModule, build_module
+from ..utils import convex_upsample_flow
 from .build import DECODER_REGISTRY
 
 
 @DECODER_REGISTRY.register()
 class DCVDilatedFlowStackFilterDecoder(nn.Module):
     @configurable
-    def __init__(
-        self, cfg, cv_search_range, feat_strides, feat_dims, flow_offsets, norm_fn
-    ):
+    def __init__(self, cost_volume_filter_cfg, feat_strides, flow_offsets, norm):
         super(DCVDilatedFlowStackFilterDecoder, self).__init__()
 
         self.feat_strides = feat_strides
 
-        dilations = cfg.MODEL.COST_VOLUME_DILATIONS
+        dilations = cost_volume_filter_cfg.DILATIONS
         num_dilations = 0
         for dilations_i in dilations:
             num_dilations += len(dilations_i)
         self.num_dilations = num_dilations
         cost_volume_dim = (
-            cfg.MODEL.COST_VOLUME_NUM_GROUPS * num_dilations * (cv_search_range**2)
+            cost_volume_filter_cfg.NUM_GROUPS
+            * num_dilations
+            * (cost_volume_filter_cfg.SEARCH_RANGE**2)
         )
-        inter_dim = cfg.MODEL.DEC_UNET_INTER_DIM
-        out_dim = num_dilations * (cv_search_range**2)
-        self.cost_volume_filter = build_module(
-            cfg.MODEL.DEC_CV_FILTER,
-            cv_num_groups=cfg.MODEL.COST_VOLUME_NUM_GROUPS,
-            num_dilations=num_dilations,
-            cv_search_range=cv_search_range,
-            out_planes=out_dim,
-            inter_planes=inter_dim,
-            feat_in_planes=feat_dims[-1],
-            use_heavy_stem=cfg.MODEL.CV_USE_HEAVY_STEM,
-            stem_use_group_conv=cfg.MODEL.CV_FILTER_STEM_GROUP_CONV,
-            norm_fn=norm_fn,
-            use_cv_residual=cfg.MODEL.CV_FILTER_RESIDUAL,
+        inter_dim = cost_volume_filter_cfg.UNET.HIDDEN_DIM
+        cost_volume_filter_cfg.OUT_CHANNELS = num_dilations * (
+            cost_volume_filter_cfg.SEARCH_RANGE**2
         )
+
+        self.cost_volume_filter = build_module(cost_volume_filter_cfg.NAME)
 
         flow_offsets = flow_offsets.view(1, -1, 2, 1, 1)
         self.register_buffer("flow_offsets", flow_offsets)
@@ -80,11 +72,6 @@ class DCVDilatedFlowStackFilterDecoder(nn.Module):
         return flow, flow_entropy
 
     def forward(self, cost, x1):
-        if not self.training:
-            torch.cuda.synchronize()
-            tic = time.time()
-
-        # b * (len(dilations)*2) * uv * h * w
         flow_logits_list, up_mask_logits_list = self.cost_volume_filter(cost, x1)
         flow_list = []
         if self.training:
@@ -100,28 +87,20 @@ class DCVDilatedFlowStackFilterDecoder(nn.Module):
                     else:
                         flow_i = F.interpolate(flow_i, scale_factor=8, mode="bilinear")
                     flow_list.append(flow_i)
-        else:
-            flow_list = [None for _ in flow_logits_list]
-            if flow_logits_list[-1] is not None:
-                flow_i, _ = self.logits_to_flow(flow_logits_list[-1])
-                flow_i = convex_upsample_flow(
-                    flow_i, up_mask_logits_list[-1], self.feat_strides[-1]
-                )
-            else:
-                flow_i, _ = self.logits_to_flow(flow_logits_list[-2])
-                flow_i = convex_upsample_flow(
-                    flow_i, up_mask_logits_list[-2], self.feat_strides[-1]
-                )
-            flow_list[-1] = flow_i
 
-        if not self.training:
-            torch.cuda.synchronize()
-            toc = time.time()
-            filter_time = toc - tic
-            time_dict = {
-                "filter_time": filter_time,
-            }
-
-        if self.training:
             return flow_list, flow_logits_list
-        return flow_list, flow_logits_list, time_dict
+
+        flow_list = [None for _ in flow_logits_list]
+        if flow_logits_list[-1] is not None:
+            flow_i, _ = self.logits_to_flow(flow_logits_list[-1])
+            flow_i = convex_upsample_flow(
+                flow_i, up_mask_logits_list[-1], self.feat_strides[-1]
+            )
+        else:
+            flow_i, _ = self.logits_to_flow(flow_logits_list[-2])
+            flow_i = convex_upsample_flow(
+                flow_i, up_mask_logits_list[-2], self.feat_strides[-1]
+            )
+        flow_list[-1] = flow_i
+
+        return flow_list, flow_logits_list
