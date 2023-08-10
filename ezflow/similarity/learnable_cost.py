@@ -1,5 +1,7 @@
+import numpy as np
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 
 try:
     from spatial_correlation_sampler import SpatialCorrelationSampler
@@ -225,5 +227,165 @@ class LearnableMatchingCost(nn.Module):
 
         cost = cost.view(x.size()[0], size_u, size_v, 1, x.size()[2], x.size()[3])
         cost = cost.permute([0, 3, 1, 2, 4, 5]).contiguous()
+
+        return cost
+
+
+@SIMILARITY_REGISTRY.register()
+class MatryoshkaDilatedCostVolume(nn.Module):
+    def __init__(
+        self,
+        num_groups=1,
+        max_displacement=4,
+        stride=1,
+        dilations=[1, 2, 3, 5, 9, 16],
+        use_relu=False,
+    ):
+        super(MatryoshkaDilatedCostVolume, self).__init__()
+
+        self._set_concentric_offsets(dilations=dilations, radius=max_displacement)
+
+        self.corr_layers = nn.ModuleList()
+
+        search_range = 2 * max_displacement + 1
+        for i in range(len(dilations)):
+            self.corr_layers.append(
+                SpatialCorrelationSampler(
+                    patch_size=search_range,
+                    stride=stride,
+                    padding=0,
+                    dilation_patch=dilations[i],
+                )
+            )
+
+        self.num_groups = num_groups
+        self.use_relu = use_relu
+
+    @classmethod
+    def from_config(cls, cfg):
+        return {
+            "num_groups": cfg.NUM_GROUPS,
+            "max_displacement": cfg.MAX_DISPLACEMENT,
+            "stride": cfg.STRIDE,
+            "dilations": cfg.DILATIONS,
+            "use_relu": cfg.USE_RELU,
+        }
+
+    def _set_concentric_offsets(self, dilations, radius):
+        offsets_list = []
+        for dilation_i in dilations:
+            offsets_i = np.arange(-radius, radius + 1) * dilation_i
+            offsets_list.append(offsets_i.tolist())
+
+        offsets = np.array(offsets_list)
+        self.register_buffer("offsets", torch.Tensor(offsets).float())
+
+    def get_relative_offsets(self):
+        return self.offsets
+
+    def get_search_range(self):
+        return self.offsets.shape[1]
+
+    def forward(self, x1, x2):
+        b, c, h, w = x1.shape
+        assert c % self.num_groups == 0
+        channels_per_group = c // self.num_groups
+
+        x1 = x1.view(b * self.num_groups, channels_per_group, h, w)
+        x2 = x2.view(b * self.num_groups, channels_per_group, h, w)
+        cost_list = []
+
+        for corr_fn in self.corr_layers:
+            cost = corr_fn(x1, x2)
+            _, u, v, h, w = cost.shape
+            cost_list.append(cost.view(b, self.num_groups, u, v, h, w))
+
+        cost = torch.cat(cost_list, dim=1)
+
+        if self.use_relu:
+            cost = F.leaky_relu(cost, negative_slope=0.1)
+
+        return cost
+
+
+@SIMILARITY_REGISTRY.register()
+class MatryoshkaDilatedCostVolumeList(nn.Module):
+    def __init__(
+        self,
+        num_groups=1,
+        max_displacement=4,
+        encoder_output_strides=[2, 8],
+        dilations=[[1], [1, 2, 3, 5, 9, 16]],
+        normalize_feat_l2=False,
+        relu_after_corr=False,
+    ):
+        super(MatryoshkaDilatedCostVolumeList, self).__init__()
+
+        # assert len(dilations) == len(encoder_output_strides), 'Fatal error!'
+        # assert encoder_output_strides[-1] == 8, 'Fatal error of the encoder.'
+
+        self.normalize_feat_l2 = normalize_feat_l2
+        cost_volume_list = nn.ModuleList()
+        offsets = None
+
+        for idx, (dilations_i, feat_stride_i) in enumerate(
+            zip(dilations, encoder_output_strides)
+        ):
+            assert feat_stride_i <= 8
+            cost_volume_i = MatryoshkaDilatedCostVolume(
+                num_groups=num_groups,
+                max_displacement=max_displacement,
+                dilations=dilations_i,
+                stride=feat_stride_i,
+                relu_after_corr=relu_after_corr,
+            )
+
+            cost_volume_list.append(cost_volume_i)
+            if offsets is None:
+                offsets = cost_volume_i.get_relative_offsets() * feat_stride_i
+            else:
+                offsets = torch.cat(
+                    (offsets, cost_volume_i.get_relative_offsets() * feat_stride_i),
+                    dim=0,
+                )
+
+        self.offsets = offsets
+
+    @classmethod
+    def from_config(cls, cfg):
+        return {
+            "num_groups": cfg.NUM_GROUPS,
+            "max_displacement": cfg.MAX_DISPLACEMENT,
+            "encoder_output_strides": cfg.ENCODER_OUTPUT_STRIDES,
+            "dilations": cfg.DILATIONS,
+            "normalize_feat_l2": cfg.NORMALIZE_FEAT_L2,
+            "use_relu": cfg.USE_RELU,
+        }
+
+    def get_global_flow_offsets(self):
+        # process offsets
+        num_dilations, search_range = self.offsets.shape
+        offsets_2d = torch.zeros((num_dilations, search_range, search_range, 2))
+        for idx in range(num_dilations):
+            offsets_i, offsets_j = torch.meshgrid(self.offsets[idx], self.offsets[idx])
+            offsets_2d[idx, :, :, 0] = offsets_i  # y
+            offsets_2d[idx, :, :, 1] = offsets_j  # x
+        return offsets_2d
+
+    def get_search_range(self):
+        return self.cost_volume_list[0].get_search_range()
+
+    def forward(self, x, nb_x):
+        # B, C, U, V, H, W
+        cost_list = []
+        for idx in range(len(x)):
+            x_i = x[idx]
+            nb_x_i = nb_x[idx]
+            if self.normalize_feat_l2:
+                x_i = x_i / (x_i.norm(dim=1, keepdim=True) + 1e-9)
+                nb_x_i = nb_x_i / (nb_x_i.norm(dim=1, keepdim=True) + 1e-9)
+            cost_i = self.cost_volume_list[idx](x_i, nb_x_i)
+            cost_list.append(cost_i)
+        cost = torch.cat(cost_list, dim=1)
 
         return cost

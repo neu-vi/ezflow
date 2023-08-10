@@ -5,6 +5,7 @@ import torch.nn.functional as F
 from ..decoder import build_decoder
 from ..encoder import build_encoder
 from ..modules import BaseModule
+from ..similarity import build_similarity
 from .build import MODEL_REGISTRY
 
 
@@ -25,7 +26,11 @@ class DCVNet(BaseModule):
 
         self.cfg = cfg
 
-        self.encoder = build_encoder(cfg.ENCODER)
+        self.encoder = build_encoder(self.cfg.ENCODER)
+
+        self.cost_volume_list = build_similarity(self.cfg.SIMILARITY)
+
+        self.cfg.DECODER.FLOW_OFFSETS = self.cost_volume_list.get_global_flow_offsets()
 
         self.decoder = build_decoder(cfg.DECODER)
 

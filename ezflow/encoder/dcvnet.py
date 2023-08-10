@@ -53,7 +53,7 @@ class DCVNetBackbone(nn.Module):
         )
 
         self.conv_stride2 = nn.Conv2d(layer_config[0], out_channels // 2, kernel_size=1)
-        self.conv_stride8 = nn.Conv2d(layer_config[1], out_channels, kernel_size=1)
+        self.conv_stride8 = nn.Conv2d(layer_config[2], out_channels, kernel_size=1)
 
     @classmethod
     def from_config(cls, cfg):
