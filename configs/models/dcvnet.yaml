@@ -18,24 +18,19 @@ SIMILARITY:
   USE_RELU: False
 DECODER:
   NAME: DCVDilatedFlowStackFilterDecoder
-  IN_CHANNELS: [64, 128]
+  FEAT_STRIDES: [2, 8]
   COST_VOLUME_FILTER:
-    NAME: DCVFilterGroupConvStemJoint_SingleStage
+    NAME: DCVFilterGroupConvStemJoint
     NUM_GROUPS: 1
-    NUM_DILATIONS: 7
-    SEARCH_RANGE: _ # computed from cost volume list
     HIDDEN_DIM: 96
-    OUT_CHANNELS: _ # computed from num_dilations * (cv_search_range ^ 2)
-    FEAT_IN_PLANES: _
+    FEAT_IN_PLANES: 128
     USE_COST_VOLUME_RESIDUAL: True
-    USE_STEM_GROUP_CONV: _ # missing in config
+    USE_STEM_GROUP_CONV: True
     NORM: none
     UNET:
       NAME: UNetBase
-      IN_CHANNELS: _
-      HIDDEN_DIM: 96
-      OUT_CHANNELS: _
       NUM_GROUPS: 1
+      HIDDEN_DIM: 96
       NORM: none
       BOTTLE_NECK: 
         NAME: ASPPConv2D

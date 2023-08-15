@@ -27,12 +27,15 @@ class DCVNet(BaseModule):
         self.cfg = cfg
 
         self.encoder = build_encoder(self.cfg.ENCODER)
-
         self.cost_volume_list = build_similarity(self.cfg.SIMILARITY)
 
+        self.cfg.DECODER.DILATIONS = self.cfg.SIMILARITY.DILATIONS
         self.cfg.DECODER.FLOW_OFFSETS = self.cost_volume_list.get_global_flow_offsets()
+        self.cfg.DECODER.COST_VOLUME_FILTER.SEARCH_RANGE = (
+            self.cost_volume_list.get_search_range()
+        )
 
-        self.decoder = build_decoder(cfg.DECODER)
+        self.decoder = build_decoder(self.cfg.DECODER)
 
     def forward(self, img1, img2):
         """
@@ -53,23 +56,21 @@ class DCVNet(BaseModule):
         """
         N, C, H, W = img1.shape
         feat_map, context_map = self.encoder([img1, img2])
+        fmap1 = [feat_i[:N] for feat_i in feat_map]
+        fmap2 = [feat_i[N:] for feat_i in feat_map]
+        context_fmap1 = [context_i[:N] for context_i in context_map]
 
-        #####################################################
-        flow_preds = []
-        output = {"flow_preds": flow_preds}
+        assert len(fmap1) == len(self.cfg.SIMILARITY.DILATIONS)
+        assert len(fmap1) == len(self.cfg.SIMILARITY.DILATIONS)
+
+        cost = self.cost_volume_list(fmap1, fmap2)
+
+        flow_list, flow_logits_list = self.decoder(cost, context_fmap1)
+
+        output = {"flow_preds": flow_list, "flow_logits": flow_logits_list}
 
         if self.training:
             return output
 
-        flow = flow_preds[0]
-
-        H_, W_ = flow.shape[-2:]
-        flow = F.interpolate(
-            flow, img1.shape[-2:], mode="bilinear", align_corners=False
-        )
-        flow_u = flow[:, 0, :, :] * (W / W_)
-        flow_v = flow[:, 1, :, :] * (H / H_)
-        flow = torch.stack([flow_u, flow_v], dim=1)
-
-        output["flow_upsampled"] = flow
+        output["flow_upsampled"] = flow_list[-1]
         return output

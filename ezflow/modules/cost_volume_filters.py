@@ -19,12 +19,12 @@ def _get_norm_fn(in_dim, norm="instance"):
 
 
 @MODULE_REGISTRY.register()
-class DCVFilterGroupConvStemJoint_SingelStage(BaseModule):
+class DCVFilterGroupConvStemJoint(BaseModule):
     @configurable
     def __init__(
         self,
         unet_cfg,
-        cv_num_groups,
+        num_groups,
         num_dilations,
         cv_search_range,
         feat_in_planes,
@@ -34,9 +34,9 @@ class DCVFilterGroupConvStemJoint_SingelStage(BaseModule):
         use_stem_group_conv,
         norm,
     ):
-        super(DCVFilterGroupConvStemJoint_SingelStage, self).__init__()
+        super(DCVFilterGroupConvStemJoint, self).__init__()
 
-        in_channels = cv_num_groups * num_dilations * (cv_search_range**2)
+        in_channels = num_groups * num_dilations * (cv_search_range**2)
         self.use_cost_volume_residual = use_cost_volume_residual
 
         stem_num_groups = num_dilations
@@ -73,7 +73,6 @@ class DCVFilterGroupConvStemJoint_SingelStage(BaseModule):
             )
 
         unet_cfg.IN_CHANNELS = out_channels + feat_in_planes
-        unet_cfg.HIDDEN_DIM = hidden_dim
         unet_cfg.OUT_CHANNELS = out_channels
 
         self.unet = build_module(unet_cfg)
@@ -85,7 +84,7 @@ class DCVFilterGroupConvStemJoint_SingelStage(BaseModule):
     def from_config(cls, cfg):
         return {
             "unet_cfg": cfg.UNET,
-            "cv_num_groups": cfg.GROUPS,
+            "num_groups": cfg.NUM_GROUPS,
             "num_dilations": cfg.NUM_DILATIONS,
             "cv_search_range": cfg.COST_VOLUME_SEARCH_RANGE,
             "feat_in_planes": cfg.FEAT_IN_PLANES,
@@ -97,15 +96,14 @@ class DCVFilterGroupConvStemJoint_SingelStage(BaseModule):
         }
 
     def forward(self, cost, x):
-        # we use the feature from the stride of 8 only for now
+        # use the feature from the stride of 8
         x = x[-1]
 
         b, c, u, v, h, w = cost.shape
         cost = cost.view(b, c * u * v, h, w)
 
         cost = self.stem(cost)
-        cost = self.stem_xform(cost)
-        flow_logits_stage0 = cost
+        flow_logits_stage0 = self.stem_xform(cost)
 
         x_out = torch.cat((x, cost), dim=1)
         x_out = self.unet(x_out)
