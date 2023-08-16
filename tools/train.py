@@ -1,5 +1,5 @@
 from ezflow.data import DataloaderCreator
-from ezflow.engine import DistributedTrainer, Trainer, get_cfg
+from ezflow.engine import DistributedTrainer, Trainer, get_training_cfg
 from ezflow.models import build_model
 
 
@@ -7,7 +7,7 @@ def main(args):
 
     # Load training configuration
 
-    cfg = get_cfg(args.train_cfg)
+    cfg = get_training_cfg(args.train_cfg)
 
     if args.device:
         cfg.DEVICE = args.device

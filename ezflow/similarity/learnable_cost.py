@@ -233,6 +233,7 @@ class LearnableMatchingCost(nn.Module):
 
 @SIMILARITY_REGISTRY.register()
 class MatryoshkaDilatedCostVolume(nn.Module):
+    @configurable
     def __init__(
         self,
         num_groups=1,
@@ -242,7 +243,8 @@ class MatryoshkaDilatedCostVolume(nn.Module):
         use_relu=False,
     ):
         super(MatryoshkaDilatedCostVolume, self).__init__()
-
+        self.num_groups = num_groups
+        self.use_relu = use_relu
         self._set_concentric_offsets(dilations=dilations, radius=max_displacement)
 
         self.corr_layers = nn.ModuleList()
@@ -257,9 +259,6 @@ class MatryoshkaDilatedCostVolume(nn.Module):
                     dilation_patch=dilations[i],
                 )
             )
-
-        self.num_groups = num_groups
-        self.use_relu = use_relu
 
     @classmethod
     def from_config(cls, cfg):
@@ -310,6 +309,7 @@ class MatryoshkaDilatedCostVolume(nn.Module):
 
 @SIMILARITY_REGISTRY.register()
 class MatryoshkaDilatedCostVolumeList(nn.Module):
+    @configurable
     def __init__(
         self,
         num_groups=1,
@@ -317,15 +317,12 @@ class MatryoshkaDilatedCostVolumeList(nn.Module):
         encoder_output_strides=[2, 8],
         dilations=[[1], [1, 2, 3, 5, 9, 16]],
         normalize_feat_l2=False,
-        relu_after_corr=False,
+        use_relu=False,
     ):
         super(MatryoshkaDilatedCostVolumeList, self).__init__()
 
-        # assert len(dilations) == len(encoder_output_strides), 'Fatal error!'
-        # assert encoder_output_strides[-1] == 8, 'Fatal error of the encoder.'
-
         self.normalize_feat_l2 = normalize_feat_l2
-        cost_volume_list = nn.ModuleList()
+        self.cost_volume_list = nn.ModuleList()
         offsets = None
 
         for idx, (dilations_i, feat_stride_i) in enumerate(
@@ -336,11 +333,11 @@ class MatryoshkaDilatedCostVolumeList(nn.Module):
                 num_groups=num_groups,
                 max_displacement=max_displacement,
                 dilations=dilations_i,
-                stride=feat_stride_i,
-                relu_after_corr=relu_after_corr,
+                stride=8 // feat_stride_i,
+                use_relu=use_relu,
             )
 
-            cost_volume_list.append(cost_volume_i)
+            self.cost_volume_list.append(cost_volume_i)
             if offsets is None:
                 offsets = cost_volume_i.get_relative_offsets() * feat_stride_i
             else:
@@ -350,6 +347,7 @@ class MatryoshkaDilatedCostVolumeList(nn.Module):
                 )
 
         self.offsets = offsets
+        self._set_global_flow_offsets()
 
     @classmethod
     def from_config(cls, cfg):
@@ -362,7 +360,7 @@ class MatryoshkaDilatedCostVolumeList(nn.Module):
             "use_relu": cfg.USE_RELU,
         }
 
-    def get_global_flow_offsets(self):
+    def _set_global_flow_offsets(self):
         # process offsets
         num_dilations, search_range = self.offsets.shape
         offsets_2d = torch.zeros((num_dilations, search_range, search_range, 2))
@@ -370,22 +368,27 @@ class MatryoshkaDilatedCostVolumeList(nn.Module):
             offsets_i, offsets_j = torch.meshgrid(self.offsets[idx], self.offsets[idx])
             offsets_2d[idx, :, :, 0] = offsets_i  # y
             offsets_2d[idx, :, :, 1] = offsets_j  # x
-        return offsets_2d
+
+        self.register_buffer("offsets_2d", torch.Tensor(offsets_2d).float())
+
+    def get_global_flow_offsets(self):
+        return self.offsets_2d
 
     def get_search_range(self):
         return self.cost_volume_list[0].get_search_range()
 
-    def forward(self, x, nb_x):
+    def forward(self, x1, x2):
         # B, C, U, V, H, W
         cost_list = []
-        for idx in range(len(x)):
-            x_i = x[idx]
-            nb_x_i = nb_x[idx]
+        for idx in range(len(x1)):
+            x1_i = x1[idx]
+            x2_i = x2[idx]
             if self.normalize_feat_l2:
-                x_i = x_i / (x_i.norm(dim=1, keepdim=True) + 1e-9)
-                nb_x_i = nb_x_i / (nb_x_i.norm(dim=1, keepdim=True) + 1e-9)
-            cost_i = self.cost_volume_list[idx](x_i, nb_x_i)
+                x1_i = x1_i / (x1_i.norm(dim=1, keepdim=True) + 1e-9)
+                x2_i = x2_i / (x2_i.norm(dim=1, keepdim=True) + 1e-9)
+            cost_i = self.cost_volume_list[idx](x1_i, x2_i)
             cost_list.append(cost_i)
+
         cost = torch.cat(cost_list, dim=1)
 
         return cost

@@ -29,11 +29,13 @@ class DCVNet(BaseModule):
         self.encoder = build_encoder(self.cfg.ENCODER)
         self.cost_volume_list = build_similarity(self.cfg.SIMILARITY)
 
-        self.cfg.DECODER.DILATIONS = self.cfg.SIMILARITY.DILATIONS
-        self.cfg.DECODER.FLOW_OFFSETS = self.cost_volume_list.get_global_flow_offsets()
-        self.cfg.DECODER.COST_VOLUME_FILTER.SEARCH_RANGE = (
-            self.cost_volume_list.get_search_range()
-        )
+        if "DILATIONS" not in self.cfg.DECODER:
+            self.cfg.DECODER.DILATIONS = self.cfg.SIMILARITY.DILATIONS
+
+        if "SEARCH_RANGE" not in self.cfg.DECODER.COST_VOLUME_FILTER:
+            self.cfg.DECODER.COST_VOLUME_FILTER.SEARCH_RANGE = (
+                self.cost_volume_list.get_search_range()
+            )
 
         self.decoder = build_decoder(self.cfg.DECODER)
 
@@ -64,8 +66,11 @@ class DCVNet(BaseModule):
         assert len(fmap1) == len(self.cfg.SIMILARITY.DILATIONS)
 
         cost = self.cost_volume_list(fmap1, fmap2)
+        flow_offsets = self.cost_volume_list.get_global_flow_offsets().view(
+            1, -1, 2, 1, 1
+        )
 
-        flow_list, flow_logits_list = self.decoder(cost, context_fmap1)
+        flow_list, flow_logits_list = self.decoder(cost, context_fmap1, flow_offsets)
 
         output = {"flow_preds": flow_list, "flow_logits": flow_logits_list}
 

@@ -1,4 +1,5 @@
 from .build import MODEL_REGISTRY, build_model, get_default_model_cfg
+from .dcvnet import DCVNet
 from .dicl import DICL
 from .flownet_c import FlowNetC
 from .flownet_s import FlowNetS
