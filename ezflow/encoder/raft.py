@@ -7,9 +7,9 @@ from .residual import BasicEncoder
 
 
 @ENCODER_REGISTRY.register()
-class DCVNetBackbone(nn.Module):
+class RAFTBackbone(nn.Module):
     """
-    ResNet-style encoder that outputs feature maps of size (H/2,W/2) and (H/8,W/8)
+    ResNet-style encoder with basic residual blocks
 
     Parameters
     ----------
@@ -23,7 +23,6 @@ class DCVNetBackbone(nn.Module):
         Dropout probability
     layer_config : list of int or tuple of int
         Number of output features per layer
-
     """
 
     @configurable
@@ -31,24 +30,25 @@ class DCVNetBackbone(nn.Module):
         self,
         in_channels=3,
         out_channels=256,
-        norm="batch",
+        norm="instance",
         p_dropout=0.0,
         layer_config=(64, 96, 128),
     ):
-        super(DCVNetBackbone, self).__init__()
-        assert len(layer_config) == 3, "Invalid number of layers for DCVNetBackbone."
+        super(RAFTBackbone, self).__init__()
 
         self.encoder = BasicEncoder(
             in_channels=in_channels,
             norm=norm,
             p_dropout=p_dropout,
             layer_config=layer_config,
-            num_residual_layers=(1, 2, 2),
-            intermediate_features=True,
+            num_residual_layers=(2, 2, 2),
+            intermediate_features=False,
         )
 
-        self.conv_stride2 = nn.Conv2d(layer_config[0], out_channels // 2, kernel_size=1)
-        self.conv_stride8 = nn.Conv2d(layer_config[2], out_channels, kernel_size=1)
+        self.conv_out = nn.Conv2d(layer_config[-1], out_channels, kernel_size=1)
+        self.dropout = nn.Identity()
+        if p_dropout > 0:
+            self.dropout = nn.Dropout2d(p=p_dropout)
 
     @classmethod
     def from_config(cls, cfg):
@@ -61,16 +61,16 @@ class DCVNetBackbone(nn.Module):
         }
 
     def forward(self, x):
-        if isinstance(x, tuple) or isinstance(x, list):
+        is_list = isinstance(x, tuple) or isinstance(x, list)
+        if is_list:
+            batch_dim = x[0].shape[0]
             x = torch.cat(x, dim=0)
 
-        feature_pyramid = self.encoder(x)
+        out = self.encoder(x)
+        out = self.conv_out(out)
+        out = self.dropout(out)
 
-        # Use feature maps of downsampling size (H/2,W/2) and (H/8, W/8)
-        context = [feature_pyramid[0], feature_pyramid[2]]
+        if is_list:
+            out = torch.split(out, [batch_dim, batch_dim], dim=0)
 
-        feat = []
-        for x_i, conv_i in zip(context, [self.conv_stride2, self.conv_stride8]):
-            feat.append(conv_i(x_i))
-
-        return feat, context
+        return out

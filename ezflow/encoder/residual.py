@@ -33,13 +33,11 @@ class BasicEncoder(nn.Module):
     def __init__(
         self,
         in_channels=3,
-        out_channels=128,
         norm="batch",
         p_dropout=0.0,
         layer_config=(64, 96, 128),
         num_residual_layers=(2, 2, 2),
         intermediate_features=False,
-        enable_output_layer=True,
     ):
         super(BasicEncoder, self).__init__()
 
@@ -74,10 +72,7 @@ class BasicEncoder(nn.Module):
 
         for i in range(len(layer_config)):
 
-            if i == 0:
-                stride = 1
-            else:
-                stride = 2
+            stride = 1 if i == 0 else 2
 
             layers.append(
                 self._make_layer(
@@ -90,13 +85,9 @@ class BasicEncoder(nn.Module):
             )
             start_channels = layer_config[i]
 
-        if enable_output_layer:
-            layers.append(nn.Conv2d(layer_config[-1], out_channels, kernel_size=1))
-
-        dropout = nn.Identity()
+        self.dropout = nn.Identity()
         if p_dropout > 0:
-            dropout = nn.Dropout2d(p=p_dropout)
-        layers.append(dropout)
+            self.dropout = nn.Dropout2d(p=p_dropout)
 
         self.encoder = layers
         if self.intermediate_features is False:
@@ -126,7 +117,6 @@ class BasicEncoder(nn.Module):
     def from_config(cls, cfg):
         return {
             "in_channels": cfg.IN_CHANNELS,
-            "out_channels": cfg.OUT_CHANNELS,
             "norm": cfg.NORM,
             "p_dropout": cfg.P_DROPOUT,
             "layer_config": cfg.LAYER_CONFIG,
@@ -143,25 +133,14 @@ class BasicEncoder(nn.Module):
                 x = self.encoder[i](x)
 
                 if isinstance(self.encoder[i], nn.Sequential):
+                    x = self.dropout(x)
                     features.append(x)
-
-            features.append(x)
 
             return features
 
-        else:
-
-            is_list = isinstance(x, tuple) or isinstance(x, list)
-            if is_list:
-                batch_dim = x[0].shape[0]
-                x = torch.cat(x, dim=0)
-
-            out = self.encoder(x)
-
-            if is_list:
-                out = torch.split(out, [batch_dim, batch_dim], dim=0)
-
-            return out
+        out = self.encoder(x)
+        out = self.dropout(out)
+        return out
 
 
 @ENCODER_REGISTRY.register()

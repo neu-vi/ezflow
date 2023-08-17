@@ -4,4 +4,5 @@ from .dcvnet import DCVNetBackbone
 from .ganet import GANetBackbone
 from .pspnet import PSPNetBackbone
 from .pyramid import PyramidEncoder
+from .raft import RAFTBackbone
 from .residual import *

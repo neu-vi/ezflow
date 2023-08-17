@@ -6,8 +6,6 @@ ENCODER:
   NORM: instance
   P_DROPOUT: 0.0
   LAYER_CONFIG: [64, 96, 128]
-  NUM_RESIDUAL_LAYERS: [1, 2, 2]
-  INTERMEDIATE_FEATURES: True
 SIMILARITY:
   NAME: MatryoshkaDilatedCostVolumeList
   NUM_GROUPS: 1
