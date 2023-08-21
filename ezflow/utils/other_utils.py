@@ -2,6 +2,7 @@ import socket
 from contextlib import closing
 
 import torch
+import torch.nn as nn
 
 
 def coords_grid(batch_size, h, w):
@@ -23,7 +24,7 @@ def coords_grid(batch_size, h, w):
         Grid of coordinates
     """
 
-    coords = torch.meshgrid(torch.arange(h), torch.arange(w))
+    coords = torch.meshgrid(torch.arange(h), torch.arange(w), indexing="ij")
     coords = torch.stack(coords[::-1], dim=0).float()
 
     return coords[None].repeat(batch_size, 1, 1, 1)
@@ -101,3 +102,21 @@ def is_port_available(port):
 
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         return s.connect_ex(("localhost", port)) != 0
+
+
+def replace_relu(module, new_fn):
+    if isinstance(module, nn.DataParallel) or isinstance(
+        module, nn.parallel.DistributedDataParallel
+    ):
+        raise Exception("Expected an nn.Module")
+
+    assert isinstance(new_fn, (nn.LeakyReLU, nn.GELU))
+
+    mod = module
+    if isinstance(module, nn.ReLU):
+        mod = new_fn
+
+    for name, child in module.named_children():
+        mod.add_module(name, replace_relu(child, new_fn))
+
+    return mod

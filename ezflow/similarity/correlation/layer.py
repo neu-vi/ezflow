@@ -47,7 +47,8 @@ class CorrelationLayer(nn.Module):
             [
                 torch.arange(0, 2 * self.max_h_disp + 1),
                 torch.arange(0, 2 * self.max_h_disp + 1),
-            ]
+            ],
+            indexing="ij",
         )
 
         H, W = features1.shape[2], features1.shape[3]

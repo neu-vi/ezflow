@@ -365,7 +365,9 @@ class MatryoshkaDilatedCostVolumeList(nn.Module):
         num_dilations, search_range = self.offsets.shape
         offsets_2d = torch.zeros((num_dilations, search_range, search_range, 2))
         for idx in range(num_dilations):
-            offsets_i, offsets_j = torch.meshgrid(self.offsets[idx], self.offsets[idx])
+            offsets_i, offsets_j = torch.meshgrid(
+                self.offsets[idx], self.offsets[idx], indexing="ij"
+            )
             offsets_2d[idx, :, :, 0] = offsets_i  # y
             offsets_2d[idx, :, :, 1] = offsets_j  # x
 

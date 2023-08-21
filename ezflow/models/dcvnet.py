@@ -6,6 +6,7 @@ from ..decoder import build_decoder
 from ..encoder import build_encoder
 from ..modules import BaseModule, build_module
 from ..similarity import build_similarity
+from ..utils import replace_relu
 from .build import MODEL_REGISTRY
 
 
@@ -38,6 +39,7 @@ class DCVNet(BaseModule):
             )
 
         self.decoder = build_decoder(self.cfg.DECODER)
+        self = replace_relu(self, nn.LeakyReLU(negative_slope=0.1))
 
     def forward(self, img1, img2):
         """

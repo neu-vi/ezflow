@@ -685,11 +685,11 @@ class AdvancedSpatialTransform(object):
         inputs = [img1, img2]
         h, w, _ = inputs[0].shape
         th, tw = self.crop
-        meshgrid = torch.meshgrid([torch.Tensor(range(th)), torch.Tensor(range(tw))])[
-            ::-1
-        ]
+        meshgrid = torch.meshgrid(
+            [torch.Tensor(range(th)), torch.Tensor(range(tw))], indexing="ij"
+        )[::-1]
         cornergrid = torch.meshgrid(
-            [torch.Tensor([0, th - 1]), torch.Tensor([0, tw - 1])]
+            [torch.Tensor([0, th - 1]), torch.Tensor([0, tw - 1])], indexing="ij"
         )[::-1]
 
         for i in range(50):
