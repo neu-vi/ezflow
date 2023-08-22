@@ -157,7 +157,7 @@ class DCVDilatedFlowStackFilterDecoder(BaseModule):
 
     def logits_to_flow(self, flow_logits, flow_offsets):
         b, cuv, h, w = flow_logits.shape
-        # assert self.num_hypothesis == 1
+
         flow_logits = flow_logits.view(b, self.num_dilations, -1, h, w)
 
         flow_logits = flow_logits.view(b, -1, h, w)
