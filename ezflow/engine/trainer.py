@@ -260,21 +260,15 @@ class BaseTrainer:
             self.writer.close()
 
     def _run_step(self, inp, target):
+        inp, target = self._to_device(inp, target)
         img1, img2 = inp
-        img1, img2, target = (
-            img1.to(self.device),
-            img2.to(self.device),
-            target.to(self.device),
-        )
 
         if self._is_main_process():
             start_time = time.time()
 
         with autocast(enabled=self.cfg.MIXED_PRECISION):
             output = self.model(img1, img2)
-            loss = self.loss_fn(
-                output["flow_preds"], target / self.cfg.TARGET_SCALE_FACTOR
-            )
+            loss = self.loss_fn(**output, **target)
 
             del output
 
@@ -297,6 +291,16 @@ class BaseTrainer:
 
         return loss
 
+    def _to_device(self, inp, target):
+        img1, img2 = inp
+        inp = (img1.to(self.device), img2.to(self.device))
+
+        for key, val in target.items():
+            target[key] = val.to(self.device)
+
+        target["flow_gt"] / self.cfg.TARGET_SCALE_FACTOR
+        return inp, target
+
     def _log_step(self, iteration, total_iters, loss_meter):
         if iteration % self.cfg.LOG_ITERATIONS_INTERVAL == 0:
             print(
@@ -316,30 +320,19 @@ class BaseTrainer:
 
         with torch.no_grad():
             for inp, target in self.val_loader:
+                inp, target = self._to_device(inp, target)
                 img1, img2 = inp
-                img1, img2, target = (
-                    img1.to(self.device),
-                    img2.to(self.device),
-                    target.to(self.device),
-                )
 
                 if self.model_parallel:
                     output = self.model.module(img1, img2)
                 else:
                     output = self.model(img1, img2)
 
-                loss = self.loss_fn(
-                    output["flow_preds"], target / self.cfg.TARGET_SCALE_FACTOR
-                )
+                loss = self.loss_fn(**output, **target)
 
                 loss_meter.update(loss.item())
 
-                """
-                    Predicted upsampled flow should be scaled for EPE calculation.
-                """
-                metric = self._calculate_metric(
-                    output["flow_upsampled"] * self.cfg.TARGET_SCALE_FACTOR, target
-                )
+                metric = self._calculate_metric(output, target)
                 metric_meter.update(metric)
 
                 del output
@@ -365,7 +358,12 @@ class BaseTrainer:
         self._freeze_bn()
 
     def _calculate_metric(self, pred, target):
-        return endpointerror(pred, target)
+        """
+        Predicted upsampled flow should be scaled for EPE calculation.
+        """
+        flow_pred = pred["flow_upsampled"] * self.cfg.TARGET_SCALE_FACTOR
+        flow_gt = target["flow_gt"]
+        return endpointerror(flow_pred, flow_gt)
 
     def _save_checkpoints(self, ckpt_type, ckpt_number):
         if self.model_parallel:

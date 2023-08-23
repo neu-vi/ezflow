@@ -83,11 +83,10 @@ class BaseDataset(data.Dataset):
         Returns
         -------
         tuple
-            A tuple consisting of ((img1, img2), flow)
+            A tuple consisting of ((img1, img2), dict)
 
             img1 and img2 of shape 3 x H x W.
-            flow of shape 2 x H x W if append_valid_mask is False.
-            flow of shape 3 x H x W if append_valid_mask is True.
+            dictionary containing flow of shape 2 x H x W, valid mask of shape 1 x H x W
         """
 
         if not self.init_seed:
@@ -153,6 +152,8 @@ class BaseDataset(data.Dataset):
         flow = torch.from_numpy(flow).permute(2, 0, 1).float()
 
         img1, img2 = self.normalize(img1, img2)
+        target = {}
+        target["flow_gt"] = flow
 
         if self.append_valid_mask:
             if valid is not None:
@@ -162,9 +163,9 @@ class BaseDataset(data.Dataset):
 
             valid = valid.float()
             valid = torch.unsqueeze(valid, dim=0)
-            flow = torch.cat([flow, valid], dim=0)
+            target["valid"] = valid
 
-        return (img1, img2), flow
+        return (img1, img2), target
 
     def __rmul__(self, v):
         """

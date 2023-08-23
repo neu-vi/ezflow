@@ -86,24 +86,19 @@ class MultiScaleLoss(nn.Module):
             "valid_range": cfg.VALID_RANGE,
         }
 
-    def forward(self, pred, label):
-
-        if label.shape[1] == 3:
-            """Ignore valid mask for Multiscale Loss."""
-            mask = label[:, 2:, :, :]
-            label = label[:, :2, :, :]
+    def forward(self, flow_preds, flow_gt, **kwargs):
 
         loss = 0
-        b, c, h, w = label.size()
+        b, c, h, w = flow_gt.size()
 
         if (
-            (type(pred) is not tuple)
-            and (type(pred) is not list)
-            and (type(pred) is not set)
+            (type(flow_preds) is not tuple)
+            and (type(flow_preds) is not list)
+            and (type(flow_preds) is not set)
         ):
-            pred = {pred}
+            flow_preds = {flow_preds}
 
-        for i, level_pred in enumerate(pred):
+        for i, level_pred in enumerate(flow_preds):
 
             if self.resize_flow.lower() == "upsample":
                 real_flow = F.interpolate(
@@ -115,14 +110,14 @@ class MultiScaleLoss(nn.Module):
                 real_flow[:, 1, :, :] = real_flow[:, 1, :, :] * (
                     h / level_pred.shape[2]
                 )
-                target = label
+                target = flow_gt
 
             elif self.resize_flow.lower() == "downsample":
                 # down sample ground truth following irr solution
                 # https://github.com/visinf/irr/blob/master/losses.py#L16
                 b, c, h, w = level_pred.shape
 
-                target = F.adaptive_avg_pool2d(label, [h, w])
+                target = F.adaptive_avg_pool2d(flow_gt, [h, w])
                 real_flow = level_pred
 
             if self.norm == "l2":
@@ -159,6 +154,6 @@ class MultiScaleLoss(nn.Module):
 
             loss += level_loss
 
-        loss = loss / len(pred)
+        loss = loss / len(flow_preds)
 
         return loss

@@ -71,15 +71,13 @@ class FlowOffsetLoss(nn.Module):
             **kwargs,
         )
 
-    def forward(self, pred, target, curr_iter):
-        assert (
-            target.shape[1] == 3
-        ), "Incorrect channel dimension. Set append valid mask to True in DataloaderCreator to append the valid data mask in the target label."
+    def forward(
+        self, flow_preds, flow_logits, flow_gt, valid, offset_lab, curr_iter, **kwargs
+    ):
 
-        _, valid = target[:, :2, :, :], target[:, 2:, :, :]
         valid = torch.squeeze(valid, dim=1)
 
-        flow_loss = self.l1_loss(pred, target)
-        logit_loss = self.cross_entropy_loss(pred, _, valid, curr_iter)
+        flow_loss = self.l1_loss(flow_preds, flow_gt)
+        logit_loss = self.cross_entropy_loss(flow_logits, offset_lab, valid, curr_iter)
         loss = flow_loss + logit_loss
         return loss
