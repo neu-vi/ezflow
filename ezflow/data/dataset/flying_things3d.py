@@ -38,6 +38,8 @@ class FlyingThings3D(BaseDataset):
         The parameters for data augmentation
     norm_params : :obj:`dict`, optional
         The parameters for normalization
+    flow_offset_params: :obj:`dict`, optional
+        The parameters for adding bilinear interpolated weights surrounding each ground truth flow values.
     """
 
     @configurable
@@ -62,6 +64,7 @@ class FlyingThings3D(BaseDataset):
             "advanced_spatial_aug_params": {"enabled": False},
         },
         norm_params={"use": False},
+        flow_offset_params={"use": False},
     ):
         super(FlyingThings3D, self).__init__(
             init_seed=init_seed,
@@ -74,6 +77,7 @@ class FlyingThings3D(BaseDataset):
             aug_params=aug_params,
             sparse_transform=False,
             norm_params=norm_params,
+            flow_offset_params=flow_offset_params,
         )
         assert (
             split.lower() == "training" or split.lower() == "validation"
@@ -131,6 +135,7 @@ class FlyingThings3D(BaseDataset):
             "augment": cfg.AUGMENTATION.USE,
             "aug_params": cfg.AUGMENTATION.PARAMS,
             "norm_params": cfg.NORM_PARAMS,
+            "flow_offset_params": cfg.FLOW_OFFSET_PARAMS,
         }
 
 
@@ -157,6 +162,7 @@ class FlyingThings3DClean(FlyingThings3D):
             "advanced_spatial_aug_params": {"enabled": False},
         },
         norm_params={"use": False},
+        flow_offset_params={"use": False},
     ):
         super(FlyingThings3DClean, self).__init__(
             root_dir=root_dir,
@@ -171,6 +177,7 @@ class FlyingThings3DClean(FlyingThings3D):
             augment=augment,
             aug_params=aug_params,
             norm_params=norm_params,
+            flow_offset_params=flow_offset_params,
         )
 
     @classmethod
@@ -187,6 +194,7 @@ class FlyingThings3DClean(FlyingThings3D):
             "augment": cfg.AUGMENTATION.USE,
             "aug_params": cfg.AUGMENTATION.PARAMS,
             "norm_params": cfg.NORM_PARAMS,
+            "flow_offset_param": cfg.FLOW_OFFSET_PARAMS,
         }
 
 
@@ -213,6 +221,7 @@ class FlyingThings3DFinal(FlyingThings3D):
             "advanced_spatial_aug_params": {"enabled": False},
         },
         norm_params={"use": False},
+        flow_offset_params={"use": False},
     ):
         super(FlyingThings3DFinal, self).__init__(
             root_dir=root_dir,
@@ -227,6 +236,7 @@ class FlyingThings3DFinal(FlyingThings3D):
             augment=augment,
             aug_params=aug_params,
             norm_params=norm_params,
+            flow_offset_params=flow_offset_params,
         )
 
     @classmethod
@@ -243,6 +253,7 @@ class FlyingThings3DFinal(FlyingThings3D):
             "augment": cfg.AUGMENTATION.USE,
             "aug_params": cfg.AUGMENTATION.PARAMS,
             "norm_params": cfg.NORM_PARAMS,
+            "flow_offset_params": cfg.FLOW_OFFSET_PARAMS,
         }
 
 
@@ -267,6 +278,10 @@ class FlyingThings3DSubset(BaseDataset):
         If True, applies data augmentation
     aug_param : :obj:`dict`, optional
         The parameters for data augmentation
+    norm_params : :obj:`dict`, optional
+        The parameters for normalization
+    flow_offset_params: :obj:`dict`, optional
+        The parameters for adding bilinear interpolated weights surrounding each ground truth flow values.
     """
 
     @configurable
@@ -290,6 +305,7 @@ class FlyingThings3DSubset(BaseDataset):
             "advanced_spatial_aug_params": {"enabled": False},
         },
         norm_params={"use": False},
+        flow_offset_params={"use": False},
     ):
         super(FlyingThings3DSubset, self).__init__(
             init_seed=init_seed,
@@ -302,6 +318,7 @@ class FlyingThings3DSubset(BaseDataset):
             aug_params=aug_params,
             sparse_transform=False,
             norm_params=norm_params,
+            flow_offset_params=flow_offset_params,
         )
         assert (
             split.lower() == "training" or split.lower() == "validation"
@@ -360,4 +377,5 @@ class FlyingThings3DSubset(BaseDataset):
             "augment": cfg.AUGMENTATION.USE,
             "aug_params": cfg.AUGMENTATION.PARAMS,
             "norm_params": cfg.NORM_PARAMS,
+            "flow_offset_params": cfg.FLOW_OFFSET_PARAMS,
         }

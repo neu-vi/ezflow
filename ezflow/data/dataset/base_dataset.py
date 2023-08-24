@@ -6,7 +6,12 @@ import torch.utils.data as data
 import torchvision.transforms as transforms
 
 from ...functional import Normalize, crop
-from ...utils import read_flow, read_image
+from ...utils import (
+    flow_to_bilinear_interpolation_weights,
+    get_flow_offsets,
+    read_flow,
+    read_image,
+)
 
 
 class BaseDataset(data.Dataset):
@@ -33,6 +38,8 @@ class BaseDataset(data.Dataset):
         The parameters for data augmentation
     norm_params : :obj:`dict`, optional
         The parameters for normalization
+    flow_offset_params: :obj:`dict`, optional
+        The parameters for adding bilinear interpolated weights surrounding each ground truth flow values.
     """
 
     def __init__(
@@ -54,6 +61,13 @@ class BaseDataset(data.Dataset):
         },
         sparse_transform=False,
         norm_params={"use": False},
+        flow_offset_params={
+            "use": False,
+            "dilations": [[1], [1, 2, 3, 5, 9, 16]],
+            "feat_strides": [2, 8],
+            "search_radius": 4,
+            "offset_bias": [0, 0],
+        },
     ):
 
         self.is_prediction = is_prediction
@@ -70,6 +84,10 @@ class BaseDataset(data.Dataset):
         self.flow_list = []
         self.image_list = []
         self.normalize = Normalize(**norm_params)
+
+        self.flow_offsets = None
+        if flow_offset_params["use"]:
+            self.flow_offsets = get_flow_offsets(**flow_offset_params)
 
     def __getitem__(self, index):
         """
@@ -147,6 +165,13 @@ class BaseDataset(data.Dataset):
                 sparse_transform=self.sparse_transform,
             )
 
+        if self.flow_offsets is not None:
+            offset_labs = self.__flow_to_bilinear_interpolation_weights(flow, valid)
+            offset_labs = torch.from_numpy(offset_labs).float()
+            offset_labs = offset_labs.view(
+                offset_labs.shape[0], offset_labs.shape[1], -1
+            ).permute(2, 0, 1)
+
         img1 = torch.from_numpy(img1).permute(2, 0, 1).float()
         img2 = torch.from_numpy(img2).permute(2, 0, 1).float()
         flow = torch.from_numpy(flow).permute(2, 0, 1).float()
@@ -165,7 +190,26 @@ class BaseDataset(data.Dataset):
             valid = torch.unsqueeze(valid, dim=0)
             target["valid"] = valid
 
+        if self.flow_offsets is not None:
+            target["offset_labs"] = offset_labs
+
         return (img1, img2), target
+
+    def __flow_to_bilinear_interpolation_weights(self, flow, valid):
+        max_flow = np.max(self.flow_offsets)
+        valid_offsets = np.logical_and(
+            np.abs(flow[:, :, 0]) <= max_flow, np.abs(flow[:, :, 1]) <= max_flow
+        )
+        if valid is None:
+            valid = valid_offsets
+        else:
+            valid = np.logical_and(valid, valid_offsets)
+
+        flow_downsample = flow[::8, ::8]
+        offset_labs, dilation_labs = flow_to_bilinear_interpolation_weights(
+            flow_downsample, valid[::8, ::8], self.flow_offsets
+        )
+        return offset_labs
 
     def __rmul__(self, v):
         """

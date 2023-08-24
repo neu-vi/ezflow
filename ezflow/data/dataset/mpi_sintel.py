@@ -39,6 +39,8 @@ class MPISintel(BaseDataset):
         The parameters for data augmentation
     norm_params : :obj:`dict`, optional
         The parameters for normalization
+    flow_offset_params: :obj:`dict`, optional
+        The parameters for adding bilinear interpolated weights surrounding each ground truth flow values.
     """
 
     @configurable
@@ -63,6 +65,7 @@ class MPISintel(BaseDataset):
             "advanced_spatial_aug_params": {"enabled": False},
         },
         norm_params={"use": False},
+        flow_offset_params={"use": False},
     ):
         super(MPISintel, self).__init__(
             init_seed=init_seed,
@@ -75,6 +78,7 @@ class MPISintel(BaseDataset):
             aug_params=aug_params,
             sparse_transform=False,
             norm_params=norm_params,
+            flow_offset_params=flow_offset_params,
         )
 
         assert (
@@ -122,6 +126,7 @@ class MPISintel(BaseDataset):
             "augment": cfg.AUGMENTATION.USE,
             "aug_params": cfg.AUGMENTATION.PARAMS,
             "norm_params": cfg.NORM_PARAMS,
+            "flow_offset_params": cfg.FLOW_OFFSET_PARAMS,
         }
 
 
@@ -148,6 +153,7 @@ class MPISintelClean(MPISintel):
             "advanced_spatial_aug_params": {"enabled": False},
         },
         norm_params={"use": False},
+        flow_offset_params={"use": False},
     ):
         super(MPISintelClean, self).__init__(
             root_dir=root_dir,
@@ -162,6 +168,7 @@ class MPISintelClean(MPISintel):
             augment=augment,
             aug_params=aug_params,
             norm_params=norm_params,
+            flow_offset_params=flow_offset_params,
         )
 
     @classmethod
@@ -178,6 +185,7 @@ class MPISintelClean(MPISintel):
             "augment": cfg.AUGMENTATION.USE,
             "aug_params": cfg.AUGMENTATION.PARAMS,
             "norm_params": cfg.NORM_PARAMS,
+            "flow_offset_params": cfg.FLOW_OFFSET_PARAMS,
         }
 
 
@@ -204,6 +212,7 @@ class MPISintelFinal(MPISintel):
             "advanced_spatial_aug_params": {"enabled": False},
         },
         norm_params={"use": False},
+        flow_offset_params={"use": False},
     ):
         super(MPISintelFinal, self).__init__(
             root_dir=root_dir,
@@ -218,6 +227,7 @@ class MPISintelFinal(MPISintel):
             augment=augment,
             aug_params=aug_params,
             norm_params=norm_params,
+            flow_offset_params=flow_offset_params,
         )
 
     @classmethod
@@ -234,4 +244,5 @@ class MPISintelFinal(MPISintel):
             "augment": cfg.AUGMENTATION.USE,
             "aug_params": cfg.AUGMENTATION.PARAMS,
             "norm_params": cfg.NORM_PARAMS,
+            "flow_offset_params": cfg.FLOW_OFFSET_PARAMS,
         }
