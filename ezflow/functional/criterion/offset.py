@@ -29,7 +29,7 @@ class OffsetCrossEntropyLoss(nn.Module):
             weight_anneal_fn(init_weight=wt, **kwargs) for wt in offset_loss_weight
         ]
 
-    def __compute_loss(self, flow_logits, offset_labs, valid, curr_iter):
+    def __compute_loss(self, flow_logits, offset_labs, valid):
         # exlude invalid pixels and extremely large diplacements()
         valid[:, :: self.stride, :: self.stride]
         valid = valid >= 0.5
@@ -40,13 +40,13 @@ class OffsetCrossEntropyLoss(nn.Module):
         loss = (valid[:, None] * loss).mean()
         return loss
 
-    def forward(self, flow_logits_list, offset_labs, valid, curr_iter):
+    def forward(self, flow_logits_list, offset_labs, valid, current_iter, **kwargs):
         logit_loss = 0.0
         for i, flow_logits in enumerate(flow_logits_list):
             loss = self.__compute_loss(flow_logits, offset_labs, valid)
-            logit_loss += (self.weight_annealers[i](curr_iter)) * loss
+            logit_loss += (self.weight_annealers[i](current_iter)) * loss
 
-        return loss
+        return logit_loss
 
 
 @FUNCTIONAL_REGISTRY.register()
@@ -72,12 +72,21 @@ class FlowOffsetLoss(nn.Module):
         )
 
     def forward(
-        self, flow_preds, flow_logits, flow_gt, valid, offset_lab, curr_iter, **kwargs
+        self,
+        flow_preds,
+        flow_logits,
+        flow_gt,
+        valid,
+        offset_lab,
+        current_iter,
+        **kwargs,
     ):
 
         valid = torch.squeeze(valid, dim=1)
 
         flow_loss = self.l1_loss(flow_preds, flow_gt)
-        logit_loss = self.cross_entropy_loss(flow_logits, offset_lab, valid, curr_iter)
+        logit_loss = self.cross_entropy_loss(
+            flow_logits, offset_lab, valid, current_iter, **kwargs
+        )
         loss = flow_loss + logit_loss
         return loss

@@ -164,12 +164,11 @@ class BaseTrainer:
 
             loss_meter.reset()
             for iteration, (inp, target) in enumerate(self.train_loader):
+                total_iters = iteration + (epoch * len(self.train_loader))
 
-                loss = self._run_step(inp, target)
+                loss = self._run_step(inp, target, current_iter=total_iters)
 
                 loss_meter.update(loss.item())
-
-                total_iters = iteration + (epoch * len(self.train_loader))
                 self._log_step(iteration, total_iters, loss_meter)
 
             print(f"\nEpoch {epoch+1}: Training loss = {loss_meter.sum}")
@@ -235,7 +234,7 @@ class BaseTrainer:
                 train_iter = iter(self.train_loader)
                 inp, target = next(train_iter)
 
-            loss = self._run_step(inp, target)
+            loss = self._run_step(inp, target, current_iter=step)
             loss_meter.update(loss.item())
 
             self._log_step(step, total_steps, loss_meter)
@@ -259,7 +258,7 @@ class BaseTrainer:
         if self._is_main_process():
             self.writer.close()
 
-    def _run_step(self, inp, target):
+    def _run_step(self, inp, target, **kwargs):
         inp, target = self._to_device(inp, target)
         img1, img2 = inp
 
@@ -268,7 +267,7 @@ class BaseTrainer:
 
         with autocast(enabled=self.cfg.MIXED_PRECISION):
             output = self.model(img1, img2)
-            loss = self.loss_fn(**output, **target)
+            loss = self.loss_fn(**output, **target, **kwargs)
 
             del output
 
