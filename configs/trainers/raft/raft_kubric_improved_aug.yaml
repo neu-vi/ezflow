@@ -1,10 +1,20 @@
 _BASE_: "../_base_/kubric_improved_aug.yaml"
 DATA:
   BATCH_SIZE: 10
-  TRAIN_CROP_SIZE: [368, 496]
-  VAL_CROP_SIZE: [368, 496]
-  APPEND_VALID_MASK: True
   NORM_PARAMS: {"use": True, "mean":[127.5, 127.5, 127.5], "std":[127.5, 127.5, 127.5]}
+  TRAIN_DATASET:
+    Kubric:
+      APPEND_VALID_MASK: True
+      CROP: 
+        USE: True
+        SIZE: [368, 496]
+        TYPE: "random"
+  VAL_DATASET:
+    Kubric: 
+      APPEND_VALID_MASK: True
+      PADDING: 1
+      CROP: 
+        USE: False
 SCHEDULER:
   USE: True
   NAME: OneCycleLR

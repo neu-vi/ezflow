@@ -17,6 +17,10 @@ class _ModelZooConfigs:
     }
 
     @staticmethod
+    def get_names():
+        return list(_ModelZooConfigs.MODEL_NAME_TO_CONFIG.keys())
+
+    @staticmethod
     def query(model_name):
 
         if model_name in _ModelZooConfigs.MODEL_NAME_TO_CONFIG:

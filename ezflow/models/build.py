@@ -14,6 +14,9 @@ def get_default_model_cfg(model_name):
     return get_cfg(cfg_path)
 
 
+def get_model_list():
+    return _ModelZooConfigs.get_names()
+
 def build_model(
     name, cfg_path=None, custom_cfg=False, cfg=None, default=False, weights_path=None
 ):

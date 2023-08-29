@@ -1,65 +1,89 @@
 DATA:
-  TRAIN_DATASET:
-    NAME: "kubric"
-    ROOT_DIR: "./Datasets/KubricFlow"
-  VAL_DATASET:
-    NAME: "kubric"
-    ROOT_DIR: "./Datasets/KubricFlow" 
+  BATCH_SIZE: 6
+  APPEND_VALID_MASK: False
   NUM_WORKERS: 4
   PIN_MEMORY: True
-  APPEND_VALID_MASK: False
   SHUFFLE: True
-  AUGMENTATION:
-    # Spatial Augmentation Settings borrowed from AutoFlow: https://github.com/google-research/opticalflow-autoflow/blob/main/src/dataset_lib/augmentations/aug_params.py
-    USE: True
-    PARAMS:
-      TRAINING:
-        COLOR_AUG_PARAMS: {
-          "enabled": True,
-          "asymmetric_color_aug_prob": 0.2, 
-          "brightness": 0.4, 
-          "contrast": 0.4, 
-          "saturation": 0.4, 
-          "hue": 0.15915494309189535
-        }
-        ERASER_AUG_PARAMS: {
-          "enabled": True,
-          "aug_prob": 0.5,
-          "bounds": [50, 100]
-        }
-        NOISE_AUG_PARAMS: {
-          "enabled": True,
-          "aug_prob": 0.5,
-          "noise_std_range": 0.06 
-        }
-        FLIP_AUG_PARAMS: {
-          "enabled": True, 
-          "h_flip_prob": 0.5, 
-          "v_flip_prob": 0.1
-        }
-        SPATIAL_AUG_PARAMS: {
-          "enabled": False,
-          "aug_prob": 0.0, 
-          "stretch_prob": 0.0, 
-          "min_scale": 0, 
-          "max_scale": 0, 
-          "max_stretch": 0
-        }
-        ADVANCED_SPATIAL_AUG_PARAMS: {
-          "enabled": True,
-          "scale1": 0.3,
-          "scale2": 0.1,
-          "rotate": 0.4,
-          "translate": 0.4,
-          "stretch": 0.3,
-          "enable_out_of_boundary_crop": False
-        }
-      VALIDATION:
-        SPATIAL_AUG_PARAMS: {"enabled": False}
-        COLOR_AUG_PARAMS: {"enabled": False}
-        ERASER_AUG_PARAMS: {"enabled": False}
-        FLIP_AUG_PARAMS: {"enabled": False}
-        ADVANCED_SPATIAL_AUG_PARAMS : {"enabled": False}
+  INIT_SEED: False
+  DROP_LAST: True
+  TRAIN_DATASET:
+    Kubric:
+      ROOT_DIR: "./Datasets/KubricFlow"
+      SPLIT: "training"
+      USE_BACKWARD_FLOW: False
+      SWAP_COLUMN_TO_ROW: True
+      IS_PREDICTION: False
+      APPEND_VALID_MASK: False
+      CROP: 
+        USE: True
+        SIZE: [384, 448]
+        TYPE: "random"
+      AUGMENTATION:
+        # Spatial Augmentation Settings borrowed from AutoFlow: https://github.com/google-research/opticalflow-autoflow/blob/main/src/dataset_lib/augmentations/aug_params.py
+        USE: True
+        PARAMS:
+          TRAINING:
+            COLOR_AUG_PARAMS: {
+              "enabled": True,
+              "asymmetric_color_aug_prob": 0.2, 
+              "brightness": 0.4, 
+              "contrast": 0.4, 
+              "saturation": 0.4, 
+              "hue": 0.15915494309189535
+            }
+            ERASER_AUG_PARAMS: {
+              "enabled": True,
+              "aug_prob": 0.5,
+              "bounds": [50, 100]
+            }
+            NOISE_AUG_PARAMS: {
+              "enabled": True,
+              "aug_prob": 0.5,
+              "noise_std_range": 0.06 
+            }
+            FLIP_AUG_PARAMS: {
+              "enabled": True, 
+              "h_flip_prob": 0.5, 
+              "v_flip_prob": 0.1
+            }
+            SPATIAL_AUG_PARAMS: {
+              "enabled": False,
+              "aug_prob": 0.0, 
+              "stretch_prob": 0.0, 
+              "min_scale": 0, 
+              "max_scale": 0, 
+              "max_stretch": 0
+            }
+            ADVANCED_SPATIAL_AUG_PARAMS: {
+              "enabled": True,
+              "scale1": 0.3,
+              "scale2": 0.1,
+              "rotate": 0.4,
+              "translate": 0.4,
+              "stretch": 0.3,
+              "enable_out_of_boundary_crop": False
+            }
+  VAL_DATASET:
+    Kubric: 
+      ROOT_DIR: "./Datasets/KubricFlow"
+      SPLIT: "validation"
+      USE_BACKWARD_FLOW: False
+      SWAP_COLUMN_TO_ROW: True
+      APPEND_VALID_MASK: False
+      IS_PREDICTION: False
+      PADDING: 1
+      CROP: 
+        USE: False
+        SIZE: [384, 448]
+        TYPE: "center" 
+      AUGMENTATION:
+        USE: False
+        PARAMS:
+          spatial_aug_params: {"enabled": False}
+          color_aug_params: {"enabled": False}
+          eraser_aug_params: {"enabled": False}
+          flip_aug_params: {"enabled": False}
+          advanced_spatial_aug_params : {"enabled": False}
 OPTIMIZER:
   NAME: AdamW
   LR: 0.0004

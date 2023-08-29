@@ -45,3 +45,7 @@ def build_dataloader(cfg, split="training", is_distributed=False, world_size=Non
         dataloader_creator.add_dataset(dataset)
 
     return dataloader_creator
+
+
+def get_dataset_list():
+    return DATASET_REGISTRY.get_list()

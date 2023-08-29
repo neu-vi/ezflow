@@ -1,65 +1,86 @@
 DATA:
-  TRAIN_DATASET:
-    NAME: "flyingthings3d"
-    ROOT_DIR: "./Datasets/SceneFlow/FlyingThings3D"
-  VAL_DATASET:
-    NAME: "flyingthings3d"
-    ROOT_DIR: "./Datasets/SceneFlow/FlyingThings3D"
+  BATCH_SIZE: 6
+  APPEND_VALID_MASK: False
   NUM_WORKERS: 4
   PIN_MEMORY: True
-  APPEND_VALID_MASK: False
   SHUFFLE: True
-  AUGMENTATION:
-    # Augmentation Settings borrowed from RAFT
-    USE: True
-    PARAMS:
-      TRAINING:
-        COLOR_AUG_PARAMS: {
-          "enabled": True,
-          "asymmetric_color_aug_prob": 0.2, 
-          "brightness": 0.4, 
-          "contrast": 0.4, 
-          "saturation": 0.4, 
-          "hue": 0.15915494309189535
-        }
-        ERASER_AUG_PARAMS: {
-          "enabled": True,
-          "aug_prob": 0.5,
-          "bounds": [50, 100]
-        }
-        NOISE_AUG_PARAMS: {
-          "enabled": False,
-          "aug_prob": 0.5,
-          "noise_std_range": 0.06 
-        }
-        FLIP_AUG_PARAMS: {
-          "enabled": True, 
-          "h_flip_prob": 0.5, 
-          "v_flip_prob": 0.1
-        }
-        SPATIAL_AUG_PARAMS: {
-          "enabled": True,
-          "aug_prob": 0.8, 
-          "stretch_prob": 0.8, 
-          "min_scale": -0.4, 
-          "max_scale": 0.8, 
-          "max_stretch": 0.2, 
-        }
-        ADVANCED_SPATIAL_AUG_PARAMS: {
-          "enabled": False,
-          "scale1": 0.0,
-          "scale2": 0.0,
-          "stretch": 0.0,
-          "rotate": 0.0,
-          "translate": 0.0,
-          "enable_out_of_boundary_crop": False
-        }
-      VALIDATION:
-        SPATIAL_AUG_PARAMS: {"enabled": False}
-        COLOR_AUG_PARAMS: {"enabled": False}
-        ERASER_AUG_PARAMS: {"enabled": False}
-        FLIP_AUG_PARAMS: {"enabled": False}
-        ADVANCED_SPATIAL_AUG_PARAMS : {"enabled": False}
+  INIT_SEED: False
+  DROP_LAST: True
+  TRAIN_DATASET:
+    FlyingThings3DClean: &TRAIN_DS_CONFIG
+      ROOT_DIR: "./Datasets/SceneFlow/FlyingThings3D"
+      SPLIT: "training"
+      IS_PREDICTION: False
+      APPEND_VALID_MASK: False
+      CROP: 
+        USE: True
+        SIZE: [384, 768]
+        TYPE: "random"
+      AUGMENTATION:
+        # Augmentation Settings borrowed from RAFT
+        USE: True
+        PARAMS:
+          color_aug_params: {
+            "enabled": True,
+            "asymmetric_color_aug_prob": 0.2, 
+            "brightness": 0.4, 
+            "contrast": 0.4, 
+            "saturation": 0.4, 
+            "hue": 0.15915494309189535
+          }
+          eraser_aug_params: {
+            "enabled": True,
+            "aug_prob": 0.5,
+            "bounds": [50, 100]
+          }
+          noise_aug_params: {
+            "enabled": False,
+            "aug_prob": 0.5,
+            "noise_std_range": 0.06 
+          }
+          flip_aug_params: {
+            "enabled": True, 
+            "h_flip_prob": 0.5, 
+            "v_flip_prob": 0.1
+          }
+          spatial_aug_params: {
+            "enabled": True,
+            "aug_prob": 0.8, 
+            "stretch_prob": 0.8, 
+            "min_scale": -0.1, 
+            "max_scale": 1.0, 
+            "max_stretch": 0.2, 
+          }
+          advanced_spatial_aug_params: {
+            "enabled": False,
+            "scale1": 0.0,
+            "scale2": 0.0,
+            "stretch": 0.0,
+            "rotate": 0.0,
+            "translate": 0.0,
+            "enable_out_of_boundary_crop": False
+          }
+    FlyingThings3DFinal: *TRAIN_DS_CONFIG
+  VAL_DATASET:
+    FlyingThings3DClean: &VAL_DS_CONFIG
+      ROOT_DIR: "./Datasets/SceneFlow/FlyingThings3D"
+      SPLIT: "validation"
+      APPEND_VALID_MASK: False
+      IS_PREDICTION: False
+      PADDING: 1
+      CROP: 
+        USE: False
+        SIZE: [384, 768]
+        TYPE: "center" 
+      AUGMENTATION:
+        USE: False
+        PARAMS:
+          spatial_aug_params: {"enabled": False}
+          color_aug_params: {"enabled": False}
+          eraser_aug_params: {"enabled": False}
+          flip_aug_params: {"enabled": False}
+          advanced_spatial_aug_params : {"enabled": False}
+    FlyingThings3DFinal: *VAL_DS_CONFIG
 OPTIMIZER:
   NAME: AdamW
   LR: 0.000125
