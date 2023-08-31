@@ -13,6 +13,8 @@ from torch.cuda.amp import GradScaler, autocast
 from torch.nn.parallel import DistributedDataParallel as DDP
 from torch.utils.tensorboard import SummaryWriter
 
+from ezflow.data import DataloaderCreator
+
 from ..functional import FUNCTIONAL_REGISTRY
 from ..utils import AverageMeter, endpointerror, find_free_port, is_port_available
 from .registry import loss_functions, optimizers, schedulers
@@ -563,21 +565,30 @@ class Trainer(BaseTrainer):
         Configuration object for training
     model : torch.nn.Module
         Model to be trained
-    train_loader : torch.utils.data.DataLoader
-        DataLoader for training
-    val_loader : torch.utils.data.DataLoader
-        DataLoader for validation
+    train_loader_creator : ezflow.data.DataloaderCreator
+        DataloaderCreator instance for training
+    val_loader_creator : ezflow.data.DataloaderCreator
+        DataloaderCreator instance for validation
     """
 
-    def __init__(self, cfg, model, train_loader, val_loader):
+    def __init__(
+        self,
+        cfg,
+        model,
+        train_loader_creator: DataloaderCreator,
+        val_loader_creator: DataloaderCreator,
+    ):
         super(Trainer, self).__init__()
 
         self.cfg = cfg
         self.model_name = model.__class__.__name__.lower()
         self.model = model
 
-        self.train_loader = train_loader
-        self.val_loader = val_loader
+        train_loader_creator.distributed = False
+        val_loader_creator.distributed = False
+
+        self.train_loader = train_loader_creator.get_dataloader()
+        self.val_loader = val_loader_creator.get_dataloader()
 
     def _setup_device(self):
 
@@ -658,13 +669,19 @@ class DistributedTrainer(BaseTrainer):
         Configuration object for training
     model : torch.nn.Module
         Model to be trained
-    train_loader_creator : ezflow.DataloaderCreator
+    train_loader_creator : ezflow.data.DataloaderCreator
         DataloaderCreator instance for training
-    val_loader_creator : ezflow.DataloaderCreator
+    val_loader_creator : ezflow.data.DataloaderCreator
         DataloaderCreator instance for validation
     """
 
-    def __init__(self, cfg, model, train_loader_creator, val_loader_creator):
+    def __init__(
+        self,
+        cfg,
+        model,
+        train_loader_creator: DataloaderCreator,
+        val_loader_creator: DataloaderCreator,
+    ):
         super(DistributedTrainer, self).__init__()
         self.model_parallel = True
         self.cfg = cfg

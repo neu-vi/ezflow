@@ -16,9 +16,13 @@ def main(args):
     cfg.DATA.TRAIN_DATASET[args.train_ds].ROOT_DIR = args.train_data_dir
     cfg.DATA.VAL_DATASET[args.val_ds].ROOT_DIR = args.val_data_dir
 
-    # Create dataloaders
-    train_loader = build_dataloader(cfg.DATA, distributed=cfg.DISTRIBUTED.USE, world_size=cfg.DISTRIBUTED.WORLD_SIZE)
-    val_loader = build_dataloader(cfg.DATA, distributed=cfg.DISTRIBUTED.USE, world_size=cfg.DISTRIBUTED.WORLD_SIZE)
+    # Create dataloader
+    train_loader = build_dataloader(
+        cfg.DATA, distributed=cfg.DISTRIBUTED.USE, world_size=cfg.DISTRIBUTED.WORLD_SIZE
+    )
+    val_loader = build_dataloader(
+        cfg.DATA, distributed=cfg.DISTRIBUTED.USE, world_size=cfg.DISTRIBUTED.WORLD_SIZE
+    )
 
     # Build model
     model = build_model(args.model, default=True)
@@ -35,8 +39,8 @@ def main(args):
         trainer = Trainer(
             cfg,
             model,
-            train_loader=train_loader.get_dataloader(),
-            val_loader=val_loader.get_dataloader(),
+            train_loader_creator=train_loader,
+            val_loader_creator=val_loader,
         )
 
     # Train model
@@ -81,7 +85,11 @@ if __name__ == "__main__":
         help="Path to the root data directory",
     )
     parser.add_argument(
-        "--model", type=str, required=True, choices=get_model_list(), help="Name of the model to train"
+        "--model",
+        type=str,
+        required=True,
+        choices=get_model_list(),
+        help="Name of the model to train",
     )
     parser.add_argument(
         "--n_epochs", type=int, default=None, help="Number of epochs to train"
