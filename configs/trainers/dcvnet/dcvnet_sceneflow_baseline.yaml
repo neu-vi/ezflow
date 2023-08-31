@@ -10,7 +10,7 @@ DATA:
         SIZE: [400, 720]
         TYPE: "random"
       FLOW_OFFSET_PARAMS: &FLOW_OFFSET_PARAMS {
-            "use": False,
+            "use": True,
             "dilations": [[1], [1, 2, 3, 5, 9, 16]],
             "feat_strides": [2, 8],
             "search_radius": 4,
