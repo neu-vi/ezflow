@@ -16,6 +16,7 @@ DATA:
         USE: True
         SIZE: [384, 768]
         TYPE: "random"
+      FLOW_OFFSET_PARAMS: {"use": False}
       AUGMENTATION:
         # Augmentation Settings borrowed from RAFT
         USE: True
@@ -70,16 +71,9 @@ DATA:
       PADDING: 1
       CROP: 
         USE: False
-        SIZE: [384, 768]
-        TYPE: "center" 
+      FLOW_OFFSET_PARAMS: {"use": False}
       AUGMENTATION:
         USE: False
-        PARAMS:
-          spatial_aug_params: {"enabled": False}
-          color_aug_params: {"enabled": False}
-          eraser_aug_params: {"enabled": False}
-          flip_aug_params: {"enabled": False}
-          advanced_spatial_aug_params : {"enabled": False}
     FlyingThings3DFinal: *VAL_DS_CONFIG
 OPTIMIZER:
   NAME: AdamW

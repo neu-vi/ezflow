@@ -14,7 +14,9 @@ DATA:
       APPEND_VALID_MASK: True
       PADDING: 1
       CROP: 
-        USE: False
+        USE: True
+        SIZE: [368, 496]
+        TYPE: "center"
 SCHEDULER:
   USE: True
   NAME: OneCycleLR

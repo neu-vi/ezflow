@@ -7,19 +7,17 @@ DATA:
   INIT_SEED: False
   DROP_LAST: True
   TRAIN_DATASET:
-    Kubric:
-      ROOT_DIR: "./Datasets/KubricFlow"
+    FlyingThings3DSubset: 
+      ROOT_DIR: "./Datasets/SceneFlow/FlyingThings3D_subset"
       SPLIT: "training"
-      USE_BACKWARD_FLOW: False
-      SWAP_COLUMN_TO_ROW: True
       IS_PREDICTION: False
       APPEND_VALID_MASK: False
-      CROP: 
+      CROP: &TRAIN_CROP_CONFIG
         USE: True
-        SIZE: [384, 448]
+        SIZE: [400, 720]
         TYPE: "random"
       FLOW_OFFSET_PARAMS: {"use": False}
-      AUGMENTATION:
+      AUGMENTATION: &TRAIN_AUGMENTATION_CONFIG
         # Augmentation Settings borrowed from RAFT
         USE: True
         PARAMS:
@@ -63,23 +61,37 @@ DATA:
             "translate": 0.0,
             "enable_out_of_boundary_crop": False
           }
+    Driving: 
+      ROOT_DIR: "./Datasets/SceneFlow/Driving"
+      IS_PREDICTION: False
+      APPEND_VALID_MASK: False
+      CROP: *TRAIN_CROP_CONFIG
+      AUGMENTATION: *TRAIN_AUGMENTATION_CONFIG
+      FLOW_OFFSET_PARAMS: {"use": False}
+    Monkaa: 
+      ROOT_DIR: "./Datasets/SceneFlow/Monkaa"
+      IS_PREDICTION: False
+      APPEND_VALID_MASK: False
+      CROP: *TRAIN_CROP_CONFIG
+      AUGMENTATION: *TRAIN_AUGMENTATION_CONFIG
+      FLOW_OFFSET_PARAMS: {"use": False}
   VAL_DATASET:
-    Kubric: 
-      ROOT_DIR: "./Datasets/KubricFlow"
-      SPLIT: "validation"
-      USE_BACKWARD_FLOW: False
-      SWAP_COLUMN_TO_ROW: True
+    MPISintelClean:
+      ROOT_DIR: "./Datasets/MPI_Sintel/"
+      SPLIT: "training"
       APPEND_VALID_MASK: False
       IS_PREDICTION: False
       PADDING: 1
       CROP: 
-        USE: False
+        USE: True
+        SIZE: [384, 1024]
+        TYPE: "center"
       FLOW_OFFSET_PARAMS: {"use": False}
       AUGMENTATION:
         USE: False
 OPTIMIZER:
   NAME: AdamW
-  LR: 0.0004
+  LR: 0.000125
   PARAMS:
     weight_decay: 0.0001
     betas: [0.9, 0.999]
@@ -88,6 +100,7 @@ OPTIMIZER:
 GRAD_CLIP: 
   USE: True
   VALUE: 1.0
+FREEZE_BATCH_NORM: False
 TARGET_SCALE_FACTOR: 1.0
 MIXED_PRECISION: False
 DEVICE: "0"

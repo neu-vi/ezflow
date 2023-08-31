@@ -16,7 +16,9 @@ DATA:
       APPEND_VALID_MASK: True
       PADDING: 1
       CROP: 
-        USE: False
+        USE: True
+        SIZE: [368, 496]
+        TYPE: "center"
     FlyingThings3DFinal: *VAL_DS_CONFIG
 SCHEDULER:
   USE: True

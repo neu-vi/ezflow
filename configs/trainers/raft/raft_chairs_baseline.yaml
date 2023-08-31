@@ -1,7 +1,6 @@
 _BASE_: "../_base_/chairs_baseline.yaml"
 DATA:
   BATCH_SIZE: 10
-  VAL_CROP_SIZE: [368, 496]
   NORM_PARAMS: {"use": True, "mean":[127.5, 127.5, 127.5], "std":[127.5, 127.5, 127.5]}
   TRAIN_DATASET:
     FlyingChairs:
@@ -15,7 +14,9 @@ DATA:
       APPEND_VALID_MASK: True
       PADDING: 1
       CROP: 
-        USE: False
+        USE: True
+        SIZE: [368, 496]
+        TYPE: "center"
 SCHEDULER:
   USE: True
   NAME: OneCycleLR
