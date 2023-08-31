@@ -619,8 +619,8 @@ class Trainer(BaseTrainer):
         loss_fn=None,
         optimizer=None,
         scheduler=None,
-        total_iterations=None,
-        start_iteration=None,
+        total_epochs=None,
+        start_epoch=None,
     ):
         """
         Method to train the model using a single cpu/gpu device.
@@ -633,10 +633,10 @@ class Trainer(BaseTrainer):
             The optimizer to be used. Defaults to None (which uses the optimizer specified in the config file).
         scheduler : torch.optim.lr_scheduler, optional
             The learning rate scheduler to be used. Defaults to None (which uses the scheduler specified in the config file).
-        total_iterations : int, optional
-            The number of epochs or steps to train for. Defaults to None (which uses the number of epochs specified in the config file)
-        start_iteration : int, optional
-            The epoch or step number to resume training from. Defaults to None (which starts from 0).
+        total_epochs : int, optional
+            The number of epochs train for. Defaults to None (which uses the number of epochs specified in the config file)
+        start_epoch : int, optional
+            The epoch to resume training from. Defaults to None (which starts from 0).
 
         """
         self._setup_device()
@@ -652,7 +652,7 @@ class Trainer(BaseTrainer):
         print(self.cfg)
         print("-" * 80)
 
-        self._trainer(total_iterations, start_iteration)
+        self._trainer(total_epochs, start_epoch)
 
         print("Training complete!")
         print(f"Total training time: {str(timedelta(seconds=sum(self.times)))}")
@@ -790,8 +790,8 @@ class DistributedTrainer(BaseTrainer):
         loss_fn=None,
         optimizer=None,
         scheduler=None,
-        total_iterations=None,
-        start_iteration=None,
+        total_epochs=None,
+        start_epoch=None,
     ):
         self._setup_device(rank)
         self._setup_ddp(rank)
@@ -807,7 +807,7 @@ class DistributedTrainer(BaseTrainer):
 
         # synchronizes all the threads to reach this point before moving on
         dist.barrier()
-        self._trainer(total_iterations, start_iteration)
+        self._trainer(total_epochs, start_epoch)
 
         if self._is_main_process():
             print("\nTraining complete!")
@@ -820,8 +820,8 @@ class DistributedTrainer(BaseTrainer):
         loss_fn=None,
         optimizer=None,
         scheduler=None,
-        total_iterations=None,
-        start_iteration=None,
+        total_epochs=None,
+        start_epoch=None,
     ):
         """
         Method to train the model in a distributed fashion using DDP
@@ -834,10 +834,10 @@ class DistributedTrainer(BaseTrainer):
             The optimizer to be used. Defaults to None (which uses the optimizer specified in the config file).
         scheduler : torch.optim.lr_scheduler, optional
             The learning rate scheduler to be used. Defaults to None (which uses the scheduler specified in the config file).
-        total_iterations : int, optional
-            The number of epochs or steps to train for. Defaults to None (which uses the number of epochs specified in the config file)
-        start_iteration : int, optional
-            The epoch or step number to resume training from. Defaults to None (which starts from 0).
+        total_epochs : int, optional
+            The number of epochs to train for. Defaults to None (which uses the number of epochs specified in the config file)
+        start_epoch : int, optional
+            The epoch number to resume training from. Defaults to None (which starts from 0).
 
         """
         print("Training config:\n")
@@ -848,7 +848,7 @@ class DistributedTrainer(BaseTrainer):
 
         mp.spawn(
             self._main_worker,
-            args=(loss_fn, optimizer, scheduler, total_iterations, start_iteration),
+            args=(loss_fn, optimizer, scheduler, total_epochs, start_epoch),
             nprocs=self.cfg.DISTRIBUTED.WORLD_SIZE,
             join=True,
         )

@@ -44,7 +44,7 @@ def main(args):
         )
 
     # Train model
-    trainer.train()
+    trainer.train(total_epochs=args.n_epochs)
 
 
 if __name__ == "__main__":
