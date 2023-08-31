@@ -13,8 +13,11 @@ def main(args):
     if args.device:
         cfg.DEVICE = args.device
 
-    cfg.DATA.TRAIN_DATASET[args.train_ds].ROOT_DIR = args.train_data_dir
-    cfg.DATA.VAL_DATASET[args.val_ds].ROOT_DIR = args.val_data_dir
+    if args.train_ds is not None and args.train_data_dir is not None:
+        cfg.DATA.TRAIN_DATASET[args.train_ds].ROOT_DIR = args.train_data_dir
+
+    if args.val_ds is not None and args.val_data_dir is not None:
+        cfg.DATA.VAL_DATASET[args.val_ds].ROOT_DIR = args.val_data_dir
 
     # Create dataloader
     train_loader = build_dataloader(
@@ -61,27 +64,27 @@ if __name__ == "__main__":
     parser.add_argument(
         "--train_ds",
         type=str,
-        required=True,
+        default=None,
         choices=get_dataset_list(),
         help="Name of the training dataset.",
     )
     parser.add_argument(
         "--train_data_dir",
         type=str,
-        required=True,
+        default=None,
         help="Path to the root data directory",
     )
     parser.add_argument(
         "--val_ds",
         type=str,
-        required=True,
+        default=None,
         choices=get_dataset_list(),
         help="Name of the validation dataset.",
     )
     parser.add_argument(
         "--val_data_dir",
         type=str,
-        required=True,
+        default=None,
         help="Path to the root data directory",
     )
     parser.add_argument(
@@ -102,5 +105,4 @@ if __name__ == "__main__":
     )
 
     args = parser.parse_args()
-
     main(args)
