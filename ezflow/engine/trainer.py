@@ -196,6 +196,8 @@ class BaseTrainer:
                 dist.barrier()
 
         if self._is_main_process():
+            self._validate_model(iter_type="Epoch", iterations=start_epoch + n_epochs)
+            self._save_checkpoints(ckpt_type="epoch", ckpt_number=start_epoch + n_epochs)
             self.writer.close()
 
     def _step_trainer(self, n_steps=None, start_step=None):
