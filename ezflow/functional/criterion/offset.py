@@ -15,6 +15,8 @@ class OffsetCrossEntropyLoss(nn.Module):
         stride=8,
         offset_loss_weight=[0, 1],
         weight_anneal_fn="CosineAnnealer",
+        min_weight=0,
+        max_iter=1,
         **kwargs,
     ):
         super(OffsetCrossEntropyLoss, self).__init__()
@@ -26,7 +28,7 @@ class OffsetCrossEntropyLoss(nn.Module):
 
         weight_anneal_fn = FUNCTIONAL_REGISTRY.get(weight_anneal_fn)
         self.weight_annealers = [
-            weight_anneal_fn(init_weight=wt, **kwargs) for wt in offset_loss_weight
+            weight_anneal_fn(init_weight=wt, min_weight=min_weight, max_iter=max_iter, **kwargs) for wt in offset_loss_weight
         ]
 
     @classmethod
@@ -35,10 +37,13 @@ class OffsetCrossEntropyLoss(nn.Module):
             "stride": cfg.STRIDE,
             "weight_anneal_fn": cfg.WEIGHT_ANNEAL_FN,
             "offset_loss_weight": cfg.OFFSET_LOSS_WEIGHT,
+            "min_weight": cfg.MIN_WEIGHT,
+            "max_iter": cfg.MAX_ITER
         }
 
     def __compute_loss(self, flow_logits, offset_labs, valid):
         # exlude invalid pixels and extremely large diplacements()
+        valid = torch.squeeze(valid, dim=1)
         valid[:, :: self.stride, :: self.stride]
         valid = valid >= 0.5
 
@@ -67,6 +72,8 @@ class FlowOffsetLoss(nn.Module):
         stride=8,
         weight_anneal_fn="CosineAnnealer",
         offset_loss_weight=[0, 1],
+        min_weight=0,
+        max_iter=1,
         **kwargs,
     ):
         super(FlowOffsetLoss, self).__init__()
@@ -76,6 +83,8 @@ class FlowOffsetLoss(nn.Module):
             offset_loss_weight=offset_loss_weight,
             weight_anneal_fn=weight_anneal_fn,
             stride=stride,
+            min_weight=min_weight,
+            max_iter=max_iter,
             **kwargs,
         )
 
@@ -87,6 +96,8 @@ class FlowOffsetLoss(nn.Module):
             "stride": cfg.STRIDE,
             "weight_anneal_fn": cfg.WEIGHT_ANNEAL_FN,
             "offset_loss_weight": cfg.OFFSET_LOSS_WEIGHT,
+            "min_weight": cfg.MIN_WEIGHT,
+            "max_iter": cfg.MAX_ITER
         }
 
     def forward(
@@ -100,9 +111,7 @@ class FlowOffsetLoss(nn.Module):
         **kwargs,
     ):
 
-        valid = torch.squeeze(valid, dim=1)
-
-        flow_loss = self.l1_loss(flow_preds, flow_gt)
+        flow_loss = self.l1_loss(flow_preds, flow_gt, valid)
         logit_loss = self.cross_entropy_loss(
             flow_logits, offset_labs, valid, current_iter, **kwargs
         )
