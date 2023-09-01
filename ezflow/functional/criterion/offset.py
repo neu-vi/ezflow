@@ -44,12 +44,11 @@ class OffsetCrossEntropyLoss(nn.Module):
     def __compute_loss(self, flow_logits, offset_labs, valid):
         # exlude invalid pixels and extremely large diplacements()
         valid = torch.squeeze(valid, dim=1)
-        valid[:, :: self.stride, :: self.stride]
+        valid = valid[:, :: self.stride, :: self.stride]
         valid = valid >= 0.5
 
         logprobs = F.log_softmax(flow_logits, dim=1)
         loss = -(offset_labs * logprobs).sum(dim=1)
-
         loss = (valid[:, None] * loss).mean()
         return loss
 
