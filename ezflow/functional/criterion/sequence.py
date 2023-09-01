@@ -20,7 +20,7 @@ class SequenceLoss(nn.Module):
     """
 
     @configurable
-    def __init__(self, gamma=0.8, max_flow=400):
+    def __init__(self, gamma=0.8, max_flow=400, **kwargs):
         super(SequenceLoss, self).__init__()
 
         self.gamma = gamma

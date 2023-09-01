@@ -50,6 +50,7 @@ class MultiScaleLoss(nn.Module):
         extra_mask=None,
         use_valid_range=True,
         valid_range=None,
+        **kwargs
     ):
         super(MultiScaleLoss, self).__init__()
 

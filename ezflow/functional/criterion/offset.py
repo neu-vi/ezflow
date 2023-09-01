@@ -29,6 +29,14 @@ class OffsetCrossEntropyLoss(nn.Module):
             weight_anneal_fn(init_weight=wt, **kwargs) for wt in offset_loss_weight
         ]
 
+    @classmethod
+    def from_config(cls, cfg):
+        return {
+            "stride": cfg.STRIDE,
+            "weight_anneal_fn": cfg.WEIGHT_ANNEAL_FN,
+            "offset_loss_weight": cfg.OFFSET_LOSS_WEIGHT,
+        }
+
     def __compute_loss(self, flow_logits, offset_labs, valid):
         # exlude invalid pixels and extremely large diplacements()
         valid[:, :: self.stride, :: self.stride]
@@ -55,10 +63,10 @@ class FlowOffsetLoss(nn.Module):
     def __init__(
         self,
         gamma=0.25,
-        max_flow=400,
+        max_flow=500,
         stride=8,
-        offset_loss_weight=[0, 1],
         weight_anneal_fn="CosineAnnealer",
+        offset_loss_weight=[0, 1],
         **kwargs,
     ):
         super(FlowOffsetLoss, self).__init__()
@@ -70,6 +78,16 @@ class FlowOffsetLoss(nn.Module):
             stride=stride,
             **kwargs,
         )
+
+    @classmethod
+    def from_config(cls, cfg):
+        return {
+            "gamma": cfg.GAMMA,
+            "max_flow": cfg.MAX_FLOW,
+            "stride": cfg.STRIDE,
+            "weight_anneal_fn": cfg.WEIGHT_ANNEAL_FN,
+            "offset_loss_weight": cfg.OFFSET_LOSS_WEIGHT,
+        }
 
     def forward(
         self,

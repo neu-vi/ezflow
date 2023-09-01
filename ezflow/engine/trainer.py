@@ -62,6 +62,13 @@ class BaseTrainer:
         raise NotImplementedError
 
     def _setup_training(self, rank=0, loss_fn=None, optimizer=None, scheduler=None):
+        self._trainer = self._epoch_trainer
+        if self.cfg.NUM_STEPS is not None:
+            self._trainer = self._step_trainer
+            max_iter = self.cfg.NUM_STEPS
+        else:
+            max_iter = self.cfg.EPOCHS * len(self.train_loader)
+
         if loss_fn is None and self.loss_fn is None:
 
             if self.cfg.CRITERION.CUSTOM:
@@ -71,6 +78,7 @@ class BaseTrainer:
 
             if self.cfg.CRITERION.PARAMS is not None:
                 loss_params = self.cfg.CRITERION.PARAMS.to_dict()
+                loss_params["max_iter"] = max_iter
                 loss_fn = loss(**loss_params)
             else:
                 loss_fn = loss()
@@ -125,12 +133,6 @@ class BaseTrainer:
             self.writer = SummaryWriter(log_dir=self.cfg.LOG_DIR)
 
         self.scaler = GradScaler(enabled=self.cfg.MIXED_PRECISION)
-
-        self._trainer = (
-            self._step_trainer
-            if self.cfg.NUM_STEPS is not None
-            else self._epoch_trainer
-        )
 
         self.min_avg_val_loss = float("inf")
         self.min_avg_val_metric = float("inf")
