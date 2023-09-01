@@ -182,22 +182,20 @@ class BaseTrainer:
                     "epochs_training_loss", loss_meter.sum, epoch + 1
                 )
 
-            if epoch % self.cfg.VALIDATE_INTERVAL == 0 and self._is_main_process():
+            if (epoch + 1) % self.cfg.VALIDATE_INTERVAL == 0 and self._is_main_process():
                 self._validate_model(iter_type="Epoch", iterations=epoch + 1)
 
-            if epoch % self.cfg.CKPT_INTERVAL == 0 and self._is_main_process():
+            if (epoch + 1) % self.cfg.CKPT_INTERVAL == 0 and self._is_main_process():
                 self._save_checkpoints(ckpt_type="epoch", ckpt_number=epoch + 1)
 
             # Synchronize all processes in multi gpu after validation and checkpoint
             if (
-                epoch % self.cfg.VALIDATE_INTERVAL == 0
-                or epoch % self.cfg.CKPT_INTERVAL == 0
+                (epoch + 1) % self.cfg.VALIDATE_INTERVAL == 0
+                or (epoch + 1) % self.cfg.CKPT_INTERVAL == 0
             ) and self.model_parallel:
                 dist.barrier()
 
         if self._is_main_process():
-            self._validate_model(iter_type="Epoch", iterations=start_epoch + n_epochs)
-            self._save_checkpoints(ckpt_type="epoch", ckpt_number=start_epoch + n_epochs)
             self.writer.close()
 
     def _step_trainer(self, n_steps=None, start_step=None):
