@@ -4,7 +4,6 @@ from ezflow.data import build_dataloader, get_dataset_list
 from ezflow.engine import DistributedTrainer, Trainer, get_training_cfg
 from ezflow.models import build_model, get_model_list
 
-
 def main(args):
 
     # Load training configuration
@@ -19,12 +18,23 @@ def main(args):
     if args.val_ds is not None and args.val_data_dir is not None:
         cfg.DATA.VAL_DATASET[args.val_ds].ROOT_DIR = args.val_data_dir
 
+
+    cfg.LOG_DIR = args.log_dir
+    cfg.CKPT_DIR = args.ckpt_dir
+
     # Create dataloader
     train_loader = build_dataloader(
-        cfg.DATA, distributed=cfg.DISTRIBUTED.USE, world_size=cfg.DISTRIBUTED.WORLD_SIZE
+        cfg.DATA, 
+        split="training", 
+        is_distributed=cfg.DISTRIBUTED.USE, 
+        world_size=cfg.DISTRIBUTED.WORLD_SIZE
     )
+    
     val_loader = build_dataloader(
-        cfg.DATA, distributed=cfg.DISTRIBUTED.USE, world_size=cfg.DISTRIBUTED.WORLD_SIZE
+        cfg.DATA, 
+        split="validation", 
+        is_distributed=cfg.DISTRIBUTED.USE, 
+        world_size=cfg.DISTRIBUTED.WORLD_SIZE
     )
 
     # Build model
@@ -93,6 +103,18 @@ if __name__ == "__main__":
         required=True,
         choices=get_model_list(),
         help="Name of the model to train",
+    )
+    parser.add_argument(
+        "--log_dir",
+        type=str,
+        required=True,
+        help="Path to the log directory",
+    )
+    parser.add_argument(
+        "--ckpt_dir",
+        type=str,
+        required=True,
+        help="Path to the log directory",
     )
     parser.add_argument(
         "--n_epochs", type=int, default=None, help="Number of epochs to train"

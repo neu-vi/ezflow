@@ -34,10 +34,9 @@ def build_dataloader(cfg, split="training", is_distributed=False, world_size=Non
         world_size=world_size,
     )
 
-    data_cfg = cfg.TRAIN_DATASET if split == "training" else cfg.VAL_DATASET
+    data_cfg = cfg.TRAIN_DATASET if split.lower() == "training" else cfg.VAL_DATASET
 
     for key in data_cfg:
-        data_cfg[key].SPLIT = split
         data_cfg[key].INIT_SEED = cfg.INIT_SEED
         data_cfg[key].NORM_PARAMS = cfg.NORM_PARAMS
 

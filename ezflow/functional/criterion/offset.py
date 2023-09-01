@@ -95,7 +95,7 @@ class FlowOffsetLoss(nn.Module):
         flow_logits,
         flow_gt,
         valid,
-        offset_lab,
+        offset_labs,
         current_iter,
         **kwargs,
     ):
@@ -104,7 +104,7 @@ class FlowOffsetLoss(nn.Module):
 
         flow_loss = self.l1_loss(flow_preds, flow_gt)
         logit_loss = self.cross_entropy_loss(
-            flow_logits, offset_lab, valid, current_iter, **kwargs
+            flow_logits, offset_labs, valid, current_iter, **kwargs
         )
         loss = flow_loss + logit_loss
         return loss

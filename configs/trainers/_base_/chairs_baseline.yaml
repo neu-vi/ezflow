@@ -68,10 +68,19 @@ DATA:
       IS_PREDICTION: False
       PADDING: 1
       CROP: 
-        USE: False
+        USE: True
+        SIZE: [384, 448]
+        TYPE: "center"
       FLOW_OFFSET_PARAMS: {"use": False}
       AUGMENTATION:
         USE: False
+        PARAMS:
+          color_aug_params: {"enabled": False}
+          eraser_aug_params: {"enabled": False}
+          noise_aug_params: {"enabled": False}
+          flip_aug_params: {"enabled": False}
+          spatial_aug_params: {"enabled": False}
+          advanced_spatial_aug_params: {"enabled": False}        
 OPTIMIZER:
   NAME: AdamW
   LR: 0.0004
