@@ -166,7 +166,7 @@ class BaseDataset(data.Dataset):
             )
 
         if self.flow_offsets is not None:
-            offset_labs = self.__flow_to_bilinear_interpolation_weights(flow, valid)
+            offset_labs = self._flow_to_bilinear_interpolation_weights(flow, valid)
             offset_labs = torch.from_numpy(offset_labs).float()
             offset_labs = offset_labs.view(
                 offset_labs.shape[0], offset_labs.shape[1], -1
@@ -195,7 +195,7 @@ class BaseDataset(data.Dataset):
 
         return (img1, img2), target
 
-    def __flow_to_bilinear_interpolation_weights(self, flow, valid):
+    def _flow_to_bilinear_interpolation_weights(self, flow, valid):
         max_flow = np.max(self.flow_offsets)
         valid_offsets = np.logical_and(
             np.abs(flow[:, :, 0]) <= max_flow, np.abs(flow[:, :, 1]) <= max_flow

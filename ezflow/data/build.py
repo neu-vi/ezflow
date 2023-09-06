@@ -39,6 +39,7 @@ def build_dataloader(cfg, split="training", is_distributed=False, world_size=Non
     for key in data_cfg:
         data_cfg[key].INIT_SEED = cfg.INIT_SEED
         data_cfg[key].NORM_PARAMS = cfg.NORM_PARAMS
+        data_cfg[key].APPEND_VALID_MASK = cfg.APPEND_VALID_MASK
 
         dataset = DATASET_REGISTRY.get(key)(data_cfg[key])
         dataloader_creator.add_dataset(dataset)

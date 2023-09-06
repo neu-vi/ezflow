@@ -170,20 +170,20 @@ class BaseTrainer:
             for iteration, (inp, target) in enumerate(self.train_loader):
                 total_iters = iteration + (epoch * len(self.train_loader))
 
-                loss = self._run_step(inp, target, current_iter=total_iters)
+                loss = self._run_step(inp, target, current_iter=total_iters, logger=self.writer)
 
                 loss_meter.update(loss.item())
                 self._log_step(iteration, total_iters, loss_meter)
 
-            print(f"\nEpoch {epoch+1}: Training loss = {loss_meter.sum}")
+            print(f"\nEpoch {epoch+1}: Average Training loss = {loss_meter.avg}")
 
             if self._is_main_process():
                 self.writer.add_scalar(
-                    "epochs_training_loss", loss_meter.sum, epoch + 1
+                    "avg_epochs_training_loss", loss_meter.avg, epoch + 1
                 )
 
             if (epoch + 1) % self.cfg.VALIDATE_INTERVAL == 0 and self._is_main_process():
-                self._validate_model(iter_type="Epoch", iterations=epoch + 1)
+                self._validate_model(iter_type="Epoch", iterations=epoch + 1, current_iter=0, logger=None)
 
             if (epoch + 1) % self.cfg.CKPT_INTERVAL == 0 and self._is_main_process():
                 self._save_checkpoints(ckpt_type="epoch", ckpt_number=epoch + 1)
@@ -307,7 +307,7 @@ class BaseTrainer:
     def _log_step(self, iteration, total_iters, loss_meter):
         if iteration % self.cfg.LOG_ITERATIONS_INTERVAL == 0:
             print(
-                f"Iterations: {iteration}, Total iterations: {total_iters}, Average batch training loss: {loss_meter.avg}"
+                f"[{iteration} / {total_iters}] iterations, average batch training loss: {loss_meter.avg}"
             )
             if self._is_main_process():
                 self.writer.add_scalar(
@@ -316,7 +316,7 @@ class BaseTrainer:
                     total_iters,
                 )
 
-    def _validate_model(self, iter_type, iterations):
+    def _validate_model(self, iter_type, iterations, **kwargs):
         self.model.eval()
         metric_meter = AverageMeter()
         loss_meter = AverageMeter()
@@ -331,7 +331,7 @@ class BaseTrainer:
                 else:
                     output = self.model(img1, img2)
 
-                loss = self.loss_fn(**output, **target)
+                loss = self.loss_fn(**output, **target, **kwargs)
 
                 loss_meter.update(loss.item())
 

@@ -18,6 +18,9 @@ def main(args):
     if args.val_ds is not None and args.val_data_dir is not None:
         cfg.DATA.VAL_DATASET[args.val_ds].ROOT_DIR = args.val_data_dir
 
+    if args.n_epochs is not None:
+        cfg.EPOCHS = args.n_epochs
+        cfg.SCHEDULER.PARAMS.epochs = args.n_epochs
 
     cfg.LOG_DIR = args.log_dir
     cfg.CKPT_DIR = args.ckpt_dir

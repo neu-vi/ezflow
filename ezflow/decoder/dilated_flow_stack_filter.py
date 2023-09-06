@@ -155,7 +155,7 @@ class DCVDilatedFlowStackFilterDecoder(BaseModule):
             "dilations": cfg.DILATIONS,
         }
 
-    def logits_to_flow(self, flow_logits, flow_offsets):
+    def _logits_to_flow(self, flow_logits, flow_offsets):
         b, cuv, h, w = flow_logits.shape
 
         flow_logits = flow_logits.view(b, self.num_dilations, -1, h, w)
@@ -170,7 +170,7 @@ class DCVDilatedFlowStackFilterDecoder(BaseModule):
 
         return flow, flow_entropy
 
-    def interpolate_flow(self, flow, up_mask_logits):
+    def _interpolate_flow(self, flow, up_mask_logits):
         if up_mask_logits is not None:
             return convex_upsample_flow(flow, up_mask_logits, self.feat_strides[-1])
 
@@ -178,19 +178,17 @@ class DCVDilatedFlowStackFilterDecoder(BaseModule):
 
     def forward(self, cost, context, flow_offsets):
         flow_logits_list, up_mask_logits_list = self.cost_volume_filter(cost, context)
-        flow_list = []
 
         if self.training:
+            flow_list = []
             for idx, flow_logits_i in enumerate(flow_logits_list):
-                flow_i, _ = self.logits_to_flow(flow_logits_i, flow_offsets)
-                flow_i = self.interpolate_flow(flow_i, up_mask_logits_list[idx])
+                flow_i, _ = self._logits_to_flow(flow_logits_i, flow_offsets)
+                flow_i = self._interpolate_flow(flow_i, up_mask_logits_list[idx])
                 flow_list.append(flow_i)
 
             return flow_list, flow_logits_list
 
-        flow_list = [None for _ in flow_logits_list]
-        flow = self.logits_to_flow(flow_logits_list[-1], flow_offsets)
-        flow = self.interpolate_flow(flow, up_mask_logits_list[-1])
-        flow_list[-1] = flow
-
-        return flow_list, flow_logits_list
+        flow, _ = self._logits_to_flow(flow_logits_list[-1], flow_offsets)
+        flow = self._interpolate_flow(flow, up_mask_logits_list[-1])
+        
+        return [flow], [flow_logits_list[-1]]

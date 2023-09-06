@@ -233,7 +233,7 @@ class Kubric(BaseDataset):
             )
 
         if self.flow_offsets is not None:
-            offset_labs = self.__flow_to_bilinear_interpolation_weights(flow, valid)
+            offset_labs = self._flow_to_bilinear_interpolation_weights(flow, valid)
             offset_labs = torch.from_numpy(offset_labs).float()
             offset_labs = offset_labs.view(
                 offset_labs.shape[0], offset_labs.shape[1], -1
