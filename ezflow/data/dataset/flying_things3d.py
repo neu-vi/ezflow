@@ -194,7 +194,7 @@ class FlyingThings3DClean(FlyingThings3D):
             "augment": cfg.AUGMENTATION.USE,
             "aug_params": cfg.AUGMENTATION.PARAMS,
             "norm_params": cfg.NORM_PARAMS,
-            "flow_offset_param": cfg.FLOW_OFFSET_PARAMS,
+            "flow_offset_params": cfg.FLOW_OFFSET_PARAMS,
         }
 
 
