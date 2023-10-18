@@ -233,6 +233,24 @@ class LearnableMatchingCost(nn.Module):
 
 @SIMILARITY_REGISTRY.register()
 class MatryoshkaDilatedCostVolume(nn.Module):
+    """
+    Cost Volume with concentric offset dilations
+    used in `DCVNet: Dilated Cost Volume Networks for Fast Optical Flow <https://jianghz.me/files/DCVNet_camera_ready_wacv2023.pdf>`_
+
+    Parameters
+    ----------
+    num_groups : int, default 1
+        Divides channels into groups of batches for batch processing of similarity computation.
+    max_displacement : int, default 4
+        Determines the cost volume search range/patch size.
+    stride : int, default 1
+        Stride of the spatial sampler, will modify output height and width.
+    dilations : List[int], default [1, 2, 3, 5, 9, 16]
+        List of steps for every shift in patch.
+    use_relu : bool, default False
+        If True, applies ReLU activation to the cost volume output.
+    """
+
     @configurable
     def __init__(
         self,
@@ -309,6 +327,26 @@ class MatryoshkaDilatedCostVolume(nn.Module):
 
 @SIMILARITY_REGISTRY.register()
 class MatryoshkaDilatedCostVolumeList(nn.Module):
+    """
+    A List of Cost Volume with concentric offset dilations
+    used in `DCVNet: Dilated Cost Volume Networks for Fast Optical Flow <https://jianghz.me/files/DCVNet_camera_ready_wacv2023.pdf>`_
+
+    Parameters
+    ----------
+    num_groups : int, default 1
+        Divides channels into groups of batches for batch processing of similarity computation.
+    max_displacement : int, default 4
+        Determines the cost volume search range/patch size.
+    encoder_output_strides : List[int], default [2, 8]
+        Stride of the feature maps from the encoder output, will modify output height and width.
+    dilations : List[int], default [1, 2, 3, 5, 9, 16]
+        List of steps for every shift in patch.
+    normalize_feat_l2 : bool, default False
+        If True, normalizes input feature maps.
+    use_relu: bool, default False
+        If True, applies ReLU activation to the cost volume output.
+    """
+
     @configurable
     def __init__(
         self,

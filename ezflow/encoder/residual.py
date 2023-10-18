@@ -25,7 +25,7 @@ class BasicEncoder(nn.Module):
         Number of output features per layer
     num_residual_layers : list of int or tuple of int
         Number of residual blocks features per layer
-    intermediate_features : bool
+    intermediate_features : bool, default False
         Whether to return intermediate features to get a feature hierarchy
     """
 
@@ -160,7 +160,7 @@ class BottleneckEncoder(nn.Module):
         Dropout probability
     layer_config : list of int or tuple of int
         Configuration of encoder's layers
-    intermediate_features : bool
+    intermediate_features : bool, default False
         Whether to return intermediate features to get a feature hierarchy
     """
 
