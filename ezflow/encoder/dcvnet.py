@@ -10,6 +10,7 @@ from .residual import BasicEncoder
 class DCVNetBackbone(nn.Module):
     """
     ResNet-style encoder that outputs feature maps of size (H/2,W/2) and (H/8,W/8)
+    used in  `DCVNet: Dilated Cost Volume Networks for Fast Optical Flow <https://jianghz.me/files/DCVNet_camera_ready_wacv2023.pdf>`_
 
     Parameters
     ----------
@@ -31,7 +32,7 @@ class DCVNetBackbone(nn.Module):
         self,
         in_channels=3,
         out_channels=256,
-        norm="batch",
+        norm="instance",
         p_dropout=0.0,
         layer_config=(64, 96, 128),
     ):

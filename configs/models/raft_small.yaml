@@ -1,14 +1,14 @@
 NAME: RAFT
 ENCODER:
   FEATURE: 
-    NAME: RAFTBackbone
+    NAME: RAFTBackboneSmall
     IN_CHANNELS: 3
     OUT_CHANNELS: 128
     NORM: instance
     P_DROPOUT: 0.0
     LAYER_CONFIG: [32, 64, 96]
   CONTEXT:
-    NAME: RAFTBackbone
+    NAME: RAFTBackboneSmall
     IN_CHANNELS: 3
     OUT_CHANNELS: 160
     NORM: batch
