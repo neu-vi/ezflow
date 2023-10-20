@@ -56,6 +56,7 @@ class DCVNet(BaseModule):
         -------
         :class:`dict`
             <flow_preds> torch.Tensor : intermediate flow predications from img1 to img2
+            <flow_logits> torch.Tensor : interpolated flow logits
             <flow_upsampled> torch.Tensor : if model is in eval state, return upsampled flow
         """
         N, C, H, W = img1.shape

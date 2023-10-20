@@ -20,7 +20,7 @@ def _get_norm_fn(in_dim, norm="instance"):
 @MODULE_REGISTRY.register()
 class ASPPConv2D(nn.Module):
     """
-    Applies a 2D Atrous Spatial Pyramid Pooling(ASPP) Convolution over an input image.
+    Applies a 2D Atrous Spatial Pyramid Pooling(ASPP) Convolution over an input.
 
     Reference:
         Chen, Liang-Chieh, et al. "Rethinking Atrous Convolution for Semantic Image Segmentation."
@@ -165,6 +165,27 @@ class ASPPConv2D(nn.Module):
 
 @MODULE_REGISTRY.register()
 class UNetBase(BaseModule):
+    """
+    Applies a UNet Convolution over an input.
+    This class is used for Cost Volume Filtering in used in `DCVNet: Dilated Cost Volume Networks for Fast Optical Flow <https://jianghz.me/files/DCVNet_camera_ready_wacv2023.pdf>`_
+
+    Parameters
+    ----------
+    in_channels : int
+        Number of channels in the input feature
+    hidden_dim : int
+        Number of hidden dimension
+    out_channels : int
+        Number of output channels produced by the ASPP module
+    bottle_neck_cfg: CfgNode
+        Configuration of bottleneck layer.
+    num_groups: int, optional
+        Number of blocked connections from intput features to output features
+    norm : str
+        Type of normalization to use. Can be None, 'batch', 'group', 'instance'
+
+    """
+
     @configurable
     def __init__(
         self,
@@ -347,6 +368,26 @@ class UNetBase(BaseModule):
 
 @MODULE_REGISTRY.register()
 class UNetLight(UNetBase):
+    """
+    Applies a UNet Convolution over an input.
+
+    Parameters
+    ----------
+    in_channels : int
+        Number of channels in the input feature
+    hidden_dim : int
+        Number of hidden dimension
+    out_channels : int
+        Number of output channels produced by the ASPP module
+    bottle_neck_cfg: CfgNode
+        Configuration of bottleneck layer.
+    num_groups: int, optional
+        Number of blocked connections from intput features to output features
+    norm : str
+        Type of normalization to use. Can be None, 'batch', 'group', 'instance'
+
+    """
+
     @configurable
     def __init__(
         self,
@@ -362,7 +403,7 @@ class UNetLight(UNetBase):
             hidden_dim=hidden_dim,
             out_channels=out_channels,
             bottle_neck_cfg=bottle_neck_cfg,
-            groups=num_groups,
+            num_groups=num_groups,
             norm=norm,
         )
 

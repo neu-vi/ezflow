@@ -21,6 +21,34 @@ def _get_norm_fn(in_dim, norm="instance"):
 
 @DECODER_REGISTRY.register()
 class DCVFilterGroupConvStemJoint(BaseModule):
+    """
+    Applies Cost Volume Filtering using a UNet in `DCVNet: Dilated Cost Volume Networks for Fast Optical Flow <https://jianghz.me/files/DCVNet_camera_ready_wacv2023.pdf>`_
+
+    Parameters
+    ----------
+    unet_cfg : CfgNode
+        Configuration of UNet Module.
+    num_groups: int, optional
+        Number of blocked connections from intput features to output features
+    num_dilations : int
+        Number of feature dilations (This is not the total number of dilation for each feature stride)
+    search_range : int
+        Search range of the Cost Volume.
+    feat_in_planes: int
+        Input channels for the UNet.
+    out_channels: int
+        Number of output channels.
+    hidden_dim: int,
+        Number of hidden channels.
+    use_filter_residual : bool
+        If enabled, adds residual flow
+    use_group_conv_stem: bool
+        If enabled, sets num_groups to number of dilations else 1.
+    norm : str
+        Type of normalization to use. Can be None, 'batch', 'group', 'instance'
+
+    """
+
     @configurable
     def __init__(
         self,
@@ -120,6 +148,21 @@ class DCVFilterGroupConvStemJoint(BaseModule):
 
 @DECODER_REGISTRY.register()
 class DCVDilatedFlowStackFilterDecoder(BaseModule):
+    """
+    Interpolates flow from UNet Filter output and flow offsets
+    used in `DCVNet: Dilated Cost Volume Networks for Fast Optical Flow <https://jianghz.me/files/DCVNet_camera_ready_wacv2023.pdf>`_
+
+    Parameters
+    ----------
+    cost_volume_filter_cfg : CfgNode
+        Configuration of Cost Volume Filter Module.
+    feat_strides: List[int]
+        Output feature strides of the Encoder
+    dilations : List[int]
+        List of Cost Volume Dilations
+
+    """
+
     @configurable
     def __init__(self, cost_volume_filter_cfg, feat_strides, dilations):
         super(DCVDilatedFlowStackFilterDecoder, self).__init__()
@@ -190,5 +233,5 @@ class DCVDilatedFlowStackFilterDecoder(BaseModule):
 
         flow, _ = self._logits_to_flow(flow_logits_list[-1], flow_offsets)
         flow = self._interpolate_flow(flow, up_mask_logits_list[-1])
-        
+
         return [flow], [flow_logits_list[-1]]
