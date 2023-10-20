@@ -99,6 +99,10 @@ class MultiScaleLoss(nn.Module):
         ):
             flow_preds = {flow_preds}
 
+        # detect NaN
+        nan_mask = (~torch.isnan(flow_gt)).float()
+        flow_gt[torch.isnan(flow_gt)] = 0.0
+
         for i, level_pred in enumerate(flow_preds):
 
             if self.resize_flow.lower() == "upsample":

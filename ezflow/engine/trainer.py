@@ -170,7 +170,7 @@ class BaseTrainer:
             for iteration, (inp, target) in enumerate(self.train_loader):
                 total_iters = iteration + (epoch * len(self.train_loader))
 
-                loss = self._run_step(inp, target, current_iter=total_iters, logger=self.writer)
+                loss = self._run_step(inp, target, current_iter=total_iters)
 
                 loss_meter.update(loss.item())
                 self._log_step(iteration, total_iters, loss_meter)
@@ -307,12 +307,12 @@ class BaseTrainer:
     def _log_step(self, iteration, total_iters, loss_meter):
         if iteration % self.cfg.LOG_ITERATIONS_INTERVAL == 0:
             print(
-                f"[{iteration} / {total_iters}] iterations, average batch training loss: {loss_meter.avg}"
+                f"[{iteration} / {total_iters}] iterations, batch training loss: {loss_meter.val}"
             )
             if self._is_main_process():
                 self.writer.add_scalar(
-                    "avg_batch_training_loss",
-                    loss_meter.avg,
+                    "batch_training_loss",
+                    loss_meter.val,
                     total_iters,
                 )
 

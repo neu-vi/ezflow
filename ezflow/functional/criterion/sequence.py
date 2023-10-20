@@ -31,6 +31,9 @@ class SequenceLoss(nn.Module):
         return {"gamma": cfg.GAMMA, "max_flow": cfg.MAX_FLOW}
 
     def forward(self, flow_preds, flow_gt, valid, **kwargs):
+        # detect NaN
+        nan_mask = (~torch.isnan(flow_gt)).float()
+        flow_gt[torch.isnan(flow_gt)] = 0.0
 
         n_preds = len(flow_preds)
         flow_loss = 0.0

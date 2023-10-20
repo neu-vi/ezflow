@@ -109,7 +109,6 @@ class FlowOffsetLoss(nn.Module):
         valid,
         offset_labs,
         current_iter,
-        logger,
         **kwargs,
     ):
 
@@ -120,19 +119,6 @@ class FlowOffsetLoss(nn.Module):
 
         self.flow_loss_meter.update(flow_loss.item())
         self.logit_loss_meter.update(logit_loss.item())
-
-        if logger is not None and current_iter % 100 == 0:
-            logger.add_scalar("avg_L1_loss", self.flow_loss_meter.avg, current_iter)
-            logger.add_scalar("avg_OffsetCrossEntropy_loss", self.logit_loss_meter.avg, current_iter)
-
-        # if torch.any(torch.isnan(flow_loss)):
-        #     print("debug: flow_loss is NaN")
-        #     flow_loss = 0.0
-
-        # if torch.any(torch.isnan(logit_loss)):
-        #     print("debug: logit loss is NaN")
-        #     logit_loss = 0.0
-
 
         loss = flow_loss + logit_loss
         return loss

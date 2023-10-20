@@ -45,7 +45,7 @@ class DataloaderCreator:
         append_valid_mask=False,
         is_prediction=False,
         distributed=False,
-        world_size=None,
+        world_size=1,
     ):
         self.dataset_list = []
         self.batch_size = batch_size
@@ -59,8 +59,8 @@ class DataloaderCreator:
 
         if distributed:
             assert (
-                world_size is not None
-            ), "world_size must be set to perform distributed training"
+                world_size > 1
+            ), "world_size must be greater than 1 to perform distributed training"
 
         self.distributed = distributed
         self.world_size = world_size
@@ -433,7 +433,7 @@ class DataloaderCreator:
             )
             data_loader = DataLoader(
                 dataset,
-                batch_size=self.batch_size,
+                batch_size=self.batch_size // self.world_size,
                 pin_memory=self.pin_memory,
                 num_workers=self.num_workers,
                 sampler=sampler,
@@ -449,8 +449,7 @@ class DataloaderCreator:
                 drop_last=self.drop_last,
             )
 
-        print(
-            f"Total image pairs loaded: {len(data_loader)*self.batch_size}/{len(dataset)}\n"
-        )
+        total_samples = len(data_loader) * (self.batch_size//self.world_size)
+        print(f"Total image pairs loaded: {total_samples}/{len(dataset)} in device: {rank}")
 
         return data_loader
