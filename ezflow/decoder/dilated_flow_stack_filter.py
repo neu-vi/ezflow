@@ -22,7 +22,8 @@ def _get_norm_fn(in_dim, norm="instance"):
 @DECODER_REGISTRY.register()
 class DCVFilterGroupConvStemJoint(BaseModule):
     """
-    Applies Cost Volume Filtering using a UNet in `DCVNet: Dilated Cost Volume Networks for Fast Optical Flow <https://jianghz.me/files/DCVNet_camera_ready_wacv2023.pdf>`_
+    Applies Cost Volume Filtering using a UNet in
+    `DCVNet: Dilated Cost Volume Networks for Fast Optical Flow <https://jianghz.me/files/DCVNet_camera_ready_wacv2023.pdf>`_
 
     Parameters
     ----------
