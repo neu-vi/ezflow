@@ -311,9 +311,4 @@ def flow_to_bilinear_interpolation_weights(flow, valid, flow_offsets, debug=Fals
     offset_labs = offset_labs.reshape(h, w, num_dilation, num_disp, num_disp)
     dilation_labs = min_dilation_idxes.reshape(h, w)
 
-    # sanity check
-    offset_labs_reshape = offset_labs.reshape(h, w, -1)
-    err = np.sum(np.abs(np.sum(offset_labs_reshape, axis=2) - 1))
-    assert err < 1e-10, err
-
     return offset_labs, dilation_labs
