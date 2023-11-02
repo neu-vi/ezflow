@@ -14,7 +14,6 @@ DATA:
             "dilations": [[1], [1, 2, 3, 5, 9, 16]],
             "feat_strides": [2, 8],
             "search_radius": 4,
-            "offset_bias": [0, 0],
         }
     Driving:
       APPEND_VALID_MASK: True

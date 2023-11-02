@@ -123,7 +123,26 @@ def replace_relu(module, new_fn):
     return mod
 
 
-def concentric_offsets(dilations=[1, 5, 9, 16], radius=4, bias=0):
+def concentric_offsets(dilations=[1, 5, 9, 16], radius=4):
+    """
+    Get concentric offsets.
+    `DCVNet: Dilated Cost Volume Networks for Fast Optical Flow <https://jianghz.me/files/DCVNet_camera_ready_wacv2023.pdf>`_
+
+    Parameters
+    -----------
+    dilations : List[int], default [1, 5, 9, 16]
+        List of steps for every shift in patch.
+    radius : int, default 4
+        Determines the cost volume search range/patch size.
+
+    Returns
+    --------
+    flow_offsets :  np.array
+        Flow offset of shape D x O, D is number of dilations, O is number of offsets.
+        It is assumed that:
+        i)  the offsets in x and y directions are the same.
+        ii) the offsets for each dilation is arranged in an ascending order.
+    """
     offsets_list = []
     for dilation_i in dilations:
         offsets_i = np.arange(-radius, radius + 1) * dilation_i
@@ -135,15 +154,37 @@ def concentric_offsets(dilations=[1, 5, 9, 16], radius=4, bias=0):
 def get_flow_offsets(
     dilations=[[1], [1, 2, 3, 5, 9, 16]],
     feat_strides=[2, 8],
-    radius=4,
-    offset_bias=[0, 0],
+    search_radius=4,
     offset_fn=concentric_offsets,
     **kwargs
 ):
+    """
+    Get flow offsets.
+    `DCVNet: Dilated Cost Volume Networks for Fast Optical Flow <https://jianghz.me/files/DCVNet_camera_ready_wacv2023.pdf>`_
+
+    Parameters
+    -----------
+    dilations : List[int], default [1, 2, 3, 5, 9, 16]
+        List of steps for every shift in patch.
+    feat_strides : int, default 1
+        Stride of the spatial sampler, will modify output height and width.
+    search_radius : int, default 4
+        Determines the cost volume search range/patch size.
+    offset_fn : <class 'function'>, default concentric_offsets
+        The function to create the offsets
+
+    Returns
+    --------
+    flow_offsets :  np.array
+        Flow offset of shape D x O, D is number of dilations, O is number of offsets.
+        It is assumed that:
+        i)  the offsets in x and y directions are the same.
+        ii) the offsets for each dilation is arranged in an ascending order.
+    """
     offsets_list = []
     for idx, (dilations_i, feat_stride_i) in enumerate(zip(dilations, feat_strides)):
         assert feat_stride_i <= 8
-        offsets_i = offset_fn(dilations_i, radius, offset_bias[idx]) * feat_stride_i
+        offsets_i = offset_fn(dilations_i, radius) * feat_stride_i
         offsets_list.append(offsets_i)
     offsets = np.concatenate(offsets_list, axis=0)
 
@@ -151,6 +192,18 @@ def get_flow_offsets(
 
 
 def flow_to_bilinear_interpolation_weights_helper(flow_x, offsets, debug=False):
+    """
+    Get starting and ending indices of flow offsets
+    `DCVNet: Dilated Cost Volume Networks for Fast Optical Flow <https://jianghz.me/files/DCVNet_camera_ready_wacv2023.pdf>`_
+
+    Parameters
+    -----------
+    flow_x : np.array
+        Flow in either x or y direction. Flow vectors of shape H x W x 1.
+    flow_offsets :  np.array
+        Flow offset of shape D x O, D is number of dilations, O is number of offsets.
+
+    """
     h, w = flow_x.shape
 
     # HW * D * O
@@ -201,6 +254,30 @@ def flow_to_bilinear_interpolation_weights_helper(flow_x, offsets, debug=False):
 
 
 def get_bilinear_weights_per_pixel(x, y, x1, y1, x2, y2):
+    """
+    Get the bilinear interpolation weights per pixel
+    `DCVNet: Dilated Cost Volume Networks for Fast Optical Flow <https://jianghz.me/files/DCVNet_camera_ready_wacv2023.pdf>`_
+
+    Parameters
+    -----------
+    x : int
+        row index of the pixel in consideration
+    y : int
+        column index of the pixel in consideration
+    x1 : int
+        starting row index of the offset
+    y1 : int
+        starting column index of the offset
+    x2 : int
+        ending row index of the offset
+    y2 : int
+        ending column index of the offset
+
+    Returns
+    --------
+    (w11, w12, w21, w22): tuple(float, float, float, float)
+        bilinear interpolation weights per pixel
+    """
     w11 = (x2 - x) * (y2 - y) / ((x2 - x1) * (y2 - y1) + 1e-30)
     w12 = (x2 - x) * (y - y1) / ((x2 - x1) * (y2 - y1) + 1e-30)
     w21 = (x - x1) * (y2 - y) / ((x2 - x1) * (y2 - y1) + 1e-30)
@@ -211,17 +288,26 @@ def get_bilinear_weights_per_pixel(x, y, x1, y1, x2, y2):
 def flow_to_bilinear_interpolation_weights(flow, valid, flow_offsets, debug=False):
     """
     Get the bilinear interpolation weights using flow_offsets.
+    `DCVNet: Dilated Cost Volume Networks for Fast Optical Flow <https://jianghz.me/files/DCVNet_camera_ready_wacv2023.pdf>`_
 
-    Input:
-    - flow: HxWx2, numpy array
-    - valid: HxW, valid flag for each pixel
-    - flow_offsets: DxO, D is number of dilations, O is number of offsets. It is assumed that:
-      i)  the offsets in x and y directions are the same.
-      ii) the offsets for each dilation is arranged in an ascending order.
+    Parameters
+    -----------
+    flow : np.array
+        Flow vectors of shape H x W x 2
+    valid : np.array
+        Valid flag for each pixel
+    flow_offsets :  np.array
+        Flow offset of shape D x O, D is number of dilations, O is number of offsets.
+        It is assumed that:
+        i)  the offsets in x and y directions are the same.
+        ii) the offsets for each dilation is arranged in an ascending order.
 
-    Output:
-    - offsets_labs: bilinear interpolation weights for each pixel, which sum to 1. HxWxDxO^2
-    - dilation_labs: in which dilation factor, are the bilinear interpolation weights found. HxWxD
+    Returns
+    --------
+    offsets_labs: np.array
+        Bilinear interpolation weights for each pixel, which sum to 1. H x W x D x O^2
+    dilation_labs:
+        In which dilation factor, are the bilinear interpolation weights found. H x W x D
     """
     if valid is None:
         valid = np.ones(flow.shape[:2]) > 0
@@ -310,5 +396,10 @@ def flow_to_bilinear_interpolation_weights(flow, valid, flow_offsets, debug=Fals
 
     offset_labs = offset_labs.reshape(h, w, num_dilation, num_disp, num_disp)
     dilation_labs = min_dilation_idxes.reshape(h, w)
+
+    # sanity check
+    offset_labs_reshape = offset_labs.reshape(h, w, -1)
+    err = np.sum(np.abs(np.sum(offset_labs_reshape, axis=2) - 1))
+    assert err < 1e-10, err
 
     return offset_labs, dilation_labs
