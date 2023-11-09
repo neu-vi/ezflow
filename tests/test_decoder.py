@@ -151,6 +151,12 @@ def test_DCVDilatedFlowStackFilterDecoder():
     )
 
     decoder = build_decoder(config)
-    _ = decoder(cost, context_fmaps, flow_offsets)
+    flows, flow_logits = decoder(cost, context_fmaps, flow_offsets)
 
-    del decoder, cost, _
+    logit_channels = 7 * 9 * 9
+
+    for flow, logit in zip(flows, flow_logits):
+        assert flow.shape == (1, 2, 256, 256)
+        assert logit.shape == (1, logit_channels, 32, 32)
+
+    del decoder, cost, flow, flow_logits

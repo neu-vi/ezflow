@@ -244,7 +244,7 @@ class MatryoshkaDilatedCostVolume(nn.Module):
     max_displacement : int, default 4
         Determines the cost volume search range/patch size.
     stride : int, default 1
-        Stride of the spatial sampler, will modify output height and width.
+        Stride of the spatial sampler
     dilations : List[int], default [1, 2, 3, 5, 9, 16]
         List of steps for every shift in patch.
     use_relu : bool, default False

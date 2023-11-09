@@ -184,7 +184,7 @@ def get_flow_offsets(
     offsets_list = []
     for idx, (dilations_i, feat_stride_i) in enumerate(zip(dilations, feat_strides)):
         assert feat_stride_i <= 8
-        offsets_i = offset_fn(dilations_i, radius) * feat_stride_i
+        offsets_i = offset_fn(dilations_i, search_radius) * feat_stride_i
         offsets_list.append(offsets_i)
     offsets = np.concatenate(offsets_list, axis=0)
 

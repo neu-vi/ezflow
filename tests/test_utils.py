@@ -92,7 +92,7 @@ def test_concentric_offsets():
     ]
 
     offset_matrix = np.array(offset_matrix)
-    offsets = concentric_offsets(dilations=[1, 5, 9, 16], radius=4, bias=0)
+    offsets = concentric_offsets(dilations=[1, 5, 9, 16], radius=4)
 
     assert offsets.shape == (4, 9)
     assert (offsets == offset_matrix).all()

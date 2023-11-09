@@ -3,12 +3,32 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from ...config import configurable
+from ...utils import AverageMeter
 from ..registry import FUNCTIONAL_REGISTRY
 from .sequence import SequenceLoss
-from ...utils import AverageMeter
+
 
 @FUNCTIONAL_REGISTRY.register()
 class OffsetCrossEntropyLoss(nn.Module):
+    """
+    Computes Cross Entropy Loss of interpolated weights of each pixel.
+    `DCVNet: Dilated Cost Volume Networks for Fast Optical Flow <https://jianghz.me/files/DCVNet_camera_ready_wacv2023.pdf>`_
+
+    Parameters
+    -----------
+    strides : int, default 8
+        Stride of the spatial sampler
+    offset_loss_weight : List[int], default [0,1]
+        Determines the weights for the cosine weight annealer
+    weight_anneal_fn : <class 'function'>, default CosineAnnealer
+        The function for annealing the weights for CrossEntropyLoss
+    min_weight : int, default 0
+        Minimum weight of the annealing function
+    max_iter : int, default 1
+        maximum iteration of the annealing function
+
+    """
+
     @configurable
     def __init__(
         self,
@@ -28,7 +48,10 @@ class OffsetCrossEntropyLoss(nn.Module):
 
         weight_anneal_fn = FUNCTIONAL_REGISTRY.get(weight_anneal_fn)
         self.weight_annealers = [
-            weight_anneal_fn(init_weight=wt, min_weight=min_weight, max_iter=max_iter, **kwargs) for wt in offset_loss_weight
+            weight_anneal_fn(
+                init_weight=wt, min_weight=min_weight, max_iter=max_iter, **kwargs
+            )
+            for wt in offset_loss_weight
         ]
 
     @classmethod
@@ -38,7 +61,7 @@ class OffsetCrossEntropyLoss(nn.Module):
             "weight_anneal_fn": cfg.WEIGHT_ANNEAL_FN,
             "offset_loss_weight": cfg.OFFSET_LOSS_WEIGHT,
             "min_weight": cfg.MIN_WEIGHT,
-            "max_iter": cfg.MAX_ITER
+            "max_iter": cfg.MAX_ITER,
         }
 
     def __compute_loss(self, flow_logits, offset_labs, valid):
@@ -63,6 +86,28 @@ class OffsetCrossEntropyLoss(nn.Module):
 
 @FUNCTIONAL_REGISTRY.register()
 class FlowOffsetLoss(nn.Module):
+    """
+    Computes Cross Entropy Loss of interpolated weights of each pixel.
+    `DCVNet: Dilated Cost Volume Networks for Fast Optical Flow <https://jianghz.me/files/DCVNet_camera_ready_wacv2023.pdf>`_
+
+    Parameters
+    -----------
+    gamma : float
+        Weight for the Sequence L1 loss
+    max_flow : float
+        Maximum flow magnitude
+    strides : int, default 8
+        Stride of the spatial sampler
+    offset_loss_weight : List[int], default [0,1]
+        Determines the weights for the cosine weight annealer used in OffsetCrossEntropyLoss
+    weight_anneal_fn : <class 'function'>, default CosineAnnealer
+        The function for annealing the weights for CrossEntropyLoss
+    min_weight : int, default 0
+        Minimum weight of the annealing function
+    max_iter : int, default 1
+        maximum iteration of the annealing function
+    """
+
     @configurable
     def __init__(
         self,
@@ -98,7 +143,7 @@ class FlowOffsetLoss(nn.Module):
             "weight_anneal_fn": cfg.WEIGHT_ANNEAL_FN,
             "offset_loss_weight": cfg.OFFSET_LOSS_WEIGHT,
             "min_weight": cfg.MIN_WEIGHT,
-            "max_iter": cfg.MAX_ITER
+            "max_iter": cfg.MAX_ITER,
         }
 
     def forward(
