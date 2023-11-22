@@ -4,8 +4,10 @@ import torchvision.transforms as transforms
 
 from ezflow.functional import (
     FlowAugmentor,
+    FlowOffsetLoss,
     MultiScaleLoss,
     Normalize,
+    OffsetCrossEntropyLoss,
     SequenceLoss,
     SparseFlowAugmentor,
     crop,
@@ -139,10 +141,9 @@ def test_SparseFlowAugmentor():
 def test_SequenceLoss():
 
     valid_mask = torch.randn(4, 1, 256, 256)
-    flow_target = torch.cat([flow_gt, valid_mask], dim=1)
 
     loss_fn = SequenceLoss()
-    _ = loss_fn(flow_pred, flow_target)
+    _ = loss_fn(flow_pred, flow_gt, valid_mask)
     del loss_fn
 
 
@@ -152,11 +153,8 @@ def test_MultiScaleLoss():
     _ = loss_fn(flow_pred, flow_gt)
     del loss_fn
 
-    valid_mask = torch.randn(4, 1, 256, 256)
-    flow_target = torch.cat([flow_gt, valid_mask], dim=1)
-
-    loss_fn = MultiScaleLoss(norm="l1")
-    _ = loss_fn(flow_pred, flow_target)
+    loss_fn = MultiScaleLoss(norm="l1", use_valid_range=True, valid_range=[[400, 400]])
+    _ = loss_fn(flow_pred, flow_gt)
     del loss_fn
 
     loss_fn = MultiScaleLoss(norm="l2")
@@ -187,3 +185,19 @@ def test_MultiScaleLoss():
 def test_normalize():
     normalize = Normalize(use=True, mean=[0, 0, 0], std=[255.0, 255.0, 255.0])
     _ = normalize(img1_tr, img2_tr)
+
+
+def test_OffsetCrossEntropyLoss():
+
+    flow_logits = torch.randn(1, 567, 32, 32)
+    offset_labs = torch.randint(0, 1, (1, 567, 32, 32))
+    valid = torch.randint(0, 2, (1, 1, 256, 256))
+
+    loss_fn = OffsetCrossEntropyLoss(weight_anneal_fn="CosineAnnealer")
+    _ = loss_fn(flow_logits, offset_labs, valid, current_iter=0)
+    del loss_fn, _
+
+    params = {"power": 2}
+    loss_fn = OffsetCrossEntropyLoss(weight_anneal_fn="PolyAnnealer", **params)
+    _ = loss_fn(flow_logits, offset_labs, valid, current_iter=0)
+    del loss_fn, _

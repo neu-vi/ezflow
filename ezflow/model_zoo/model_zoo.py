@@ -9,11 +9,16 @@ class _ModelZooConfigs:
         "RAFT": "raft.yaml",
         "RAFT_SMALL": "raft_small.yaml",
         "DICL": "dicl.yaml",
+        "DCVNet": "dcvnet.yaml",
         "PWCNet": "pwcnet.yaml",
         "VCN": "vcn.yaml",
         "FlowNetS": "flownet_s.yaml",
         "FlowNetC": "flownet_c.yaml",
     }
+
+    @staticmethod
+    def get_names():
+        return list(_ModelZooConfigs.MODEL_NAME_TO_CONFIG.keys())
 
     @staticmethod
     def query(model_name):

@@ -7,7 +7,7 @@ from .registry import FUNCTIONAL_REGISTRY
 @FUNCTIONAL_REGISTRY.register()
 class CosineWarmupScheduler(optim.lr_scheduler._LRScheduler):
     """
-    Coaine learning rate warmup scheduler
+    Cosine learning rate warmup scheduler
 
     Parameters
     ----------

@@ -36,6 +36,8 @@ class Kitti(BaseDataset):
         The parameters for data augmentation
     norm_params : :obj:`dict`, optional
         The parameters for normalization
+    flow_offset_params: :obj:`dict`, optional
+        The parameters for adding bilinear interpolated weights surrounding each ground truth flow values.
     """
 
     @configurable
@@ -59,6 +61,7 @@ class Kitti(BaseDataset):
             "advanced_spatial_aug_params": {"enabled": False},
         },
         norm_params={"use": False},
+        flow_offset_params={"use": False},
     ):
         super(Kitti, self).__init__(
             init_seed=init_seed,
@@ -71,6 +74,7 @@ class Kitti(BaseDataset):
             aug_params=aug_params,
             sparse_transform=True,
             norm_params=norm_params,
+            flow_offset_params=flow_offset_params,
         )
         assert (
             split.lower() == "training" or split.lower() == "validation"
@@ -111,4 +115,5 @@ class Kitti(BaseDataset):
             "augment": cfg.AUGMENTATION.USE,
             "aug_params": cfg.AUGMENTATION.PARAMS,
             "norm_params": cfg.NORM_PARAMS,
+            "flow_offset_params": cfg.FLOW_OFFSET_PARAMS,
         }

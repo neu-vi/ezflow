@@ -129,3 +129,25 @@ def test_VCN():
     assert output["flow_upsampled"].shape == (16, 2, 256, 256)
 
     del model, output
+
+
+def test_DCVNet():
+
+    model = build_model("DCVNet", "dcvnet.yaml")
+    output = model(img1, img2)
+    assert isinstance(output, dict)
+    assert isinstance(output["flow_preds"], tuple) or isinstance(
+        output["flow_preds"], list
+    )
+    assert isinstance(output["flow_logits"], tuple) or isinstance(
+        output["flow_logits"], list
+    )
+
+    model.eval()
+    output = model(img1, img2)
+    assert output["flow_upsampled"].shape == (2, 2, 256, 256)
+
+    del model, output
+
+    model = build_model("DCVNet", default=True)
+    del model

@@ -34,6 +34,8 @@ class HD1K(BaseDataset):
         The parameters for data augmentation
     norm_params : :obj:`dict`, optional
         The parameters for normalization
+    flow_offset_params: :obj:`dict`, optional
+        The parameters for adding bilinear interpolated weights surrounding each ground truth flow values.
     """
 
     @configurable
@@ -56,6 +58,7 @@ class HD1K(BaseDataset):
             "advanced_spatial_aug_params": {"enabled": False},
         },
         norm_params={"use": False},
+        flow_offset_params={"use": False},
     ):
         super(HD1K, self).__init__(
             init_seed=init_seed,
@@ -68,6 +71,7 @@ class HD1K(BaseDataset):
             aug_params=aug_params,
             sparse_transform=True,
             norm_params=norm_params,
+            flow_offset_params=flow_offset_params,
         )
 
         self.is_prediction = is_prediction
@@ -107,4 +111,5 @@ class HD1K(BaseDataset):
             "augment": cfg.AUGMENTATION.USE,
             "aug_params": cfg.AUGMENTATION.PARAMS,
             "norm_params": cfg.NORM_PARAMS,
+            "flow_offset_params": cfg.FLOW_OFFSET_PARAMS,
         }

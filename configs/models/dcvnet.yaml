@@ -1,0 +1,44 @@
+NAME: DCVNet
+ENCODER: 
+  NAME: DCVNetBackbone
+  IN_CHANNELS: 3
+  OUT_CHANNELS: 256
+  NORM: instance
+  P_DROPOUT: 0.0
+  LAYER_CONFIG: [64, 96, 128]
+SIMILARITY:
+  NAME: MatryoshkaDilatedCostVolumeList
+  NUM_GROUPS: 1
+  MAX_DISPLACEMENT: 4
+  ENCODER_OUTPUT_STRIDES: [2, 8]
+  DILATIONS: [[1],[1, 2, 3, 5, 9, 16]]
+  NORMALIZE_FEAT_L2: False
+  USE_RELU: False
+DECODER:
+  NAME: DCVDilatedFlowStackFilterDecoder
+  FEAT_STRIDES: [2, 8]
+  DILATIONS: [[1],[1, 2, 3, 5, 9, 16]]
+  COST_VOLUME_FILTER:
+    NAME: DCVFilterGroupConvStemJoint
+    NUM_GROUPS: 1
+    HIDDEN_DIM: 96
+    FEAT_IN_PLANES: 128
+    OUT_CHANNELS: 567
+    USE_FILTER_RESIDUAL: True
+    USE_GROUP_CONV_STEM: True
+    NORM: none
+    UNET:
+      NAME: UNetBase
+      NUM_GROUPS: 1
+      IN_CHANNELS: 695
+      HIDDEN_DIM: 96
+      OUT_CHANNELS: 96
+      NORM: none
+      BOTTLE_NECK: 
+        NAME: ASPPConv2D
+        IN_CHANNELS: 192
+        HIDDEN_DIM: 192
+        OUT_CHANNELS: 192
+        DILATIONS: [2, 4, 8]
+        NUM_GROUPS: 1
+        NORM: none

@@ -7,20 +7,18 @@ DATA:
   INIT_SEED: False
   DROP_LAST: True
   TRAIN_DATASET:
-    Kubric:
-      ROOT_DIR: "./Datasets/KubricFlow"
+    FlyingThings3DSubset: 
+      ROOT_DIR: "./Datasets/SceneFlow/FlyingThings3D_subset"
       SPLIT: "training"
-      USE_BACKWARD_FLOW: False
-      SWAP_COLUMN_TO_ROW: True
       IS_PREDICTION: False
       APPEND_VALID_MASK: False
-      CROP: 
+      CROP: &TRAIN_CROP_CONFIG
         USE: True
-        SIZE: [384, 448]
+        SIZE: [400, 720]
         TYPE: "random"
       FLOW_OFFSET_PARAMS: {"use": False}
-      AUGMENTATION:
-        # Spatial Augmentation Settings borrowed from AutoFlow: https://github.com/google-research/opticalflow-autoflow/blob/main/src/dataset_lib/augmentations/aug_params.py
+      AUGMENTATION: &TRAIN_AUGMENTATION_CONFIG
+        # Augmentation Settings borrowed from RAFT
         USE: True
         PARAMS:
           color_aug_params: {
@@ -37,7 +35,7 @@ DATA:
             "bounds": [50, 100]
           }
           noise_aug_params: {
-            "enabled": True,
+            "enabled": False,
             "aug_prob": 0.5,
             "noise_std_range": 0.06 
           }
@@ -47,34 +45,46 @@ DATA:
             "v_flip_prob": 0.1
           }
           spatial_aug_params: {
-            "enabled": False,
-            "aug_prob": 0.0, 
-            "stretch_prob": 0.0, 
-            "min_scale": 0, 
-            "max_scale": 0, 
-            "max_stretch": 0
+            "enabled": True,
+            "aug_prob": 0.8, 
+            "stretch_prob": 0.8, 
+            "min_scale": -0.1, 
+            "max_scale": 1.0, 
+            "max_stretch": 0.2, 
           }
           advanced_spatial_aug_params: {
-            "enabled": True,
-            "scale1": 0.3,
-            "scale2": 0.1,
-            "rotate": 0.4,
-            "translate": 0.4,
-            "stretch": 0.3,
+            "enabled": False,
+            "scale1": 0.0,
+            "scale2": 0.0,
+            "stretch": 0.0,
+            "rotate": 0.0,
+            "translate": 0.0,
             "enable_out_of_boundary_crop": False
           }
+    Driving: 
+      ROOT_DIR: "./Datasets/SceneFlow/Driving"
+      IS_PREDICTION: False
+      APPEND_VALID_MASK: False
+      CROP: *TRAIN_CROP_CONFIG
+      AUGMENTATION: *TRAIN_AUGMENTATION_CONFIG
+      FLOW_OFFSET_PARAMS: {"use": False}
+    Monkaa: 
+      ROOT_DIR: "./Datasets/SceneFlow/Monkaa"
+      IS_PREDICTION: False
+      APPEND_VALID_MASK: False
+      CROP: *TRAIN_CROP_CONFIG
+      AUGMENTATION: *TRAIN_AUGMENTATION_CONFIG
+      FLOW_OFFSET_PARAMS: {"use": False}
   VAL_DATASET:
-    Kubric: 
-      ROOT_DIR: "./Datasets/KubricFlow"
-      SPLIT: "validation"
-      USE_BACKWARD_FLOW: False
-      SWAP_COLUMN_TO_ROW: True
+    MPISintelClean:
+      ROOT_DIR: "./Datasets/MPI_Sintel/"
+      SPLIT: "training"
       APPEND_VALID_MASK: False
       IS_PREDICTION: False
       PADDING: 1
       CROP: 
         USE: True
-        SIZE: [384, 448]
+        SIZE: [384, 1024]
         TYPE: "center"
       FLOW_OFFSET_PARAMS: {"use": False}
       AUGMENTATION:
@@ -88,7 +98,7 @@ DATA:
           advanced_spatial_aug_params: {"enabled": False}        
 OPTIMIZER:
   NAME: AdamW
-  LR: 0.0004
+  LR: 0.000125
   PARAMS:
     weight_decay: 0.0001
     betas: [0.9, 0.999]

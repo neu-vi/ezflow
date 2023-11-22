@@ -1,0 +1,72 @@
+_BASE_: "../_base_/sceneflow_baseline.yaml"
+DATA:
+  BATCH_SIZE: 8
+  NORM_PARAMS: {"use": True, "mean":[127.5, 127.5, 127.5], "std":[127.5, 127.5, 127.5]}
+  TRAIN_DATASET:
+    FlyingThings3DSubset:
+      APPEND_VALID_MASK: True
+      CROP: &TRAIN_CROP_CONFIG
+        USE: True 
+        SIZE: [400, 720]
+        TYPE: "random"
+      FLOW_OFFSET_PARAMS: &FLOW_OFFSET_PARAMS {
+            "use": True,
+            "dilations": [[1], [1, 2, 3, 5, 9, 16]],
+            "feat_strides": [2, 8],
+            "search_radius": 4,
+        }
+    Driving:
+      APPEND_VALID_MASK: True
+      CROP: *TRAIN_CROP_CONFIG
+      FLOW_OFFSET_PARAMS: *FLOW_OFFSET_PARAMS
+    Monkaa:
+      APPEND_VALID_MASK: True
+      CROP: *TRAIN_CROP_CONFIG
+      FLOW_OFFSET_PARAMS: *FLOW_OFFSET_PARAMS
+  VAL_DATASET:
+    MPISintelClean:
+      APPEND_VALID_MASK: True
+      PADDING: 1
+      CROP: 
+        USE: True
+        SIZE: [384, 1024]
+        TYPE: "center"
+OPTIMIZER:
+  NAME: AdamW
+  LR: 0.0002
+  PARAMS:
+    weight_decay: 0.0001
+    betas: [0.9, 0.999]
+    eps: 1.e-08
+    amsgrad: False
+GRAD_CLIP: 
+  USE: True
+  VALUE: 1.0
+SCHEDULER:
+  USE: True
+  NAME: OneCycleLR
+  PARAMS:
+    max_lr: 0.0002
+    epochs: 50
+    pct_start: 0.05
+    cycle_momentum: False
+    anneal_strategy: linear
+    final_div_factor: 10000
+CRITERION:
+  CUSTOM: True
+  NAME: FlowOffsetLoss
+  PARAMS: 
+    gamma: 0.25
+    max_flow: 500.0
+    stride: 8
+    weight_anneal_fn: CosineAnnealer
+    min_weight: 0
+    offset_loss_weight: [0, 1]
+EPOCHS: 50
+NUM_STEPS: null
+LOG_DIR: "./logs"
+CKPT_DIR: "./ckpts"
+LOG_ITERATIONS_INTERVAL: 100
+CKPT_INTERVAL: 20000
+VALIDATE_INTERVAL: 1000
+VALIDATE_ON: metric

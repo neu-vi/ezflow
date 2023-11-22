@@ -6,7 +6,7 @@ from ..decoder import build_decoder
 from ..encoder import build_encoder
 from ..modules import BaseModule
 from ..similarity import build_similarity
-from ..utils import coords_grid, upflow
+from ..utils import convex_upsample_flow, coords_grid, upflow
 from .build import MODEL_REGISTRY
 
 try:
@@ -66,20 +66,6 @@ class RAFT(BaseModule):
 
         return coords0, coords1
 
-    def _upsample_flow(self, flow, mask):
-
-        N, _, H, W = flow.shape
-        mask = mask.view(N, 1, 9, 8, 8, H, W)
-        mask = torch.softmax(mask, dim=2)
-
-        up_flow = F.unfold(8 * flow, [3, 3], padding=1)
-        up_flow = up_flow.view(N, 2, 9, 1, 1, H, W)
-
-        up_flow = torch.sum(mask * up_flow, dim=2)
-        up_flow = up_flow.permute(0, 1, 4, 2, 5, 3)
-
-        return up_flow.reshape(N, 2, 8 * H, 8 * W)
-
     def forward(self, img1, img2, flow_init=None):
         """
         Performs forward pass of the network
@@ -134,11 +120,11 @@ class RAFT(BaseModule):
                 net, up_mask, delta_flow = self.update_block(net, inp, corr, flow)
 
             coords1 = coords1 + delta_flow
-
+            flow = coords1 - coords0
             if up_mask is None:
-                flow_up = upflow(coords1 - coords0)
+                flow_up = upflow(flow)
             else:
-                flow_up = self._upsample_flow(coords1 - coords0, up_mask)
+                flow_up = convex_upsample_flow(8 * flow, up_mask, out_stride=8)
 
             flow_predictions.append(flow_up)
 
