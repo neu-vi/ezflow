@@ -2,16 +2,15 @@ _BASE_: "../_base_/chairs_baseline.yaml"
 DATA:
   BATCH_SIZE: 10
   NORM_PARAMS: {"use": True, "mean":[127.5, 127.5, 127.5], "std":[127.5, 127.5, 127.5]}
+  APPEND_VALID_MASK: True
   TRAIN_DATASET:
     FlyingChairs:
-      APPEND_VALID_MASK: True
       CROP: 
         USE: True
         SIZE: [368, 496]
         TYPE: "random"
   VAL_DATASET:
     FlyingChairs:
-      APPEND_VALID_MASK: True
       PADDING: 1
       CROP: 
         USE: True

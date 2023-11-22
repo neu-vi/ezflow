@@ -57,13 +57,16 @@ class DataloaderCreator:
         self.append_valid_mask = append_valid_mask
         self.is_prediction = is_prediction
 
+        self.distributed = False
+        self.world_size = 1
+
         if distributed:
             assert (
                 world_size > 1
             ), "world_size must be greater than 1 to perform distributed training"
 
-        self.distributed = distributed
-        self.world_size = world_size
+            self.distributed = distributed
+            self.world_size = world_size
 
     def add_FlyingChairs(self, root_dir, split="training", augment=False, **kwargs):
         """

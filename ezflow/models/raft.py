@@ -120,11 +120,11 @@ class RAFT(BaseModule):
                 net, up_mask, delta_flow = self.update_block(net, inp, corr, flow)
 
             coords1 = coords1 + delta_flow
-
+            flow = coords1 - coords0
             if up_mask is None:
-                flow_up = upflow(coords1 - coords0)
+                flow_up = upflow(flow)
             else:
-                flow_up = convex_upsample_flow(coords1 - coords0, up_mask, out_stride=8)
+                flow_up = convex_upsample_flow(8 * flow, up_mask, out_stride=8)
 
             flow_predictions.append(flow_up)
 

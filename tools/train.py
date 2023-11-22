@@ -33,12 +33,7 @@ def main(args):
         world_size=cfg.DISTRIBUTED.WORLD_SIZE
     )
     
-    val_loader = build_dataloader(
-        cfg.DATA, 
-        split="validation", 
-        is_distributed=False, 
-        world_size=1
-    )
+    val_loader = build_dataloader(cfg.DATA, split="validation")
 
     # Build model
     model = build_model(args.model, default=True)

@@ -609,6 +609,8 @@ class Trainer(BaseTrainer):
         else:
             self.device = torch.device(int(self.cfg.DEVICE))
             torch.cuda.empty_cache()
+        
+        seed(0)
 
     def _setup_model(self):
         self.model = self.model.to(self.device)

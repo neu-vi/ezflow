@@ -3,9 +3,9 @@ FREEZE_BATCH_NORM: True
 DATA:
   BATCH_SIZE: 6
   NORM_PARAMS: {"use": True, "mean":[127.5, 127.5, 127.5], "std":[127.5, 127.5, 127.5]}
+  APPEND_VALID_MASK: True
   TRAIN_DATASET:
     FlyingThings3DClean: &TRAIN_DS_CONFIG
-      APPEND_VALID_MASK: True
       CROP: 
         USE: True
         SIZE: [400, 720]
@@ -13,7 +13,6 @@ DATA:
     FlyingThings3DFinal: *TRAIN_DS_CONFIG
   VAL_DATASET:
     FlyingThings3DClean: &VAL_DS_CONFIG
-      APPEND_VALID_MASK: True
       PADDING: 1
       CROP: 
         USE: True
