@@ -4,6 +4,7 @@ from ezflow.data import build_dataloader, get_dataset_list
 from ezflow.engine import DistributedTrainer, Trainer, get_training_cfg
 from ezflow.models import build_model, get_model_list
 
+
 def main(args):
 
     # Load training configuration
@@ -27,12 +28,12 @@ def main(args):
 
     # Create dataloader
     train_loader = build_dataloader(
-        cfg.DATA, 
-        split="training", 
-        is_distributed=cfg.DISTRIBUTED.USE, 
-        world_size=cfg.DISTRIBUTED.WORLD_SIZE
+        cfg.DATA,
+        split="training",
+        is_distributed=cfg.DISTRIBUTED.USE,
+        world_size=cfg.DISTRIBUTED.WORLD_SIZE,
     )
-    
+
     val_loader = build_dataloader(cfg.DATA, split="validation")
 
     # Build model

@@ -182,8 +182,12 @@ class BaseTrainer:
                     "avg_epochs_training_loss", loss_meter.avg, epoch + 1
                 )
 
-            if (epoch + 1) % self.cfg.VALIDATE_INTERVAL == 0 and self._is_main_process():
-                self._validate_model(iter_type="Epoch", iterations=epoch + 1, current_iter=0, logger=None)
+            if (
+                epoch + 1
+            ) % self.cfg.VALIDATE_INTERVAL == 0 and self._is_main_process():
+                self._validate_model(
+                    iter_type="Epoch", iterations=epoch + 1, current_iter=0, logger=None
+                )
 
             if (epoch + 1) % self.cfg.CKPT_INTERVAL == 0 and self._is_main_process():
                 self._save_checkpoints(ckpt_type="epoch", ckpt_number=epoch + 1)
@@ -609,7 +613,7 @@ class Trainer(BaseTrainer):
         else:
             self.device = torch.device(int(self.cfg.DEVICE))
             torch.cuda.empty_cache()
-        
+
         seed(0)
 
     def _setup_model(self):

@@ -452,7 +452,9 @@ class DataloaderCreator:
                 drop_last=self.drop_last,
             )
 
-        total_samples = len(data_loader) * (self.batch_size//self.world_size)
-        print(f"Total image pairs loaded: {total_samples}/{len(dataset)} in device: {rank}")
+        total_samples = len(data_loader) * (self.batch_size // self.world_size)
+        print(
+            f"Total image pairs loaded: {total_samples}/{len(dataset)} in device: {rank}"
+        )
 
         return data_loader
