@@ -14,12 +14,18 @@ class MockOpticalFlowDataset(Dataset):
 
         self.imgs = torch.randn(length, channels, *size)
         self.flow = torch.randn(length, 2, *size)
+        self.valid = torch.ones(1, *size)
+        self.offset_labs = torch.randint(0, 1, (1, 567, 32, 32))
 
     def __len__(self):
         return self.length
 
     def __getitem__(self, idx):
-        return (self.imgs[idx], self.imgs[idx]), self.flow[idx]
+        target = {}
+        target["flow_gt"] = self.flow[idx]
+        target["valid"] = self.valid
+        target["offset_labs"] = self.offset_labs
+        return (self.imgs[idx], self.imgs[idx]), target
 
 
 class MockDataloaderCreator(DataloaderCreator):

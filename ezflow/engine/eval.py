@@ -29,11 +29,9 @@ def warmup(model, dataloader, device, pad_divisor=1):
     padder = InputPadder(img1.shape, divisor=pad_divisor)
     img1, img2 = padder.pad(img1, img2)
 
-    img1, img2, target = (
-        img1.to(device),
-        img2.to(device),
-        target.to(device),
-    )
+    img1, img2 = img1.to(device), img2.to(device)
+    for key, val in target.items():
+        target[key] = val.to(device)
 
     _ = model(img1, img2)
 
@@ -70,7 +68,7 @@ def run_inference(model, dataloader, device, metric_fn, flow_scale=1.0, pad_divi
     times = []
 
     inp, target = next(iter(dataloader))
-    batch_size = target.shape[0]
+    batch_size = target["flow_gt"].shape[0]
 
     padder = InputPadder(inp[0].shape, divisor=pad_divisor)
 
@@ -79,11 +77,9 @@ def run_inference(model, dataloader, device, metric_fn, flow_scale=1.0, pad_divi
         for inp, target in dataloader:
 
             img1, img2 = inp
-            img1, img2, target = (
-                img1.to(device),
-                img2.to(device),
-                target.to(device),
-            )
+            img1, img2 = img1.to(device), img2.to(device)
+            for key, val in target.items():
+                target[key] = val.to(device)
 
             img1, img2 = padder.pad(img1, img2)
 
@@ -103,7 +99,7 @@ def run_inference(model, dataloader, device, metric_fn, flow_scale=1.0, pad_divi
             pred = padder.unpad(output["flow_upsampled"])
             pred = pred * flow_scale
 
-            metric = metric_fn(pred, target)
+            metric = metric_fn(pred, target["flow_gt"])
             metric_meter.update(metric)
 
     avg_inference_time = sum(times) / len(times)
@@ -162,7 +158,7 @@ def profile_inference(
     times = []
 
     inp, target = next(iter(dataloader))
-    batch_size = target.shape[0]
+    batch_size = target["flow_gt"].shape[0]
 
     padder = InputPadder(inp[0].shape, divisor=pad_divisor)
 
@@ -179,11 +175,9 @@ def profile_inference(
             for inp, target in dataloader:
 
                 img1, img2 = inp
-                img1, img2, target = (
-                    img1.to(device),
-                    img2.to(device),
-                    target.to(device),
-                )
+                img1, img2 = img1.to(device), img2.to(device)
+                for key, val in target.items():
+                    target[key] = val.to(device)
 
                 img1, img2 = padder.pad(img1, img2)
 
@@ -206,7 +200,7 @@ def profile_inference(
                 pred = padder.unpad(output["flow_upsampled"])
                 pred = pred * flow_scale
 
-                metric = metric_fn(pred, target)
+                metric = metric_fn(pred, target["flow_gt"])
                 metric_meter.update(metric)
 
     print(
