@@ -32,8 +32,8 @@ def endpointerror(pred, target, valid=None, multi_magnitude=False):
         mag = mag.view(-1)
         val = valid.reshape(-1) >= 0.5
 
-        f1 = ((epe > 3.0) & ((epe/mag) > 0.05)).float()
-        
+        f1 = ((epe > 3.0) & ((epe / mag) > 0.05)).float()
+
         epe = epe[val]
         f1 = f1[val].cpu().numpy()
 

@@ -80,7 +80,7 @@ class Predictor:
             )
 
         self.model = self.model.eval()
-        self.norm = Normalize(mean=mean,std=std)
+        self.norm = Normalize(mean=mean, std=std)
         self.data_transform = data_transform
         self.device = torch.device(device)
 

@@ -28,7 +28,7 @@ def test_endpointerror():
     multi_magnitude_epe = endpointerror(pred, target, multi_magnitude=True)
     assert isinstance(multi_magnitude_epe, dict)
 
-    valid = torch.rand(4, 1, 256, 256)  
+    valid = torch.rand(4, 1, 256, 256)
     epe, f1 = endpointerror(pred, target, valid)
 
     multi_magnitude_epe, f1 = endpointerror(pred, target, valid, multi_magnitude=True)
