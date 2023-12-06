@@ -1,4 +1,10 @@
 ### Results and Pre-trained checkpoints
+
+- #### DCVNet | [model config](./configs/models/dcvnet.yaml) | [paper](https://jianghz.me/files/DCVNet_camera_ready_wacv2023.pdf)
+| Training Dataset | Training Config                                                         | ckpts                                                                                  | Sintel Clean (training) | Sintel Final(training)| KITTI2015 AEPE | KITTI2015 F1-all |
+|------------------|-------------------------------------------------------------------------|----------------------------------------------------------------------------------------|-------------------------|-----------------------|----------------|------------------|
+| SceneFlow        | [config](./configs/trainers/dcvnet/dcvnet_sceneflow_baseline.yaml)      | [download](                                                                   )        | 1.90                    | 3.35                  | 4.75           | 23.41%           |
+
 ___
 
 #### FlowNetC | [model config](./models/flownet_c.yaml) | [arXiv](https://arxiv.org/abs/1504.06852)
@@ -36,4 +42,4 @@ ___
 
 - KITTI dataset has been evaluated with a center crop of size `1224 x 370`.
 - FlowNetC and PWC-Net uses `padding` of size `64` for evaluating the KITTI2015 dataset.
-- RAFT uses `padding` of size `8` for evaluating the Sintel and KITTI2015 datasets.
+- RAFT and DCVNet uses `padding` of size `8` for evaluating the Sintel and KITTI2015 datasets.

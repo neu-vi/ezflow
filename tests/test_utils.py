@@ -23,15 +23,16 @@ def test_endpointerror():
 
     pred = torch.rand(4, 2, 256, 256)
     target = torch.rand(4, 2, 256, 256)
-    _ = endpointerror(pred, target)
+    epe = endpointerror(pred, target)
 
     multi_magnitude_epe = endpointerror(pred, target, multi_magnitude=True)
     assert isinstance(multi_magnitude_epe, dict)
 
-    target = torch.rand(
-        4, 3, 256, 256
-    )  # Ignore valid mask for EPE calculation if target contains it
-    _ = endpointerror(pred, target)
+    valid = torch.rand(4, 1, 256, 256)  
+    epe, f1 = endpointerror(pred, target, valid)
+
+    multi_magnitude_epe, f1 = endpointerror(pred, target, valid, multi_magnitude=True)
+    assert isinstance(multi_magnitude_epe, dict)
 
 
 def test_forward_interpolate():

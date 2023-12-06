@@ -1,7 +1,7 @@
 import torch
 
 
-def endpointerror(pred, target, multi_magnitude=False):
+def endpointerror(pred, target, valid=None, multi_magnitude=False):
     """
     Endpoint error
 
@@ -11,6 +11,8 @@ def endpointerror(pred, target, multi_magnitude=False):
         Predicted flow
     target : torch.Tensor
         Target flow
+    valid : torch.Tensor
+        Valid flow vectors
 
     Returns
     -------
@@ -20,13 +22,25 @@ def endpointerror(pred, target, multi_magnitude=False):
     if isinstance(pred, tuple) or isinstance(pred, list):
         pred = pred[-1]
 
-    if target.shape[1] == 3:
-        """Ignore valid mask for EPE calculation."""
-        target = target[:, :2, :, :]
-
     epe = torch.norm(pred - target, p=2, dim=1)
+    f1 = None
+
+    if valid is not None:
+        mag = torch.sum(target**2, dim=1).sqrt()
+
+        epe = epe.view(-1)
+        mag = mag.view(-1)
+        val = valid.reshape(-1) >= 0.5
+
+        f1 = ((epe > 3.0) & ((epe/mag) > 0.05)).float()
+        
+        epe = epe[val]
+        f1 = f1[val].cpu().numpy()
 
     if not multi_magnitude:
+        if f1 is not None:
+            return epe.mean().item(), f1
+
         return epe.mean().item()
 
     epe = epe.view(-1)
@@ -36,5 +50,8 @@ def endpointerror(pred, target, multi_magnitude=False):
         "3px": (epe < 3).float().mean().item(),
         "5px": (epe < 5).float().mean().item(),
     }
+
+    if f1 is not None:
+        return multi_magnitude_epe, f1
 
     return multi_magnitude_epe

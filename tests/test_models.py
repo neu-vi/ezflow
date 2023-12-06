@@ -9,15 +9,13 @@ img2 = torch.randn(2, 3, 256, 256)
 
 def test_Predictor():
 
-    transform = T.Compose(
-        [T.Resize((224, 224)), T.ColorJitter(brightness=0.5, hue=0.3)]
-    )
-
-    predictor = Predictor("RAFT", "raft.yaml", data_transform=transform)
+    predictor = Predictor("RAFT", (0.,0.,0.), (255.,255.,255.),"raft.yaml")
     flow = predictor(img1, img2)
-    assert flow.shape == (2, 2, 224, 224)
+    assert flow.shape == (2, 2, 256, 256)
 
-    predictor = Predictor("RAFT", "raft.yaml", data_transform=transform, pad_divisor=32)
+    transform = T.Compose([T.Resize((224, 224))])
+
+    predictor = Predictor("RAFT", (0.,0.,0.), (255.,255.,255.), "raft.yaml", data_transform=transform, pad_divisor=32)
     flow = predictor(img1, img2)
     assert flow.shape == (2, 2, 224, 224)
 
