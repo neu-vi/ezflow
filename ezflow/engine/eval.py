@@ -1,5 +1,6 @@
 import time
 
+import numpy as np
 import torch
 from torch.nn import DataParallel
 from torch.profiler import profile, record_function
@@ -69,7 +70,7 @@ def run_inference(model, dataloader, device, metric_fn, flow_scale=1.0, pad_divi
 
     inp, target = next(iter(dataloader))
     batch_size = target["flow_gt"].shape[0]
-
+    f1_list = []
     padder = InputPadder(inp[0].shape, divisor=pad_divisor)
 
     with torch.no_grad():
@@ -99,7 +100,11 @@ def run_inference(model, dataloader, device, metric_fn, flow_scale=1.0, pad_divi
             pred = padder.unpad(output["flow_upsampled"])
             pred = pred * flow_scale
 
-            metric = metric_fn(pred, target["flow_gt"])
+            metric = metric_fn(pred, **target)
+            if len(metric) == 2:
+                metric, f1 = metric
+                f1_list.append(f1)
+
             metric_meter.update(metric)
 
     avg_inference_time = sum(times) / len(times)
@@ -110,6 +115,11 @@ def run_inference(model, dataloader, device, metric_fn, flow_scale=1.0, pad_divi
         print(
             f"Average inference time: {avg_inference_time}, FPS: {1/avg_inference_time}"
         )
+
+    if f1_list:
+        f1_list = np.concatenate(f1_list)
+        f1_all = 100 * np.mean(f1_list)
+        print(f"F1-all: {f1_all}")
 
     return metric_meter, avg_inference_time
 
@@ -200,7 +210,7 @@ def profile_inference(
                 pred = padder.unpad(output["flow_upsampled"])
                 pred = pred * flow_scale
 
-                metric = metric_fn(pred, target["flow_gt"])
+                metric = metric_fn(pred, **target)
                 metric_meter.update(metric)
 
     print(

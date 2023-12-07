@@ -1,7 +1,7 @@
 import torch
 
 
-def endpointerror(pred, target, valid=None, multi_magnitude=False):
+def endpointerror(pred, flow_gt, valid=None, multi_magnitude=False, **kwargs):
     """
     Endpoint error
 
@@ -9,8 +9,8 @@ def endpointerror(pred, target, valid=None, multi_magnitude=False):
     ----------
     pred : torch.Tensor
         Predicted flow
-    target : torch.Tensor
-        Target flow
+    flow_gt : torch.Tensor
+        flow_gt flow
     valid : torch.Tensor
         Valid flow vectors
 
@@ -22,11 +22,11 @@ def endpointerror(pred, target, valid=None, multi_magnitude=False):
     if isinstance(pred, tuple) or isinstance(pred, list):
         pred = pred[-1]
 
-    epe = torch.norm(pred - target, p=2, dim=1)
+    epe = torch.norm(pred - flow_gt, p=2, dim=1)
     f1 = None
 
     if valid is not None:
-        mag = torch.sum(target**2, dim=1).sqrt()
+        mag = torch.sum(flow_gt**2, dim=1).sqrt()
 
         epe = epe.view(-1)
         mag = mag.view(-1)
