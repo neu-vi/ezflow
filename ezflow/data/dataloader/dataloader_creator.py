@@ -303,7 +303,7 @@ class DataloaderCreator:
                 split=split,
                 init_seed=self.init_seed,
                 is_prediction=self.is_prediction,
-                append_valid_mask=self.append_valid_mask,
+                append_valid_mask=True,
                 augment=augment,
                 **kwargs,
             )

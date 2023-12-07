@@ -2,6 +2,7 @@ import time
 
 import numpy as np
 import torch
+from tqdm import tqdm
 from torch.nn import DataParallel
 from torch.profiler import profile, record_function
 
@@ -75,7 +76,7 @@ def run_inference(model, dataloader, device, metric_fn, flow_scale=1.0, pad_divi
 
     with torch.no_grad():
 
-        for inp, target in dataloader:
+        for inp, target in tqdm(dataloader):
 
             img1, img2 = inp
             img1, img2 = img1.to(device), img2.to(device)
@@ -101,11 +102,11 @@ def run_inference(model, dataloader, device, metric_fn, flow_scale=1.0, pad_divi
             pred = pred * flow_scale
 
             metric = metric_fn(pred, **target)
-            if len(metric) == 2:
+            if "valid" in target:
                 metric, f1 = metric
                 f1_list.append(f1)
 
-            metric_meter.update(metric)
+            metric_meter.update(metric, n=batch_size)
 
     avg_inference_time = sum(times) / len(times)
     avg_inference_time /= batch_size  # Average inference time per sample
@@ -211,7 +212,11 @@ def profile_inference(
                 pred = pred * flow_scale
 
                 metric = metric_fn(pred, **target)
-                metric_meter.update(metric)
+                if "valid" in target:
+                    metric, f1 = metric
+                    f1_list.append(f1)
+
+                metric_meter.update(metric, n=batch_size)
 
     print(
         prof.key_averages(group_by_input_shape=True).table(

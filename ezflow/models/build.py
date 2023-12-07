@@ -65,8 +65,9 @@ def build_model(
     model = model(cfg)
 
     if weights_path is not None:
-        model.load_state_dict(
-            torch.load(weights_path, map_location=torch.device("cpu"))
-        )
+        state_dict = torch.load(weights_path, map_location=torch.device("cpu"))
+        if "model_state_dict" in state_dict:
+            state_dict = state_dict["model_state_dict"]
+        model.load_state_dict(state_dict)
 
     return model
