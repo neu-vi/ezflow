@@ -69,9 +69,9 @@ ___
 ### Results and Pre-trained checkpoints
 
 - #### DCVNet | [model config](./configs/models/dcvnet.yaml) | [paper](https://jianghz.me/files/DCVNet_camera_ready_wacv2023.pdf)
-| Training Dataset | Training Config                                                         | ckpts                                                                                  | Sintel Clean (training) | Sintel Final(training)| KITTI2015 AEPE | KITTI2015 F1-all |
-|------------------|-------------------------------------------------------------------------|----------------------------------------------------------------------------------------|-------------------------|-----------------------|----------------|------------------|
-| SceneFlow        | [config](./configs/trainers/dcvnet/dcvnet_sceneflow_baseline.yaml)      | [download](                                                                   )        | 1.90                    | 3.35                  | 4.75           | 23.41%           |
+| Training Dataset                        | Training Config                                                         | ckpts                                                                                  | Sintel Clean (training) | Sintel Final(training)| KITTI2015 AEPE | KITTI2015 F1-all |
+|-----------------------------------------|-------------------------------------------------------------------------|----------------------------------------------------------------------------------------|-------------------------|-----------------------|----------------|------------------|
+| FlyingThings3DSubset + Monkaa + Driving | [config](./configs/trainers/dcvnet/dcvnet_sceneflow_baseline.yaml)      | [download](https://jianghz.me/files/ezflow_ckpts/dcvnet_sceneflow_step800k.pth)        | 1.90                    | 3.35                  | 4.75           | 23.41%           |
 
 - #### FlowNetC | [model config](./configs/models/flownet_c.yaml) | [arXiv](https://arxiv.org/abs/1504.06852)
 
@@ -92,11 +92,11 @@ ___
 
 - #### RAFT | [model config](./configs/models/raft.yaml) | [arXiv](https://arxiv.org/abs/2003.12039)
 
-| Training Dataset | Training Config                                                 | ckpts                                                                             | Sintel Clean (training) | Sintel Final(training)| KITTI2015 AEPE | KITTI2015 F1-all |
-|------------------|-----------------------------------------------------------------|-----------------------------------------------------------------------------------|-------------------------|-----------------------|----------------|------------------|
-| Chairs           | [config](./configs/trainers/raft/raft_chairs_baseline.yaml)     | [download](https://jianghz.me/files/ezflow_ckpts/raft_chairs_step100k.pth)        | 2.23                    | 4.56                  | 10.45          | 38.93%           |
-| Chairs -> Things | [config](./configs/trainers/raft/raft_things_baseline.yaml)     | [download](https://jianghz.me/files/ezflow_ckpts/raft_chairs_things_step200k.pth) | 1.66                    | 2.75                  | 5.01           | 16.87%           |
-| Kubric           | [config](./configs/trainers/raft/raft_kubric_improved_aug.yaml) | [download](https://jianghz.me/files/ezflow_ckpts/raft_kubric_step100k.pth)        | 2.12                    | 2.54                  | 6.01           | 17.35%           |
+| Training Dataset | Training Config                                                 | ckpts                                                                                | Sintel Clean (training) | Sintel Final(training)| KITTI2015 AEPE | KITTI2015 F1-all |
+|------------------|-----------------------------------------------------------------|--------------------------------------------------------------------------------------|-------------------------|-----------------------|----------------|------------------|
+| Chairs           | [config](./configs/trainers/raft/raft_chairs_baseline.yaml)     | [download](https://jianghz.me/files/ezflow_ckpts/raft_chairs_step100k_v2.pth)        | 2.23                    | 4.56                  | 10.45          | 38.93%           |
+| Chairs -> Things | [config](./configs/trainers/raft/raft_things_baseline.yaml)     | [download](https://jianghz.me/files/ezflow_ckpts/raft_chairs_things_step200k_v2.pth) | 1.66                    | 2.75                  | 5.01           | 16.87%           |
+| Kubric           | [config](./configs/trainers/raft/raft_kubric_improved_aug.yaml) | [download](https://jianghz.me/files/ezflow_ckpts/raft_kubric_step100k_v2.pth)        | 2.12                    | 2.54                  | 6.01           | 17.35%           |
 
 ___
 

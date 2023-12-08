@@ -1,9 +1,9 @@
 ### Results and Pre-trained checkpoints
 
-- #### DCVNet | [model config](./configs/models/dcvnet.yaml) | [paper](https://jianghz.me/files/DCVNet_camera_ready_wacv2023.pdf)
-| Training Dataset | Training Config                                                         | ckpts                                                                                  | Sintel Clean (training) | Sintel Final(training)| KITTI2015 AEPE | KITTI2015 F1-all |
-|------------------|-------------------------------------------------------------------------|----------------------------------------------------------------------------------------|-------------------------|-----------------------|----------------|------------------|
-| SceneFlow        | [config](./configs/trainers/dcvnet/dcvnet_sceneflow_baseline.yaml)      | [download](                                                                   )        | 1.90                    | 3.35                  | 4.75           | 23.41%           |
+#### DCVNet | [model config](./configs/models/dcvnet.yaml) | [paper](https://jianghz.me/files/DCVNet_camera_ready_wacv2023.pdf)
+| Training Dataset                        | Training Config                                                         | ckpts                                                                                  | Sintel Clean (training) | Sintel Final(training)| KITTI2015 AEPE | KITTI2015 F1-all |
+|-----------------------------------------|-------------------------------------------------------------------------|----------------------------------------------------------------------------------------|-------------------------|-----------------------|----------------|------------------|
+| FlyingThings3DSubset + Monkaa + Driving | [config](./configs/trainers/dcvnet/dcvnet_sceneflow_baseline.yaml)      | [download](https://jianghz.me/files/ezflow_ckpts/dcvnet_sceneflow_step800k.pth)        | 1.90                    | 3.35                  | 4.75           | 23.41%           |
 
 ___
 
