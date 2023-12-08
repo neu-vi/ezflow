@@ -2,12 +2,11 @@ from ezflow.data import DataloaderCreator
 from ezflow.engine import eval_model
 from ezflow.models import build_model
 
-
 if __name__ == "__main__":
     model = build_model(
-        "DCVNet", 
+        "DCVNet",
         default=True,
-        weights_path="./pretrained_weights/dcvnet_sceneflow_step800k.pth"
+        weights_path="./pretrained_weights/dcvnet_sceneflow_step800k.pth",
     )
     dataloader_creator = DataloaderCreator(
         batch_size=8, shuffle=False, num_workers=4, pin_memory=True

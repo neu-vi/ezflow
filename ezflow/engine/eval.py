@@ -2,9 +2,9 @@ import time
 
 import numpy as np
 import torch
-from tqdm import tqdm
 from torch.nn import DataParallel
 from torch.profiler import profile, record_function
+from tqdm import tqdm
 
 from ..utils import AverageMeter, InputPadder, endpointerror
 from .profiler import Profiler
