@@ -45,6 +45,7 @@ ___
 ### Models supported
 
 - [x] [DICL](https://arxiv.org/abs/2010.14851)
+- [x] [DCVNet](https://jianghz.me/files/DCVNet_camera_ready_wacv2023.pdf) ([1 checkpoint](./configs/README.md))
 - [x] [FlowNetS](https://arxiv.org/abs/1504.06852)
 - [x] [FlowNetC](https://arxiv.org/abs/1504.06852) ([3 checkpoints](./configs/README.md))
 - [x] [PWCNet](https://arxiv.org/abs/1709.02371) ([3 checkpoints](./configs/README.md)) 
