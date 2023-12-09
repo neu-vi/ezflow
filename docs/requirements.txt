@@ -47,7 +47,7 @@ jinja2-time==0.2.0
 kiwisolver 
 Markdown==3.3.4
 MarkupSafe==2.0.1
-matplotlib 
+matplotlib==3.4.2 
 mccabe==0.6.1
 mkl-fft
 mkl-random 
