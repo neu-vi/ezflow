@@ -81,7 +81,10 @@ This can be done using the :class:`Predictor` class.
     from ezflow.models import Predictor
     from torchvision.transforms import Resize
 
-    predictor = Predictor("RAFT", default=True, 
+    predictor = Predictor("RAFT", 
+        mean=(127.5, 127.5, 127.5),
+        std=(127.5, 127.5, 127.5),
+        default=True, 
         model_weights_path="raft_weights.pth", 
         data_transform=Resize((256, 256))
     )

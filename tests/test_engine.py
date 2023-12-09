@@ -15,17 +15,14 @@ from ezflow.engine import (
 )
 from ezflow.functional import MultiScaleLoss
 
-from .utils import MockDataloaderCreator, MockOpticalFlowDataset, MockOpticalFlowModel
+from .utils import MockDataloaderCreator, MockOpticalFlowModel
 
 img_size = (64, 64)
 img_channels = 3
 len_dataset = 4
 batch_size = 2
 
-mock_dataloader = DataLoader(
-    MockOpticalFlowDataset(size=img_size, channels=img_channels, length=len_dataset),
-    batch_size=batch_size,
-)
+dataloader_creator = MockDataloaderCreator()
 mock_model = MockOpticalFlowModel(img_channels=img_channels)
 
 
@@ -34,8 +31,9 @@ class TestTrainer(TestCase):
         self.training_cfg = get_training_cfg(
             cfg_path="./tests/configs/base_trainer_test.yaml", custom=True
         )
-        self.train_loader = mock_dataloader
-        self.val_loader = mock_dataloader
+
+        self.train_loader_creator = dataloader_creator
+        self.val_loader_creator = dataloader_creator
         self.mock_model = mock_model
 
     @mock.patch.object(Trainer, "_setup_model")
@@ -55,10 +53,13 @@ class TestTrainer(TestCase):
     ):
 
         trainer = Trainer(
-            self.training_cfg, self.mock_model, self.train_loader, self.val_loader
+            self.training_cfg,
+            self.mock_model,
+            self.train_loader_creator,
+            self.val_loader_creator,
         )
         trainer._trainer = Trainer._epoch_trainer
-        trainer.train(total_iterations=50, start_iteration=0)
+        trainer.train(total_epochs=10, start_epoch=0)
 
         # assert torch
         mock_torch_device.assert_called_with("cpu")
@@ -68,7 +69,7 @@ class TestTrainer(TestCase):
         mock_setup_training.assert_called_with(
             rank=0, loss_fn=None, optimizer=None, scheduler=None
         )
-        mock_trainer.assert_called_with(50, 0)
+        mock_trainer.assert_called_with(10, 0)
         assert trainer.cfg.MIXED_PRECISION == False
 
         # assert system calls
@@ -94,7 +95,10 @@ class TestTrainer(TestCase):
 
         self.training_cfg.DEVICE = 0
         trainer = Trainer(
-            self.training_cfg, self.mock_model, self.train_loader, self.val_loader
+            self.training_cfg,
+            self.mock_model,
+            self.train_loader_creator,
+            self.val_loader_creator,
         )
         trainer._trainer = Trainer._epoch_trainer
         trainer.train()
@@ -124,7 +128,10 @@ class TestTrainer(TestCase):
     ):
         self.training_cfg.DEVICE = 0
         trainer = Trainer(
-            self.training_cfg, self.mock_model, self.train_loader, self.val_loader
+            self.training_cfg,
+            self.mock_model,
+            self.train_loader_creator,
+            self.val_loader_creator,
         )
         trainer._trainer = Trainer._epoch_trainer
         trainer.train()
@@ -150,7 +157,10 @@ class TestTrainer(TestCase):
         mock_setup_device,
     ):
         trainer = Trainer(
-            self.training_cfg, self.mock_model, self.train_loader, self.val_loader
+            self.training_cfg,
+            self.mock_model,
+            self.train_loader_creator,
+            self.val_loader_creator,
         )
         trainer._trainer = Trainer._epoch_trainer
         trainer.device = torch.device("cpu")
@@ -177,7 +187,10 @@ class TestTrainer(TestCase):
         self, mock_os, mock_writer, mock_trainer, mock_setup_model, mock_setup_device
     ):
         trainer = Trainer(
-            self.training_cfg, self.mock_model, self.train_loader, self.val_loader
+            self.training_cfg,
+            self.mock_model,
+            self.train_loader_creator,
+            self.val_loader_creator,
         )
         trainer._trainer = Trainer._epoch_trainer
         trainer.train()
@@ -217,7 +230,9 @@ class TestTrainer(TestCase):
             cfg_path="./tests/configs/custom_loss_trainer.yaml", custom=True
         )
 
-        trainer = Trainer(cfg, self.mock_model, self.train_loader, self.val_loader)
+        trainer = Trainer(
+            cfg, self.mock_model, self.train_loader_creator, self.val_loader_creator
+        )
         trainer.train()
 
         assert isinstance(trainer.loss_fn, MultiScaleLoss)
@@ -232,7 +247,9 @@ class TestTrainer(TestCase):
             cfg_path="./tests/configs/custom_loss_trainer.yaml", custom=True
         )
 
-        trainer = Trainer(cfg, self.mock_model, self.train_loader, self.val_loader)
+        trainer = Trainer(
+            cfg, self.mock_model, self.train_loader_creator, self.val_loader_creator
+        )
         trainer._trainer = Trainer._epoch_trainer
 
         trainer.train()
@@ -244,7 +261,9 @@ class TestTrainer(TestCase):
         del trainer
 
         cfg.VALIDATE_ON = "loss"
-        trainer = Trainer(cfg, self.mock_model, self.train_loader, self.val_loader)
+        trainer = Trainer(
+            cfg, self.mock_model, self.train_loader_creator, self.val_loader_creator
+        )
         trainer._trainer = Trainer._epoch_trainer
 
         trainer.train()
@@ -264,7 +283,9 @@ class TestTrainer(TestCase):
         )
         cfg.NUM_STEPS = 1
 
-        trainer = Trainer(cfg, self.mock_model, self.train_loader, self.val_loader)
+        trainer = Trainer(
+            cfg, self.mock_model, self.train_loader_creator, self.val_loader_creator
+        )
         trainer._trainer = Trainer._step_trainer
 
         trainer.train()
@@ -287,14 +308,12 @@ class TestDistributedTrainer(TestCase):
         self.training_cfg.WORLD_SIZE = 2
         self.training_cfg.SYNC_BATCH_NORM = True
 
-        dataloader_creator = MockDataloaderCreator()
-
         self.train_loader_creator = dataloader_creator
         self.val_loader_creator = dataloader_creator
         self.mock_model = mock_model
 
     @mock.patch.object(torch.cuda, "device_count", return_value=2)
-    @mock.patch("ezflow.utils.other_utils")
+    @mock.patch("ezflow.utils.common")
     @mock.patch("ezflow.engine.trainer.os")
     def test_validate_ddp_config(self, mock_os, mock_utils, mock_cuda_device_count):
 
@@ -419,7 +438,7 @@ class TestDistributedTrainer(TestCase):
 
 def test_eval_model():
 
-    _ = eval_model(mock_model, mock_dataloader, device="cpu")
+    _ = eval_model(mock_model, dataloader_creator.get_dataloader(), device="cpu")
 
 
 def test_l1_pruning():

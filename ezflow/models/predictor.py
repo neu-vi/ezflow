@@ -1,5 +1,6 @@
 import torch
 from torchvision import io
+from torchvision.transforms import Normalize
 
 from ..utils import InputPadder
 from .build import build_model
@@ -13,6 +14,10 @@ class Predictor:
     ----------
     model_name : str
         The name of the optical flow estimation model to use
+    mean : tuple of float,
+        Sequence of mean for normalizing each image channel
+    std : tuple of float,
+        Sequence of standard deviations for normalizing each image channel
     model_cfg_path : str, optional
         The path to the config file for the optical flow estimation model, by default None in which case the default config is used
     model_cfg : CfgNode object, optional
@@ -36,13 +41,15 @@ class Predictor:
     def __init__(
         self,
         model_name,
+        mean,
+        std,
         model_cfg_path=None,
         model_cfg=None,
         model_weights_path=None,
         custom_cfg_file=False,
         default=False,
-        data_transform=None,
         device="cpu",
+        data_transform=None,
         flow_scale=1.0,
         pad_divisor=1,
     ):
@@ -73,6 +80,7 @@ class Predictor:
             )
 
         self.model = self.model.eval()
+        self.norm = Normalize(mean=mean, std=std)
         self.data_transform = data_transform
         self.device = torch.device(device)
 
@@ -94,13 +102,19 @@ class Predictor:
         """
 
         if type(img1) == str:
-            img1 = io.read_image(img1)
-        if type(img2) == str:
-            img2 = io.read_image(img2)
+            img1 = io.read_image(img1).float()
+            img1 = img1.unsqueeze(dim=0)
 
-        if self.data_transform is not None:
+        if type(img2) == str:
+            img2 = io.read_image(img2).float()
+            img2 = img2.unsqueeze(dim=0)
+
+        if self.data_transform:
             img1 = self.data_transform(img1)
             img2 = self.data_transform(img2)
+
+        img1 = self.norm(img1)
+        img2 = self.norm(img2)
 
         padder = InputPadder(img1.shape, divisor=self.pad_divisor)
         img1, img2 = padder.pad(img1, img2)

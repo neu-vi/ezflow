@@ -2,9 +2,6 @@ _BASE_: "../_base_/things_baseline.yaml"
 TARGET_SCALE_FACTOR: 20.0
 DATA:
   BATCH_SIZE: 2 # Effective Batch Size = 2 x 2 GPUs = 4
-  TRAIN_CROP_SIZE: [384, 768]
-  VAL_CROP_SIZE: [384, 768]
-  APPEND_VALID_MASK: False
   NORM_PARAMS: {"use": True, "mean":[0.0, 0.0, 0.0], "std":[255.0, 255.0, 255.0]}
 SCHEDULER:
   USE: True

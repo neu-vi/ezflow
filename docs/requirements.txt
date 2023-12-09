@@ -47,15 +47,12 @@ jinja2-time==0.2.0
 kiwisolver 
 Markdown==3.3.4
 MarkupSafe==2.0.1
-matplotlib 
+matplotlib==3.4.2 
 mccabe==0.6.1
-mkl-fft
-mkl-random 
-mkl-service
 mypy-extensions==0.4.3
 networkx==2.6.2
 nodeenv==1.6.0
-numpy 
+numpy==1.20.2
 oauthlib==3.2.2
 olefile==0.46
 omegaconf 

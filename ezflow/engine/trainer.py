@@ -13,6 +13,8 @@ from torch.cuda.amp import GradScaler, autocast
 from torch.nn.parallel import DistributedDataParallel as DDP
 from torch.utils.tensorboard import SummaryWriter
 
+from ezflow.data import DataloaderCreator
+
 from ..functional import FUNCTIONAL_REGISTRY
 from ..utils import AverageMeter, endpointerror, find_free_port, is_port_available
 from .registry import loss_functions, optimizers, schedulers
@@ -60,6 +62,13 @@ class BaseTrainer:
         raise NotImplementedError
 
     def _setup_training(self, rank=0, loss_fn=None, optimizer=None, scheduler=None):
+        self._trainer = self._epoch_trainer
+        if self.cfg.NUM_STEPS is not None:
+            self._trainer = self._step_trainer
+            max_iter = self.cfg.NUM_STEPS
+        else:
+            max_iter = self.cfg.EPOCHS * len(self.train_loader)
+
         if loss_fn is None and self.loss_fn is None:
 
             if self.cfg.CRITERION.CUSTOM:
@@ -69,6 +78,7 @@ class BaseTrainer:
 
             if self.cfg.CRITERION.PARAMS is not None:
                 loss_params = self.cfg.CRITERION.PARAMS.to_dict()
+                loss_params["max_iter"] = max_iter
                 loss_fn = loss(**loss_params)
             else:
                 loss_fn = loss()
@@ -124,12 +134,6 @@ class BaseTrainer:
 
         self.scaler = GradScaler(enabled=self.cfg.MIXED_PRECISION)
 
-        self._trainer = (
-            self._step_trainer
-            if self.cfg.NUM_STEPS is not None
-            else self._epoch_trainer
-        )
-
         self.min_avg_val_loss = float("inf")
         self.min_avg_val_metric = float("inf")
 
@@ -164,31 +168,34 @@ class BaseTrainer:
 
             loss_meter.reset()
             for iteration, (inp, target) in enumerate(self.train_loader):
+                total_iters = iteration + (epoch * len(self.train_loader))
 
-                loss = self._run_step(inp, target)
+                loss = self._run_step(inp, target, current_iter=total_iters)
 
                 loss_meter.update(loss.item())
-
-                total_iters = iteration + (epoch * len(self.train_loader))
                 self._log_step(iteration, total_iters, loss_meter)
 
-            print(f"\nEpoch {epoch+1}: Training loss = {loss_meter.sum}")
+            print(f"\nEpoch {epoch+1}: Average Training loss = {loss_meter.avg}")
 
             if self._is_main_process():
                 self.writer.add_scalar(
-                    "epochs_training_loss", loss_meter.sum, epoch + 1
+                    "avg_epochs_training_loss", loss_meter.avg, epoch + 1
                 )
 
-            if epoch % self.cfg.VALIDATE_INTERVAL == 0 and self._is_main_process():
-                self._validate_model(iter_type="Epoch", iterations=epoch + 1)
+            if (
+                epoch + 1
+            ) % self.cfg.VALIDATE_INTERVAL == 0 and self._is_main_process():
+                self._validate_model(
+                    iter_type="Epoch", iterations=epoch + 1, current_iter=0, logger=None
+                )
 
-            if epoch % self.cfg.CKPT_INTERVAL == 0 and self._is_main_process():
+            if (epoch + 1) % self.cfg.CKPT_INTERVAL == 0 and self._is_main_process():
                 self._save_checkpoints(ckpt_type="epoch", ckpt_number=epoch + 1)
 
             # Synchronize all processes in multi gpu after validation and checkpoint
             if (
-                epoch % self.cfg.VALIDATE_INTERVAL == 0
-                or epoch % self.cfg.CKPT_INTERVAL == 0
+                (epoch + 1) % self.cfg.VALIDATE_INTERVAL == 0
+                or (epoch + 1) % self.cfg.CKPT_INTERVAL == 0
             ) and self.model_parallel:
                 dist.barrier()
 
@@ -235,7 +242,7 @@ class BaseTrainer:
                 train_iter = iter(self.train_loader)
                 inp, target = next(train_iter)
 
-            loss = self._run_step(inp, target)
+            loss = self._run_step(inp, target, current_iter=step)
             loss_meter.update(loss.item())
 
             self._log_step(step, total_steps, loss_meter)
@@ -259,22 +266,16 @@ class BaseTrainer:
         if self._is_main_process():
             self.writer.close()
 
-    def _run_step(self, inp, target):
+    def _run_step(self, inp, target, **kwargs):
+        inp, target = self._to_device(inp, target)
         img1, img2 = inp
-        img1, img2, target = (
-            img1.to(self.device),
-            img2.to(self.device),
-            target.to(self.device),
-        )
 
         if self._is_main_process():
             start_time = time.time()
 
         with autocast(enabled=self.cfg.MIXED_PRECISION):
             output = self.model(img1, img2)
-            loss = self.loss_fn(
-                output["flow_preds"], target / self.cfg.TARGET_SCALE_FACTOR
-            )
+            loss = self.loss_fn(**output, **target, **kwargs)
 
             del output
 
@@ -297,49 +298,48 @@ class BaseTrainer:
 
         return loss
 
+    def _to_device(self, inp, target):
+        img1, img2 = inp
+        inp = (img1.to(self.device), img2.to(self.device))
+
+        for key, val in target.items():
+            target[key] = val.to(self.device)
+
+        target["flow_gt"] / self.cfg.TARGET_SCALE_FACTOR
+        return inp, target
+
     def _log_step(self, iteration, total_iters, loss_meter):
         if iteration % self.cfg.LOG_ITERATIONS_INTERVAL == 0:
             print(
-                f"Iterations: {iteration}, Total iterations: {total_iters}, Average batch training loss: {loss_meter.avg}"
+                f"[{iteration} / {total_iters}] iterations, batch training loss: {loss_meter.val}"
             )
             if self._is_main_process():
                 self.writer.add_scalar(
-                    "avg_batch_training_loss",
-                    loss_meter.avg,
+                    "batch_training_loss",
+                    loss_meter.val,
                     total_iters,
                 )
 
-    def _validate_model(self, iter_type, iterations):
+    def _validate_model(self, iter_type, iterations, **kwargs):
         self.model.eval()
         metric_meter = AverageMeter()
         loss_meter = AverageMeter()
 
         with torch.no_grad():
             for inp, target in self.val_loader:
+                inp, target = self._to_device(inp, target)
                 img1, img2 = inp
-                img1, img2, target = (
-                    img1.to(self.device),
-                    img2.to(self.device),
-                    target.to(self.device),
-                )
 
                 if self.model_parallel:
                     output = self.model.module(img1, img2)
                 else:
                     output = self.model(img1, img2)
 
-                loss = self.loss_fn(
-                    output["flow_preds"], target / self.cfg.TARGET_SCALE_FACTOR
-                )
+                loss = self.loss_fn(**output, **target, **kwargs)
 
                 loss_meter.update(loss.item())
 
-                """
-                    Predicted upsampled flow should be scaled for EPE calculation.
-                """
-                metric = self._calculate_metric(
-                    output["flow_upsampled"] * self.cfg.TARGET_SCALE_FACTOR, target
-                )
+                metric = self._calculate_metric(output, target)
                 metric_meter.update(metric)
 
                 del output
@@ -365,7 +365,12 @@ class BaseTrainer:
         self._freeze_bn()
 
     def _calculate_metric(self, pred, target):
-        return endpointerror(pred, target)
+        """
+        Predicted upsampled flow should be scaled for EPE calculation.
+        """
+        flow_pred = pred["flow_upsampled"] * self.cfg.TARGET_SCALE_FACTOR
+        flow_gt = target["flow_gt"]
+        return endpointerror(flow_pred, flow_gt)
 
     def _save_checkpoints(self, ckpt_type, ckpt_number):
         if self.model_parallel:
@@ -566,21 +571,30 @@ class Trainer(BaseTrainer):
         Configuration object for training
     model : torch.nn.Module
         Model to be trained
-    train_loader : torch.utils.data.DataLoader
-        DataLoader for training
-    val_loader : torch.utils.data.DataLoader
-        DataLoader for validation
+    train_loader_creator : ezflow.data.DataloaderCreator
+        DataloaderCreator instance for training
+    val_loader_creator : ezflow.data.DataloaderCreator
+        DataloaderCreator instance for validation
     """
 
-    def __init__(self, cfg, model, train_loader, val_loader):
+    def __init__(
+        self,
+        cfg,
+        model,
+        train_loader_creator: DataloaderCreator,
+        val_loader_creator: DataloaderCreator,
+    ):
         super(Trainer, self).__init__()
 
         self.cfg = cfg
         self.model_name = model.__class__.__name__.lower()
         self.model = model
 
-        self.train_loader = train_loader
-        self.val_loader = val_loader
+        train_loader_creator.distributed = False
+        val_loader_creator.distributed = False
+
+        self.train_loader = train_loader_creator.get_dataloader()
+        self.val_loader = val_loader_creator.get_dataloader()
 
     def _setup_device(self):
 
@@ -600,6 +614,8 @@ class Trainer(BaseTrainer):
             self.device = torch.device(int(self.cfg.DEVICE))
             torch.cuda.empty_cache()
 
+        seed(0)
+
     def _setup_model(self):
         self.model = self.model.to(self.device)
 
@@ -611,8 +627,8 @@ class Trainer(BaseTrainer):
         loss_fn=None,
         optimizer=None,
         scheduler=None,
-        total_iterations=None,
-        start_iteration=None,
+        total_epochs=None,
+        start_epoch=None,
     ):
         """
         Method to train the model using a single cpu/gpu device.
@@ -625,10 +641,10 @@ class Trainer(BaseTrainer):
             The optimizer to be used. Defaults to None (which uses the optimizer specified in the config file).
         scheduler : torch.optim.lr_scheduler, optional
             The learning rate scheduler to be used. Defaults to None (which uses the scheduler specified in the config file).
-        total_iterations : int, optional
-            The number of epochs or steps to train for. Defaults to None (which uses the number of epochs specified in the config file)
-        start_iteration : int, optional
-            The epoch or step number to resume training from. Defaults to None (which starts from 0).
+        total_epochs : int, optional
+            The number of epochs train for. Defaults to None (which uses the number of epochs specified in the config file)
+        start_epoch : int, optional
+            The epoch to resume training from. Defaults to None (which starts from 0).
 
         """
         self._setup_device()
@@ -644,7 +660,7 @@ class Trainer(BaseTrainer):
         print(self.cfg)
         print("-" * 80)
 
-        self._trainer(total_iterations, start_iteration)
+        self._trainer(total_epochs, start_epoch)
 
         print("Training complete!")
         print(f"Total training time: {str(timedelta(seconds=sum(self.times)))}")
@@ -661,13 +677,19 @@ class DistributedTrainer(BaseTrainer):
         Configuration object for training
     model : torch.nn.Module
         Model to be trained
-    train_loader_creator : ezflow.DataloaderCreator
+    train_loader_creator : ezflow.data.DataloaderCreator
         DataloaderCreator instance for training
-    val_loader_creator : ezflow.DataloaderCreator
+    val_loader_creator : ezflow.data.DataloaderCreator
         DataloaderCreator instance for validation
     """
 
-    def __init__(self, cfg, model, train_loader_creator, val_loader_creator):
+    def __init__(
+        self,
+        cfg,
+        model,
+        train_loader_creator: DataloaderCreator,
+        val_loader_creator: DataloaderCreator,
+    ):
         super(DistributedTrainer, self).__init__()
         self.model_parallel = True
         self.cfg = cfg
@@ -776,8 +798,8 @@ class DistributedTrainer(BaseTrainer):
         loss_fn=None,
         optimizer=None,
         scheduler=None,
-        total_iterations=None,
-        start_iteration=None,
+        total_epochs=None,
+        start_epoch=None,
     ):
         self._setup_device(rank)
         self._setup_ddp(rank)
@@ -793,7 +815,7 @@ class DistributedTrainer(BaseTrainer):
 
         # synchronizes all the threads to reach this point before moving on
         dist.barrier()
-        self._trainer(total_iterations, start_iteration)
+        self._trainer(total_epochs, start_epoch)
 
         if self._is_main_process():
             print("\nTraining complete!")
@@ -806,8 +828,8 @@ class DistributedTrainer(BaseTrainer):
         loss_fn=None,
         optimizer=None,
         scheduler=None,
-        total_iterations=None,
-        start_iteration=None,
+        total_epochs=None,
+        start_epoch=None,
     ):
         """
         Method to train the model in a distributed fashion using DDP
@@ -820,10 +842,10 @@ class DistributedTrainer(BaseTrainer):
             The optimizer to be used. Defaults to None (which uses the optimizer specified in the config file).
         scheduler : torch.optim.lr_scheduler, optional
             The learning rate scheduler to be used. Defaults to None (which uses the scheduler specified in the config file).
-        total_iterations : int, optional
-            The number of epochs or steps to train for. Defaults to None (which uses the number of epochs specified in the config file)
-        start_iteration : int, optional
-            The epoch or step number to resume training from. Defaults to None (which starts from 0).
+        total_epochs : int, optional
+            The number of epochs to train for. Defaults to None (which uses the number of epochs specified in the config file)
+        start_epoch : int, optional
+            The epoch number to resume training from. Defaults to None (which starts from 0).
 
         """
         print("Training config:\n")
@@ -834,7 +856,7 @@ class DistributedTrainer(BaseTrainer):
 
         mp.spawn(
             self._main_worker,
-            args=(loss_fn, optimizer, scheduler, total_iterations, start_iteration),
+            args=(loss_fn, optimizer, scheduler, total_epochs, start_epoch),
             nprocs=self.cfg.DISTRIBUTED.WORLD_SIZE,
             join=True,
         )

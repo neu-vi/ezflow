@@ -1,10 +1,13 @@
 import os.path as osp
 from glob import glob
 
+from ...config import configurable
 from ...functional import SparseFlowAugmentor
+from ..build import DATASET_REGISTRY
 from .base_dataset import BaseDataset
 
 
+@DATASET_REGISTRY.register()
 class Kitti(BaseDataset):
     """
     Dataset Class for preparing the Kitti dataset for training and validation.
@@ -33,8 +36,11 @@ class Kitti(BaseDataset):
         The parameters for data augmentation
     norm_params : :obj:`dict`, optional
         The parameters for normalization
+    flow_offset_params: :obj:`dict`, optional
+        The parameters for adding bilinear interpolated weights surrounding each ground truth flow values.
     """
 
+    @configurable
     def __init__(
         self,
         root_dir,
@@ -55,6 +61,7 @@ class Kitti(BaseDataset):
             "advanced_spatial_aug_params": {"enabled": False},
         },
         norm_params={"use": False},
+        flow_offset_params={"use": False},
     ):
         super(Kitti, self).__init__(
             init_seed=init_seed,
@@ -67,6 +74,7 @@ class Kitti(BaseDataset):
             aug_params=aug_params,
             sparse_transform=True,
             norm_params=norm_params,
+            flow_offset_params=flow_offset_params,
         )
         assert (
             split.lower() == "training" or split.lower() == "validation"
@@ -92,3 +100,20 @@ class Kitti(BaseDataset):
 
         if not self.is_prediction:
             self.flow_list += sorted(glob(osp.join(root_dir, "flow_occ/*_10.png")))
+
+    @classmethod
+    def from_config(cls, cfg):
+        return {
+            "root_dir": cfg.ROOT_DIR,
+            "split": cfg.SPLIT,
+            "is_prediction": cfg.IS_PREDICTION,
+            "init_seed": cfg.INIT_SEED,
+            "append_valid_mask": cfg.APPEND_VALID_MASK,
+            "crop": cfg.CROP.USE,
+            "crop_size": cfg.CROP.SIZE,
+            "crop_type": cfg.CROP.TYPE,
+            "augment": cfg.AUGMENTATION.USE,
+            "aug_params": cfg.AUGMENTATION.PARAMS,
+            "norm_params": cfg.NORM_PARAMS,
+            "flow_offset_params": cfg.FLOW_OFFSET_PARAMS,
+        }

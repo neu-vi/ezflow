@@ -7,11 +7,14 @@ import numpy as np
 import torch
 import torch.utils.data as data
 
+from ...config import configurable
 from ...functional import FlowAugmentor, Normalize, crop
 from ...utils import read_flow, read_image
+from ..build import DATASET_REGISTRY
 from .base_dataset import BaseDataset
 
 
+@DATASET_REGISTRY.register()
 class Kubric(BaseDataset):
     """
     Dataset Class for preparing the Kubric 'movi-f' split of
@@ -61,8 +64,11 @@ class Kubric(BaseDataset):
         The parameters for data augmentation
     norm_params : :obj:`dict`, optional
         The parameters for normalization
+    flow_offset_params: :obj:`dict`, optional
+        The parameters for adding bilinear interpolated weights surrounding each ground truth flow values.
     """
 
+    @configurable
     def __init__(
         self,
         root_dir,
@@ -85,6 +91,7 @@ class Kubric(BaseDataset):
             "advanced_spatial_aug_params": {"enabled": False},
         },
         norm_params={"use": False},
+        flow_offset_params={"use": False},
     ):
         super(Kubric, self).__init__(
             init_seed=init_seed,
@@ -97,6 +104,7 @@ class Kubric(BaseDataset):
             aug_params=aug_params,
             sparse_transform=False,
             norm_params=norm_params,
+            flow_offset_params=flow_offset_params,
         )
 
         assert (
@@ -126,6 +134,25 @@ class Kubric(BaseDataset):
 
             if not self.is_prediction:
                 self.flow_list += sorted(glob(osp.join(flow_root, scene, "*.flo")))
+
+    @classmethod
+    def from_config(cls, cfg):
+        return {
+            "root_dir": cfg.ROOT_DIR,
+            "split": cfg.SPLIT,
+            "swap_column_to_row": cfg.SWAP_COLUMN_TO_ROW,
+            "use_backward_flow": cfg.USE_BACKWARD_FLOW,
+            "is_prediction": cfg.IS_PREDICTION,
+            "init_seed": cfg.INIT_SEED,
+            "append_valid_mask": cfg.APPEND_VALID_MASK,
+            "crop": cfg.CROP.USE,
+            "crop_size": cfg.CROP.SIZE,
+            "crop_type": cfg.CROP.TYPE,
+            "augment": cfg.AUGMENTATION.USE,
+            "aug_params": cfg.AUGMENTATION.PARAMS,
+            "norm_params": cfg.NORM_PARAMS,
+            "flow_offset_params": cfg.FLOW_OFFSET_PARAMS,
+        }
 
     def __getitem__(self, index):
         """
@@ -205,11 +232,20 @@ class Kubric(BaseDataset):
                 sparse_transform=self.sparse_transform,
             )
 
+        if self.flow_offsets is not None:
+            offset_labs = self._flow_to_bilinear_interpolation_weights(flow, valid)
+            offset_labs = torch.from_numpy(offset_labs).float()
+            offset_labs = offset_labs.view(
+                offset_labs.shape[0], offset_labs.shape[1], -1
+            ).permute(2, 0, 1)
+
         img1 = torch.from_numpy(img1).permute(2, 0, 1).float()
         img2 = torch.from_numpy(img2).permute(2, 0, 1).float()
         flow = torch.from_numpy(flow).permute(2, 0, 1).float()
 
         img1, img2 = self.normalize(img1, img2)
+        target = {}
+        target["flow_gt"] = flow
 
         if self.append_valid_mask:
             if valid is not None:
@@ -219,6 +255,9 @@ class Kubric(BaseDataset):
 
             valid = valid.float()
             valid = torch.unsqueeze(valid, dim=0)
-            flow = torch.cat([flow, valid], dim=0)
+            target["valid"] = valid
 
-        return (img1, img2), flow
+        if self.flow_offsets is not None:
+            target["offset_labs"] = offset_labs
+
+        return (img1, img2), target

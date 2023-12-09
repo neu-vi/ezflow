@@ -39,13 +39,13 @@ class DataloaderCreator:
         batch_size,
         pin_memory=False,
         shuffle=True,
-        num_workers=0,
+        num_workers=2,
         drop_last=True,
         init_seed=False,
         append_valid_mask=False,
         is_prediction=False,
         distributed=False,
-        world_size=None,
+        world_size=1,
     ):
         self.dataset_list = []
         self.batch_size = batch_size
@@ -57,13 +57,16 @@ class DataloaderCreator:
         self.append_valid_mask = append_valid_mask
         self.is_prediction = is_prediction
 
+        self.distributed = False
+        self.world_size = 1
+
         if distributed:
             assert (
-                world_size is not None
-            ), "world_size must be set to perform distributed training"
+                world_size > 1
+            ), "world_size must be greater than 1 to perform distributed training"
 
-        self.distributed = distributed
-        self.world_size = world_size
+            self.distributed = distributed
+            self.world_size = world_size
 
     def add_FlyingChairs(self, root_dir, split="training", augment=False, **kwargs):
         """
@@ -300,7 +303,7 @@ class DataloaderCreator:
                 split=split,
                 init_seed=self.init_seed,
                 is_prediction=self.is_prediction,
-                append_valid_mask=self.append_valid_mask,
+                append_valid_mask=True,
                 augment=augment,
                 **kwargs,
             )
@@ -386,6 +389,20 @@ class DataloaderCreator:
             )
         )
 
+    def add_dataset(self, dataset):
+        """
+        Add an optical flow dataset to the DataloaderCreator object.
+
+        Parameters
+        ----------
+        dataset : torch.utils.data.Dataset
+            the optical flow dataset
+        """
+        assert dataset is not None and isinstance(
+            dataset, BaseDataset
+        ), "Invalid dataset type."
+        self.dataset_list.append(dataset)
+
     def get_dataloader(self, rank=0):
         """
         Gets the Dataloader for the added datasets.
@@ -419,7 +436,7 @@ class DataloaderCreator:
             )
             data_loader = DataLoader(
                 dataset,
-                batch_size=self.batch_size,
+                batch_size=self.batch_size // self.world_size,
                 pin_memory=self.pin_memory,
                 num_workers=self.num_workers,
                 sampler=sampler,
@@ -435,8 +452,9 @@ class DataloaderCreator:
                 drop_last=self.drop_last,
             )
 
+        total_samples = len(data_loader) * (self.batch_size // self.world_size)
         print(
-            f"Total image pairs loaded: {len(data_loader)*self.batch_size}/{len(dataset)}\n"
+            f"Total image pairs loaded: {total_samples}/{len(dataset)} in device: {rank}"
         )
 
         return data_loader

@@ -14,6 +14,10 @@ def get_default_model_cfg(model_name):
     return get_cfg(cfg_path)
 
 
+def get_model_list():
+    return _ModelZooConfigs.get_names()
+
+
 def build_model(
     name, cfg_path=None, custom_cfg=False, cfg=None, default=False, weights_path=None
 ):
@@ -61,8 +65,9 @@ def build_model(
     model = model(cfg)
 
     if weights_path is not None:
-        model.load_state_dict(
-            torch.load(weights_path, map_location=torch.device("cpu"))
-        )
+        state_dict = torch.load(weights_path, map_location=torch.device("cpu"))
+        if "model_state_dict" in state_dict:
+            state_dict = state_dict["model_state_dict"]
+        model.load_state_dict(state_dict)
 
     return model

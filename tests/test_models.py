@@ -9,15 +9,20 @@ img2 = torch.randn(2, 3, 256, 256)
 
 def test_Predictor():
 
-    transform = T.Compose(
-        [T.Resize((224, 224)), T.ColorJitter(brightness=0.5, hue=0.3)]
-    )
-
-    predictor = Predictor("RAFT", "raft.yaml", data_transform=transform)
+    predictor = Predictor("RAFT", (0.0, 0.0, 0.0), (255.0, 255.0, 255.0), "raft.yaml")
     flow = predictor(img1, img2)
-    assert flow.shape == (2, 2, 224, 224)
+    assert flow.shape == (2, 2, 256, 256)
 
-    predictor = Predictor("RAFT", "raft.yaml", data_transform=transform, pad_divisor=32)
+    transform = T.Compose([T.Resize((224, 224))])
+
+    predictor = Predictor(
+        "RAFT",
+        (0.0, 0.0, 0.0),
+        (255.0, 255.0, 255.0),
+        "raft.yaml",
+        data_transform=transform,
+        pad_divisor=32,
+    )
     flow = predictor(img1, img2)
     assert flow.shape == (2, 2, 224, 224)
 
@@ -129,3 +134,25 @@ def test_VCN():
     assert output["flow_upsampled"].shape == (16, 2, 256, 256)
 
     del model, output
+
+
+def test_DCVNet():
+
+    model = build_model("DCVNet", "dcvnet.yaml")
+    output = model(img1, img2)
+    assert isinstance(output, dict)
+    assert isinstance(output["flow_preds"], tuple) or isinstance(
+        output["flow_preds"], list
+    )
+    assert isinstance(output["flow_logits"], tuple) or isinstance(
+        output["flow_logits"], list
+    )
+
+    model.eval()
+    output = model(img1, img2)
+    assert output["flow_upsampled"].shape == (2, 2, 256, 256)
+
+    del model, output
+
+    model = build_model("DCVNet", default=True)
+    del model

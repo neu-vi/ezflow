@@ -1,21 +1,19 @@
 NAME: RAFT
 ENCODER:
   FEATURE: 
-    NAME: BasicEncoder
+    NAME: RAFTBackboneSmall
     IN_CHANNELS: 3
     OUT_CHANNELS: 128
     NORM: instance
     P_DROPOUT: 0.0
     LAYER_CONFIG: [32, 64, 96]
-    INTERMEDIATE_FEATURES: False
   CONTEXT:
-    NAME: BasicEncoder
+    NAME: RAFTBackboneSmall
     IN_CHANNELS: 3
     OUT_CHANNELS: 160
     NORM: batch
     P_DROPOUT: 0.0
     LAYER_CONFIG: [32, 64, 96]
-    INTERMEDIATE_FEATURES: False
 HIDDEN_DIM: 96
 CONTEXT_DIM: 64
 SIMILARITY:
