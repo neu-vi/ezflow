@@ -53,7 +53,7 @@ mkl-service
 mypy-extensions==0.4.3
 networkx==2.6.2
 nodeenv==1.6.0
-numpy 
+numpy==1.20.2
 oauthlib==3.2.2
 olefile==0.46
 omegaconf 
