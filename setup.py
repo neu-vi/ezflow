@@ -8,7 +8,7 @@ from setuptools import find_packages, setup
 # Basic information
 NAME = "ezflow"
 DESCRIPTION = "A PyTorch library for optical flow estimation using neural networks"
-VERSION = "0.2.4"
+VERSION = "0.2.5"
 AUTHOR = "EzFlow Contributors"
 EMAIL = "shahnh19@gmail.com"
 LICENSE = "MIT"
